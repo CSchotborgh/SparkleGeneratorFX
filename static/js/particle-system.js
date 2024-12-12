@@ -2,15 +2,6 @@
 const initialWidth = window.innerWidth * 0.75;
 const initialHeight = window.innerHeight;
 
-// Initialize Kaboom.js
-const k = kaboom({
-    global: false,
-    canvas: document.getElementById("gameCanvas"),
-    width: initialWidth,
-    height: initialHeight,
-    background: [0, 0, 0],
-});
-
 // Physics parameters
 const physics = {
     gravity: 0.1,
@@ -25,6 +16,15 @@ const physics = {
     collisionEnabled: false
 };
 
+// Initialize Kaboom.js
+const k = kaboom({
+    global: false,
+    canvas: document.getElementById("gameCanvas"),
+    width: initialWidth,
+    height: initialHeight,
+    background: [0, 0, 0],
+});
+
 // Particle system configuration
 let config = {
     count: 50,
@@ -32,43 +32,9 @@ let config = {
     speed: 5,
     color: "#ffffff",
     preset: "sparkle",
-    trailLength: 10,
-    reverseTrail: false
+    trailLength: 10,  // Added trail length configuration
+    reverseTrail: false // Trail direction control
 };
-
-// Emitter class to manage particle generation
-class Emitter {
-    constructor() {
-        this.x = physics.vortexCenter.x;
-        this.y = physics.vortexCenter.y;
-        this.isDragging = false;
-        this.lastX = this.x;
-        this.lastY = this.y;
-    }
-
-    reset() {
-        this.x = physics.vortexCenter.x;
-        this.y = physics.vortexCenter.y;
-        this.isDragging = false;
-    }
-
-    generateParticle() {
-        const particle = new Particle();
-        particle.reset(this.x, this.y);
-        particle.isAttached = this.isDragging;
-        return particle;
-    }
-
-    update(deltaX = 0, deltaY = 0) {
-        if (this.isDragging) {
-            this.lastX = this.x;
-            this.lastY = this.y;
-        }
-    }
-}
-
-// Create emitter instance before Particle class uses it
-const emitter = new Emitter();
 
 // Particle class
 class Particle {
@@ -78,9 +44,9 @@ class Particle {
         this.reset();
     }
 
-    reset(x = null, y = null) {
-        this.x = x !== null ? x : emitter.x;
-        this.y = y !== null ? y : emitter.y;
+    reset() {
+        this.x = physics.vortexCenter.x;
+        this.y = physics.vortexCenter.y;
         this.vx = (Math.random() - 0.5) * config.speed;
         this.vy = (Math.random() - 0.5) * config.speed;
         this.ax = 0;
@@ -95,77 +61,87 @@ class Particle {
             y: this.y,
             angle: this.angle
         }));
-        this.isAttached = emitter.isDragging;
     }
 
     update() {
-        if (this.isAttached && emitter.isDragging) {
-            // Move with emitter
-            const deltaX = emitter.x - emitter.lastX;
-            const deltaY = emitter.y - emitter.lastY;
-            this.x += deltaX;
-            this.y += deltaY;
-            
-            // Update trail positions
-            this.trail = this.trail.map(point => ({
-                x: point.x + deltaX,
-                y: point.y + deltaY,
-                angle: point.angle
-            }));
-        } else {
-            // Apply physics to particle
-            this.ax = physics.wind;
-            this.ay = physics.gravity;
-            
-            // Apply air resistance
-            const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-            if (speed > 0) {
-                this.ax -= (this.vx / speed) * physics.airResistance * speed * speed;
-                this.ay -= (this.vy / speed) * physics.airResistance * speed * speed;
+        // Apply physics to particle
+        this.ax = physics.wind;
+        this.ay = physics.gravity;
+        
+        // Apply air resistance (proportional to velocity squared)
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        if (speed > 0) {
+            this.ax -= (this.vx / speed) * physics.airResistance * speed * speed;
+            this.ay -= (this.vy / speed) * physics.airResistance * speed * speed;
+        }
+        
+        // Apply turbulence using Perlin noise
+        const time = Date.now() * 0.001;
+        this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
+        this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
+        
+        // Apply vortex effect
+        if (physics.vortexStrength !== 0) {
+            const dx = this.x - physics.vortexCenter.x;
+            const dy = this.y - physics.vortexCenter.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance > 0) {
+                const vortexForce = physics.vortexStrength / (distance * physics.particleMass);
+                this.ax += -dy * vortexForce;
+                this.ay += dx * vortexForce;
             }
-            
-            // Apply turbulence
-            const time = Date.now() * 0.001;
-            this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
-            this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
-            
-            // Apply vortex effect
-            if (physics.vortexStrength !== 0) {
-                const dx = this.x - physics.vortexCenter.x;
-                const dy = this.y - physics.vortexCenter.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance > 0) {
-                    const vortexForce = physics.vortexStrength / (distance * physics.particleMass);
-                    this.ax += -dy * vortexForce;
-                    this.ay += dx * vortexForce;
+        }
+        
+        // Update velocity and position
+        this.vx += this.ax / physics.particleMass;
+        this.vy += this.ay / physics.particleMass;
+        
+        this.vx *= physics.friction;
+        this.vy *= physics.friction;
+        
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        // Bounce off screen edges
+        if (this.x < 0 || this.x > k.width()) {
+            this.vx *= -physics.bounce;
+            this.x = this.x < 0 ? 0 : k.width();
+        }
+        if (this.y < 0 || this.y > k.height()) {
+            this.vy *= -physics.bounce;
+            this.y = this.y < 0 ? 0 : k.height();
+        }
+        
+        // Particle collisions if enabled
+        if (physics.collisionEnabled) {
+            for (const other of particles) {
+                if (other !== this) {
+                    const dx = other.x - this.x;
+                    const dy = other.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const minDist = (this.size + other.size) * 0.5;
+                    
+                    if (distance < minDist) {
+                        const angle = Math.atan2(dy, dx);
+                        const targetX = this.x + Math.cos(angle) * minDist;
+                        const targetY = this.y + Math.sin(angle) * minDist;
+                        
+                        const ax = (targetX - other.x) * 0.05;
+                        const ay = (targetY - other.y) * 0.05;
+                        
+                        this.vx -= ax;
+                        this.vy -= ay;
+                        other.vx += ax;
+                        other.vy += ay;
+                    }
                 }
-            }
-            
-            // Update velocity and position
-            this.vx += this.ax / physics.particleMass;
-            this.vy += this.ay / physics.particleMass;
-            
-            this.vx *= physics.friction;
-            this.vy *= physics.friction;
-            
-            this.x += this.vx;
-            this.y += this.vy;
-            
-            // Bounce off screen edges
-            if (this.x < 0 || this.x > k.width()) {
-                this.vx *= -physics.bounce;
-                this.x = this.x < 0 ? 0 : k.width();
-            }
-            if (this.y < 0 || this.y > k.height()) {
-                this.vy *= -physics.bounce;
-                this.y = this.y < 0 ? 0 : k.height();
             }
         }
         
         // Update rotation
         this.angle += this.spin;
         
-        // Update trail
+        // Update trail based on direction
         if (config.reverseTrail) {
             this.trail.shift();
             this.trail.push({
@@ -183,6 +159,7 @@ class Particle {
         }
         
         this.life -= this.decay;
+
         if (this.life <= 0) {
             this.reset();
         }
@@ -237,6 +214,65 @@ class Particle {
 // Create particle pool
 let particles = Array(config.count).fill().map(() => new Particle());
 
+// Particle burst function
+function createParticleBurst(x, y, count = 20) {
+    const burstParticles = Array(count).fill().map(() => {
+        const particle = new Particle();
+        particle.x = x;
+        particle.y = y;
+        
+        // Create radial burst effect
+        const angle = Math.random() * Math.PI * 2;
+        const speed = config.speed * (1 + Math.random());
+        particle.vx = Math.cos(angle) * speed;
+        particle.vy = Math.sin(angle) * speed;
+        
+        // Shorter life for burst particles
+        particle.decay = 0.02 + Math.random() * 0.03;
+        
+        // Set sprite if using image-based particles
+        if (animationFrames.length > 0) {
+            particle.sprite = animationFrames[currentFrame].sprite;
+            particle.originalSize = animationFrames[currentFrame].originalSize;
+        }
+        
+        return particle;
+    });
+    
+    particles.push(...burstParticles);
+    
+    // Trim excess particles
+    while (particles.length > config.count * 2) {
+        particles.shift();
+    }
+}
+
+// Emitter class to manage particle generation
+class Emitter {
+    constructor() {
+        this.x = physics.vortexCenter.x;
+        this.y = physics.vortexCenter.y;
+        this.isDragging = false;
+    }
+
+    reset() {
+        this.x = physics.vortexCenter.x;
+        this.y = physics.vortexCenter.y;
+    }
+
+    generateParticle() {
+        const particle = new Particle();
+        particle.x = this.x;
+        particle.y = this.y;
+        particle.vx = (Math.random() - 0.5) * config.speed;
+        particle.vy = (Math.random() - 0.5) * config.speed;
+        return particle;
+    }
+}
+
+// Create emitter instance
+const emitter = new Emitter();
+
 // Event listeners for drag and burst effects
 k.canvas.addEventListener('mousedown', (e) => {
     if (e.button === 0) { // Left click
@@ -250,15 +286,13 @@ k.canvas.addEventListener('mousedown', (e) => {
 k.canvas.addEventListener('mousemove', (e) => {
     if (emitter.isDragging) {
         const rect = k.canvas.getBoundingClientRect();
-        const newX = e.clientX - rect.left;
-        const newY = e.clientY - rect.top;
-        emitter.x = newX;
-        emitter.y = newY;
+        emitter.x = e.clientX - rect.left;
+        emitter.y = e.clientY - rect.top;
     }
 });
 
 k.canvas.addEventListener('mouseup', (e) => {
-    if (e.button === 0) {
+    if (e.button === 0) { // Left click release
         emitter.isDragging = false;
         emitter.reset();
     }
@@ -268,7 +302,22 @@ k.canvas.addEventListener('mouseleave', () => {
     if (emitter.isDragging) {
         emitter.isDragging = false;
         emitter.reset();
+        // Reset all particles
+        particles.forEach(particle => {
+            delete particle.offsetX;
+            delete particle.offsetY;
+            particle.reset();
+        });
     }
+});
+
+// Right click for burst
+k.canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const rect = k.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    createParticleBurst(x, y);
 });
 
 // Touch events
@@ -301,14 +350,23 @@ k.onUpdate(() => {
     // Remove dead particles
     particles = particles.filter(p => p.life > 0);
 
-    // Generate new particles from emitter's current position
+    // Generate new particles from emitter
     while (particles.length < config.count) {
         particles.push(emitter.generateParticle());
     }
 
     // Update and draw particles
-    particles.forEach(particle => particle.update());
-    particles.forEach(particle => particle.draw());
+    particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+    });
+
+    // Draw emitter position indicator (optional, for debugging)
+    k.drawCircle({
+        pos: k.vec2(emitter.x, emitter.y),
+        radius: 3,
+        color: k.rgb(255, 0, 0, 0.5),
+    });
 });
 
 // Helper function to convert hex to RGB
@@ -321,28 +379,120 @@ function hexToRgb(hex) {
     ] : [255, 255, 255];
 }
 
+// Preset configurations
+const presets = {
+    sparkle: {
+        count: 50,
+        size: 5,
+        speed: 5,
+        color: "#ffffff",
+        physics: {
+            gravity: 0.1,
+            wind: 0,
+            friction: 0.99,
+            bounce: 0.8,
+            airResistance: 0.02,
+            turbulence: 0.1,
+            vortexStrength: 0,
+            particleMass: 1.0,
+            collisionEnabled: false
+        }
+    },
+    fire: {
+        count: 70,
+        size: 8,
+        speed: 7,
+        color: "#ff4400",
+        physics: {
+            gravity: -0.1,
+            wind: 0,
+            friction: 0.96,
+            bounce: 0.3,
+            airResistance: 0.01,
+            turbulence: 0.2,
+            vortexStrength: 0.2,
+            particleMass: 0.5,
+            collisionEnabled: false
+        }
+    },
+    snow: {
+        count: 100,
+        size: 3,
+        speed: 2,
+        color: "#aaccff",
+        physics: {
+            gravity: 0.05,
+            wind: 0.1,
+            friction: 0.98,
+            bounce: 0.1,
+            airResistance: 0.04,
+            turbulence: 0.05,
+            vortexStrength: 0,
+            particleMass: 0.8,
+            collisionEnabled: true
+        }
+    },
+    galaxy: {
+        count: 200,
+        size: 2,
+        speed: 3,
+        color: "#9966ff",
+        physics: {
+            gravity: 0,
+            wind: 0,
+            friction: 0.99,
+            bounce: 1.0,
+            airResistance: 0,
+            turbulence: 0.02,
+            vortexStrength: 0.5,
+            particleMass: 1.2,
+            collisionEnabled: false
+        }
+    },
+    explosion: {
+        count: 150,
+        size: 4,
+        speed: 10,
+        color: "#ffaa00",
+        physics: {
+            gravity: 0.2,
+            wind: 0,
+            friction: 0.95,
+            bounce: 0.6,
+            airResistance: 0.03,
+            turbulence: 0.3,
+            vortexStrength: -0.1,
+            particleMass: 0.7,
+            collisionEnabled: true
+        }
+    }
+};
+
 // Window resize handler
 window.addEventListener('resize', () => {
+    const canvas = document.getElementById("gameCanvas");
     const newWidth = window.innerWidth * 0.75;
     const newHeight = window.innerHeight;
     
     // Update canvas size
+    canvas.style.width = `${newWidth}px`;
+    canvas.style.height = `${newHeight}px`;
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    
+    // Update Kaboom instance dimensions
     k.canvas.width = newWidth;
     k.canvas.height = newHeight;
     
     // Update vortex center
     physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
     
-    // Reset emitter if not dragging
-    if (!emitter.isDragging) {
-        emitter.reset();
-    }
-    
     // Ensure particles are within bounds
     particles.forEach(particle => {
         if (particle.x > newWidth) particle.x = newWidth;
         if (particle.y > newHeight) particle.y = newHeight;
         
+        // Update trail positions if needed
         particle.trail = particle.trail.map(point => ({
             x: Math.min(point.x, newWidth),
             y: Math.min(point.y, newHeight),
