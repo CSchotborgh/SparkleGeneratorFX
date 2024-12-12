@@ -262,11 +262,11 @@ class Emitter {
 
     generateParticle() {
         const particle = new Particle();
-        // Set initial position to current emitter position
+        // Always use current emitter position for new particles
         particle.x = this.x;
         particle.y = this.y;
         
-        // Initialize trail at current position
+        // Initialize trail at current emitter position
         particle.trail = Array(particle.trailLength).fill().map(() => ({
             x: this.x,
             y: this.y,
@@ -279,25 +279,18 @@ class Emitter {
         particle.vx = Math.cos(angle) * speed;
         particle.vy = Math.sin(angle) * speed;
         
-        // Mark particle as attached if emitter is being dragged
-        particle.isDetached = !this.isDragging;
+        // Mark particle as attached to emitter during drag
+        particle.isAttached = this.isDragging;
         
         return particle;
     }
 
-    update() {
-        // Update attached particles' positions relative to emitter when dragging
+    update(deltaX = 0, deltaY = 0) {
+        // Update particles relative to emitter movement
         if (this.isDragging) {
-            const oldX = this.x;
-            const oldY = this.y;
-            
             particles.forEach(particle => {
-                if (!particle.isDetached) {
-                    // Calculate the relative movement of the emitter
-                    const deltaX = this.x - oldX;
-                    const deltaY = this.y - oldY;
-                    
-                    // Move particles with the emitter
+                if (particle.isAttached) {
+                    // Move attached particles with the emitter
                     particle.x += deltaX;
                     particle.y += deltaY;
                     
@@ -341,8 +334,19 @@ k.canvas.addEventListener('mousedown', (e) => {
 k.canvas.addEventListener('mousemove', (e) => {
     if (emitter.isDragging) {
         const rect = k.canvas.getBoundingClientRect();
-        emitter.x = e.clientX - rect.left;
-        emitter.y = e.clientY - rect.top;
+        const newX = e.clientX - rect.left;
+        const newY = e.clientY - rect.top;
+        
+        // Calculate movement delta
+        const deltaX = newX - emitter.x;
+        const deltaY = newY - emitter.y;
+        
+        // Update emitter position
+        emitter.x = newX;
+        emitter.y = newY;
+        
+        // Update particles with movement
+        emitter.update(deltaX, deltaY);
     }
 });
 
