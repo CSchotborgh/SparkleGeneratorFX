@@ -64,15 +64,21 @@ async function exportToVideo(format) {
     });
     
     if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = `particle-animation.${format}`;
-        link.href = url;
-        link.click();
-        URL.revokeObjectURL(url);
+        try {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `particle-animation.${format}`;
+            link.href = url;
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error processing video:', error);
+            alert(`Error processing video: ${error.message}`);
+        }
     } else {
-        console.error('Error exporting video:', await response.text());
-        alert('Error exporting video. Please try again.');
+        const errorText = await response.text();
+        console.error('Error exporting video:', errorText);
+        alert(`Error exporting video: ${errorText}\nPlease try a different format or reduce the recording duration.`);
     }
 }

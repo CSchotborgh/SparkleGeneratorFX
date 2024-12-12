@@ -99,15 +99,40 @@ def export_video():
         output_path = temp_path / f"output.{format}"
         
         # FFmpeg command based on format
-        cmd = [
-            'ffmpeg',
-            '-framerate', str(frame_rate),
-            '-i', str(temp_path / 'frame_%06d.png'),
-            '-c:v', 'libx264' if format in ['mp4', 'mkv'] else 'copy',
-            '-pix_fmt', 'yuv420p',
-            '-y',  # Overwrite output file if it exists
-            str(output_path)
-        ]
+        cmd = ['ffmpeg', '-framerate', str(frame_rate), '-i', str(temp_path / 'frame_%06d.png')]
+        
+        # Add format-specific encoding settings
+        if format == 'mp4':
+            cmd.extend([
+                '-c:v', 'libx264',
+                '-preset', 'medium',
+                '-crf', '23',
+                '-pix_fmt', 'yuv420p',
+                '-movflags', '+faststart'
+            ])
+        elif format == 'mkv':
+            cmd.extend([
+                '-c:v', 'libx264',
+                '-preset', 'medium',
+                '-crf', '23',
+                '-pix_fmt', 'yuv420p'
+            ])
+        elif format == 'avi':
+            cmd.extend([
+                '-c:v', 'mpeg4',
+                '-q:v', '6',
+                '-pix_fmt', 'yuv420p'
+            ])
+        elif format == 'mov':
+            cmd.extend([
+                '-c:v', 'prores_ks',
+                '-profile:v', '3',
+                '-vendor', 'apl0',
+                '-pix_fmt', 'yuv422p10le'
+            ])
+            
+        # Add output file
+        cmd.extend(['-y', str(output_path)])
         
         try:
             subprocess.run(cmd, check=True, capture_output=True)
