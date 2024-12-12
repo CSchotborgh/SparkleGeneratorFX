@@ -64,7 +64,23 @@ class Particle {
     }
 
     update() {
-        // Apply base forces
+        if (isDragging) {
+            // When dragging, move particles towards the drag target
+            const dx = dragTarget.x - this.x;
+            const dy = dragTarget.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 0) {
+                this.vx = (dx / distance) * config.speed;
+                this.vy = (dy / distance) * config.speed;
+            }
+            
+            this.x += this.vx;
+            this.y += this.vy;
+            return;
+        }
+        
+        // Normal physics when not dragging
         this.ax = physics.wind;
         this.ay = physics.gravity;
         
@@ -247,7 +263,44 @@ function createParticleBurst(x, y, count = 20) {
     }
 }
 
-// Event listeners for burst effects
+// Drag state
+let isDragging = false;
+let dragTarget = { x: 0, y: 0 };
+
+// Event listeners for drag and burst effects
+k.canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 0) { // Left click
+        isDragging = true;
+        const rect = k.canvas.getBoundingClientRect();
+        dragTarget.x = e.clientX - rect.left;
+        dragTarget.y = e.clientY - rect.top;
+    }
+});
+
+k.canvas.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+        const rect = k.canvas.getBoundingClientRect();
+        dragTarget.x = e.clientX - rect.left;
+        dragTarget.y = e.clientY - rect.top;
+    }
+});
+
+k.canvas.addEventListener('mouseup', (e) => {
+    if (e.button === 0) { // Left click release
+        isDragging = false;
+        // Reset all particles to center
+        particles.forEach(particle => particle.reset());
+    }
+});
+
+k.canvas.addEventListener('mouseleave', () => {
+    if (isDragging) {
+        isDragging = false;
+        particles.forEach(particle => particle.reset());
+    }
+});
+
+// Right click for burst
 k.canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     const rect = k.canvas.getBoundingClientRect();
@@ -256,14 +309,31 @@ k.canvas.addEventListener('contextmenu', (e) => {
     createParticleBurst(x, y);
 });
 
+// Touch events
 k.canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
+    isDragging = true;
     const rect = k.canvas.getBoundingClientRect();
     const touch = e.touches[0];
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-    createParticleBurst(x, y);
+    dragTarget.x = touch.clientX - rect.left;
+    dragTarget.y = touch.clientY - rect.top;
 }, { passive: false });
+
+k.canvas.addEventListener('touchmove', (e) => {
+    if (isDragging) {
+        e.preventDefault();
+        const rect = k.canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        dragTarget.x = touch.clientX - rect.left;
+        dragTarget.y = touch.clientY - rect.top;
+    }
+}, { passive: false });
+
+k.canvas.addEventListener('touchend', () => {
+    isDragging = false;
+    // Reset all particles to center
+    particles.forEach(particle => particle.reset());
+});
 
 // Main game loop
 k.onUpdate(() => {
