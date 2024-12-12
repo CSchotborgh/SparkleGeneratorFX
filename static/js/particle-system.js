@@ -182,19 +182,86 @@ const presets = {
         count: 50,
         size: 5,
         speed: 5,
-        color: "#ffffff"
+        color: "#ffffff",
+        physics: {
+            gravity: 0.1,
+            wind: 0,
+            friction: 0.99,
+            bounce: 0.8,
+            airResistance: 0.02,
+            turbulence: 0.1,
+            vortexStrength: 0,
+            particleMass: 1.0,
+            collisionEnabled: false
+        }
     },
     fire: {
         count: 70,
         size: 8,
         speed: 7,
-        color: "#ff4400"
+        color: "#ff4400",
+        physics: {
+            gravity: -0.1,
+            wind: 0,
+            friction: 0.96,
+            bounce: 0.3,
+            airResistance: 0.01,
+            turbulence: 0.2,
+            vortexStrength: 0.2,
+            particleMass: 0.5,
+            collisionEnabled: false
+        }
     },
     snow: {
-        count: 30,
+        count: 100,
         size: 3,
         speed: 2,
-        color: "#aaccff"
+        color: "#aaccff",
+        physics: {
+            gravity: 0.05,
+            wind: 0.1,
+            friction: 0.98,
+            bounce: 0.1,
+            airResistance: 0.04,
+            turbulence: 0.05,
+            vortexStrength: 0,
+            particleMass: 0.8,
+            collisionEnabled: true
+        }
+    },
+    galaxy: {
+        count: 200,
+        size: 2,
+        speed: 3,
+        color: "#9966ff",
+        physics: {
+            gravity: 0,
+            wind: 0,
+            friction: 0.99,
+            bounce: 1.0,
+            airResistance: 0,
+            turbulence: 0.02,
+            vortexStrength: 0.5,
+            particleMass: 1.2,
+            collisionEnabled: false
+        }
+    },
+    explosion: {
+        count: 150,
+        size: 4,
+        speed: 10,
+        color: "#ffaa00",
+        physics: {
+            gravity: 0.2,
+            wind: 0,
+            friction: 0.95,
+            bounce: 0.6,
+            airResistance: 0.03,
+            turbulence: 0.3,
+            vortexStrength: -0.1,
+            particleMass: 0.7,
+            collisionEnabled: true
+        }
     }
 };
 

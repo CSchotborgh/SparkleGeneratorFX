@@ -57,13 +57,29 @@ document.getElementById('presets').addEventListener('change', (e) => {
     const preset = presets[e.target.value];
     config = { ...config, ...preset };
     
-    // Update UI controls
+    // Update physics parameters
+    if (preset.physics) {
+        Object.assign(physics, preset.physics);
+        
+        // Update physics control UI
+        document.getElementById('gravity').value = physics.gravity;
+        document.getElementById('wind').value = physics.wind;
+        document.getElementById('friction').value = physics.friction;
+        document.getElementById('bounce').value = physics.bounce;
+        document.getElementById('airResistance').value = physics.airResistance;
+        document.getElementById('turbulence').value = physics.turbulence;
+        document.getElementById('vortexStrength').value = physics.vortexStrength;
+        document.getElementById('particleMass').value = physics.particleMass;
+        document.getElementById('collisionEnabled').checked = physics.collisionEnabled;
+    }
+    
+    // Update visual control UI
     document.getElementById('particleCount').value = config.count;
     document.getElementById('particleSize').value = config.size;
     document.getElementById('particleSpeed').value = config.speed;
     document.getElementById('particleColor').value = config.color;
     
-    // Reset particles
+    // Reset particles with new configuration
     particles = Array(config.count).fill().map(() => new Particle());
 });
 
