@@ -35,7 +35,7 @@ const physics = {
 class Particle {
     constructor() {
         this.trail = [];
-        this.trailLength = 10; // Default trail length
+        this.trailLength = config.trailLength || 10;
         this.reset();
     }
 
@@ -51,7 +51,11 @@ class Particle {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.2;
         this.size = config.size * (0.5 + Math.random() * 0.5);
-        this.trail = [];
+        this.trail = Array(this.trailLength).fill().map(() => ({
+            x: this.x,
+            y: this.y,
+            angle: this.angle
+        }));
     }
 
     update() {
@@ -133,10 +137,12 @@ class Particle {
         this.angle += this.spin;
         
         // Update trail
-        this.trail.unshift({ x: this.x, y: this.y, angle: this.angle });
-        if (this.trail.length > this.trailLength) {
-            this.trail.pop();
-        }
+        this.trail.pop();
+        this.trail.unshift({
+            x: this.x,
+            y: this.y,
+            angle: this.angle
+        });
         
         this.life -= this.decay;
 
@@ -147,10 +153,10 @@ class Particle {
 
     draw() {
         // Draw trail
-        for (let i = 0; i < this.trail.length; i++) {
+        for (let i = this.trail.length - 1; i >= 0; i--) {
             const point = this.trail[i];
-            const opacity = (i / this.trail.length) * this.life * 0.5;
-            const trailSize = (this.size * i) / this.trail.length;
+            const opacity = (1 - i / this.trail.length) * this.life * 0.5;
+            const trailSize = this.size * (1 - i / this.trail.length);
             
             if (this.sprite) {
                 k.drawSprite({
