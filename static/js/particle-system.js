@@ -201,8 +201,13 @@ const presets = {
 // Window resize handler
 window.addEventListener('resize', () => {
     const canvas = document.getElementById("gameCanvas");
-    canvas.width = window.innerWidth * 0.75;
-    canvas.height = window.innerHeight;
-    k.width = () => canvas.width;
-    k.height = () => canvas.height;
+    const newWidth = window.innerWidth * 0.75;
+    const newHeight = window.innerHeight;
+    
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    
+    // Update Kaboom canvas size
+    k.canvas.width = newWidth;
+    k.canvas.height = newHeight;
 });
