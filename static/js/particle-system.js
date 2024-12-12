@@ -2,6 +2,10 @@
 const initialWidth = window.innerWidth * 0.75;
 const initialHeight = window.innerHeight;
 
+// Click/touch handling state
+let lastClickTime = 0;
+const doubleClickDelay = 300; // milliseconds
+
 // Physics parameters
 const physics = {
     gravity: 0.1,
@@ -36,10 +40,6 @@ const config = {
     reverseTrail: false, // Trail direction control
     followMouse: true // Track if particles should follow mouse
 };
-
-// Click/touch handling state
-let lastClickTime = 0;
-const doubleClickDelay = 300; // milliseconds
 
 // Particle class
 class Particle {
@@ -196,15 +196,15 @@ class Particle {
                 if (this.sprite) {
                     k.drawSprite({
                         sprite: this.sprite,
-                        pos: vec2(point.x, point.y),
+                        pos: k.vec2(point.x, point.y),
                         angle: point.angle,
-                        color: rgb(1, 1, 1),
+                        color: k.rgb(1, 1, 1),
                         opacity: alpha * 0.5,
                         scale: size / this.originalSize
                     });
                 } else {
                     k.drawCircle({
-                        pos: vec2(point.x, point.y),
+                        pos: k.vec2(point.x, point.y),
                         radius: size,
                         color: config.color,
                         opacity: alpha * 0.5
@@ -217,13 +217,13 @@ class Particle {
         if (this.sprite) {
             k.drawSprite({
                 sprite: this.sprite,
-                pos: vec2(this.x, this.y),
+                pos: k.vec2(this.x, this.y),
                 angle: this.angle,
                 scale: size / this.originalSize
             });
         } else {
             k.drawCircle({
-                pos: vec2(this.x, this.y),
+                pos: k.vec2(this.x, this.y),
                 radius: size,
                 color: config.color
             });
