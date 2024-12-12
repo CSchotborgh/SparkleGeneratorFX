@@ -262,11 +262,29 @@ class Emitter {
 
     generateParticle() {
         const particle = new Particle();
+        // Set initial position to current emitter position
         particle.x = this.x;
         particle.y = this.y;
-        particle.vx = (Math.random() - 0.5) * config.speed;
-        particle.vy = (Math.random() - 0.5) * config.speed;
+        // Set initial velocity with random spread
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * config.speed;
+        particle.vx = Math.cos(angle) * speed;
+        particle.vy = Math.sin(angle) * speed;
         return particle;
+    }
+
+    update() {
+        // Update attached particles' positions relative to emitter when dragging
+        if (this.isDragging) {
+            particles.forEach(particle => {
+                if (!particle.isDetached) {
+                    const dx = particle.x - this.x;
+                    const dy = particle.y - this.y;
+                    particle.x = this.x + dx;
+                    particle.y = this.y + dy;
+                }
+            });
+        }
     }
 }
 
@@ -280,6 +298,10 @@ k.canvas.addEventListener('mousedown', (e) => {
         const rect = k.canvas.getBoundingClientRect();
         emitter.x = e.clientX - rect.left;
         emitter.y = e.clientY - rect.top;
+        // Mark existing particles as attached to the emitter
+        particles.forEach(particle => {
+            particle.isDetached = false;
+        });
     }
 });
 
@@ -294,6 +316,10 @@ k.canvas.addEventListener('mousemove', (e) => {
 k.canvas.addEventListener('mouseup', (e) => {
     if (e.button === 0) { // Left click release
         emitter.isDragging = false;
+        // Mark all particles as detached
+        particles.forEach(particle => {
+            particle.isDetached = true;
+        });
         emitter.reset();
     }
 });
@@ -301,13 +327,11 @@ k.canvas.addEventListener('mouseup', (e) => {
 k.canvas.addEventListener('mouseleave', () => {
     if (emitter.isDragging) {
         emitter.isDragging = false;
-        emitter.reset();
-        // Reset all particles
+        // Mark all particles as detached
         particles.forEach(particle => {
-            delete particle.offsetX;
-            delete particle.offsetY;
-            particle.reset();
+            particle.isDetached = true;
         });
+        emitter.reset();
     }
 });
 
@@ -352,8 +376,13 @@ k.onUpdate(() => {
 
     // Generate new particles from emitter
     while (particles.length < config.count) {
-        particles.push(emitter.generateParticle());
+        const newParticle = emitter.generateParticle();
+        newParticle.isDetached = !emitter.isDragging;
+        particles.push(newParticle);
     }
+
+    // Update emitter
+    emitter.update();
 
     // Update and draw particles
     particles.forEach(particle => {
