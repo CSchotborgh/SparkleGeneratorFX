@@ -214,6 +214,57 @@ class Particle {
 // Create particle pool
 let particles = Array(config.count).fill().map(() => new Particle());
 
+// Particle burst function
+function createParticleBurst(x, y, count = 20) {
+    const burstParticles = Array(count).fill().map(() => {
+        const particle = new Particle();
+        particle.x = x;
+        particle.y = y;
+        
+        // Create radial burst effect
+        const angle = Math.random() * Math.PI * 2;
+        const speed = config.speed * (1 + Math.random());
+        particle.vx = Math.cos(angle) * speed;
+        particle.vy = Math.sin(angle) * speed;
+        
+        // Shorter life for burst particles
+        particle.decay = 0.02 + Math.random() * 0.03;
+        
+        // Set sprite if using image-based particles
+        if (animationFrames.length > 0) {
+            particle.sprite = animationFrames[currentFrame].sprite;
+            particle.originalSize = animationFrames[currentFrame].originalSize;
+        }
+        
+        return particle;
+    });
+    
+    particles.push(...burstParticles);
+    
+    // Trim excess particles
+    while (particles.length > config.count * 2) {
+        particles.shift();
+    }
+}
+
+// Event listeners for burst effects
+k.canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const rect = k.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    createParticleBurst(x, y);
+});
+
+k.canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const rect = k.canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    createParticleBurst(x, y);
+}, { passive: false });
+
 // Main game loop
 k.onUpdate(() => {
     particles.forEach(particle => {
