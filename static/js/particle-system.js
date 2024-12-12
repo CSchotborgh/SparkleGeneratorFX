@@ -68,7 +68,7 @@ class Particle {
             this.y = this.y < 0 ? 0 : k.height();
         }
         
-        // Update sparkle effect
+        // Update rotation
         this.angle += this.spin;
         this.life -= this.decay;
 
@@ -78,22 +78,21 @@ class Particle {
     }
 
     draw() {
-        const sparklePoints = 4;
-        const innerRadius = this.size * 0.4 * this.life;
-        const outerRadius = this.size * this.life;
-        
-        for (let i = 0; i < sparklePoints; i++) {
-            const angle = this.angle + (i * Math.PI * 2 / sparklePoints);
-            const startX = this.x + Math.cos(angle) * innerRadius;
-            const startY = this.y + Math.sin(angle) * innerRadius;
-            const endX = this.x + Math.cos(angle) * outerRadius;
-            const endY = this.y + Math.sin(angle) * outerRadius;
-            
-            k.drawLine({
-                p1: k.vec2(startX, startY),
-                p2: k.vec2(endX, endY),
-                width: 2,
-                color: k.rgb(...hexToRgb(config.color), this.life)
+        if (this.sprite) {
+            k.drawSprite({
+                sprite: this.sprite,
+                pos: k.vec2(this.x, this.y),
+                scale: k.vec2(this.size / 20),
+                angle: this.angle,
+                color: k.rgb(...hexToRgb(config.color), this.life),
+                anchor: "center",
+            });
+        } else {
+            // Fallback to basic particle if no sprite is loaded
+            k.drawCircle({
+                pos: k.vec2(this.x, this.y),
+                radius: this.size,
+                color: k.rgb(...hexToRgb(config.color), this.life),
             });
         }
     }
