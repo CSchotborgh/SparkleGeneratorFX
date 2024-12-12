@@ -6,6 +6,15 @@ const initialHeight = window.innerHeight;
 let lastClickTime = 0;
 const doubleClickDelay = 300; // milliseconds
 
+// Initialize Kaboom.js
+const k = kaboom({
+    global: false,
+    canvas: document.getElementById("gameCanvas"),
+    width: initialWidth,
+    height: initialHeight,
+    background: [0, 0, 0],
+});
+
 // Physics parameters
 const physics = {
     gravity: 0.1,
@@ -20,15 +29,6 @@ const physics = {
     collisionEnabled: false
 };
 
-// Initialize Kaboom.js
-const k = kaboom({
-    global: false,
-    canvas: document.getElementById("gameCanvas"),
-    width: initialWidth,
-    height: initialHeight,
-    background: [0, 0, 0],
-});
-
 // Configuration object for particle system
 const config = {
     count: 50,
@@ -36,8 +36,8 @@ const config = {
     speed: 5,
     color: "#ffffff",
     preset: "sparkle",
-    trailLength: 10,  // Added trail length configuration
-    reverseTrail: false, // Trail direction control
+    trailLength: 10,
+    reverseTrail: false,
     followMouse: true // Track if particles should follow mouse
 };
 
@@ -55,8 +55,9 @@ class Particle {
 
     reset() {
         if (config.followMouse) {
-            this.x = k.mousePos().x;
-            this.y = k.mousePos().y;
+            const mousePos = k.mousePos();
+            this.x = mousePos.x;
+            this.y = mousePos.y;
         } else {
             // Keep the current position if not following mouse
             this.x = this.x || k.width() / 2;
@@ -147,8 +148,8 @@ class Particle {
 
         // Vortex effect
         if (physics.vortexStrength !== 0) {
-            const dx = this.x - k.width() / 2;
-            const dy = this.y - k.height() / 2;
+            const dx = this.x - physics.vortexCenter.x;
+            const dy = this.y - physics.vortexCenter.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             const vortexAngle = Math.atan2(dy, dx);
             const vortexForce = physics.vortexStrength * (distance / 100);
@@ -206,7 +207,7 @@ class Particle {
                     k.drawCircle({
                         pos: k.vec2(point.x, point.y),
                         radius: size,
-                        color: config.color,
+                        color: k.rgb(...hexToRgb(config.color).map(c => c / 255)),
                         opacity: alpha * 0.5
                     });
                 }
@@ -225,7 +226,7 @@ class Particle {
             k.drawCircle({
                 pos: k.vec2(this.x, this.y),
                 radius: size,
-                color: config.color
+                color: k.rgb(...hexToRgb(config.color).map(c => c / 255))
             });
         }
     }
@@ -268,10 +269,11 @@ k.canvas.addEventListener('touchmove', (e) => {
     if (config.followMouse) {
         const touch = e.touches[0];
         const rect = k.canvas.getBoundingClientRect();
-        k.mousePos = () => ({
+        const mousePos = {
             x: touch.clientX - rect.left,
             y: touch.clientY - rect.top
-        });
+        };
+        k.mousePos = () => mousePos;
     }
     e.preventDefault(); // Prevent scrolling
 });
@@ -294,7 +296,29 @@ function hexToRgb(hex) {
     ] : [255, 255, 255];
 }
 
-// Preset configurations
+// Window resize handler
+window.addEventListener('resize', () => {
+    const newWidth = window.innerWidth * 0.75;
+    const newHeight = window.innerHeight;
+    
+    k.canvas.width = newWidth;
+    k.canvas.height = newHeight;
+    
+    // Update particle positions to stay within new bounds
+    particles.forEach(particle => {
+        particle.x = Math.min(particle.x, newWidth);
+        particle.y = Math.min(particle.y, newHeight);
+        
+        // Update trail positions
+        particle.trail = particle.trail.map(point => ({
+            x: Math.min(point.x, newWidth),
+            y: Math.min(point.y, newHeight),
+            angle: point.angle
+        }));
+    });
+});
+
+// Export presets
 const presets = {
     sparkle: {
         count: 50,
@@ -382,25 +406,3 @@ const presets = {
         }
     }
 };
-
-// Window resize handler
-window.addEventListener('resize', () => {
-    const newWidth = window.innerWidth * 0.75; // 75% of window width
-    const newHeight = window.innerHeight;
-    
-    k.canvas.width = newWidth;
-    k.canvas.height = newHeight;
-    
-    // Update particle positions to stay within new bounds
-    particles.forEach(particle => {
-        particle.x = Math.min(particle.x, newWidth);
-        particle.y = Math.min(particle.y, newHeight);
-        
-        // Update trail positions if needed
-        particle.trail = particle.trail.map(point => ({
-            x: Math.min(point.x, newWidth),
-            y: Math.min(point.y, newHeight),
-            angle: point.angle
-        }));
-    });
-});
