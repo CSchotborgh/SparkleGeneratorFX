@@ -265,23 +265,48 @@ class Emitter {
         // Set initial position to current emitter position
         particle.x = this.x;
         particle.y = this.y;
+        
+        // Initialize trail at current position
+        particle.trail = Array(particle.trailLength).fill().map(() => ({
+            x: this.x,
+            y: this.y,
+            angle: particle.angle
+        }));
+        
         // Set initial velocity with random spread
         const angle = Math.random() * Math.PI * 2;
         const speed = Math.random() * config.speed;
         particle.vx = Math.cos(angle) * speed;
         particle.vy = Math.sin(angle) * speed;
+        
+        // Mark particle as attached if emitter is being dragged
+        particle.isDetached = !this.isDragging;
+        
         return particle;
     }
 
     update() {
         // Update attached particles' positions relative to emitter when dragging
         if (this.isDragging) {
+            const oldX = this.x;
+            const oldY = this.y;
+            
             particles.forEach(particle => {
                 if (!particle.isDetached) {
-                    const dx = particle.x - this.x;
-                    const dy = particle.y - this.y;
-                    particle.x = this.x + dx;
-                    particle.y = this.y + dy;
+                    // Calculate the relative movement of the emitter
+                    const deltaX = this.x - oldX;
+                    const deltaY = this.y - oldY;
+                    
+                    // Move particles with the emitter
+                    particle.x += deltaX;
+                    particle.y += deltaY;
+                    
+                    // Update particle trail positions
+                    particle.trail = particle.trail.map(point => ({
+                        x: point.x + deltaX,
+                        y: point.y + deltaY,
+                        angle: point.angle
+                    }));
                 }
             });
         }
@@ -298,9 +323,17 @@ k.canvas.addEventListener('mousedown', (e) => {
         const rect = k.canvas.getBoundingClientRect();
         emitter.x = e.clientX - rect.left;
         emitter.y = e.clientY - rect.top;
+        
+        // Store initial positions for relative movement calculation
+        emitter.lastX = emitter.x;
+        emitter.lastY = emitter.y;
+        
         // Mark existing particles as attached to the emitter
         particles.forEach(particle => {
             particle.isDetached = false;
+            // Store initial relative positions
+            particle.relativeX = particle.x - emitter.x;
+            particle.relativeY = particle.y - emitter.y;
         });
     }
 });
