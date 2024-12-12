@@ -13,7 +13,8 @@ let config = {
     size: 5,
     speed: 5,
     color: "#ffffff",
-    preset: "sparkle"
+    preset: "sparkle",
+    trailLength: 10  // Added trail length configuration
 };
 
 // Physics parameters
@@ -33,6 +34,8 @@ const physics = {
 // Particle class
 class Particle {
     constructor() {
+        this.trail = [];
+        this.trailLength = 10; // Default trail length
         this.reset();
     }
 
@@ -48,6 +51,7 @@ class Particle {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.2;
         this.size = config.size * (0.5 + Math.random() * 0.5);
+        this.trail = [];
     }
 
     update() {
@@ -127,6 +131,13 @@ class Particle {
         
         // Update rotation
         this.angle += this.spin;
+        
+        // Update trail
+        this.trail.unshift({ x: this.x, y: this.y, angle: this.angle });
+        if (this.trail.length > this.trailLength) {
+            this.trail.pop();
+        }
+        
         this.life -= this.decay;
 
         if (this.life <= 0) {
@@ -135,6 +146,31 @@ class Particle {
     }
 
     draw() {
+        // Draw trail
+        for (let i = 0; i < this.trail.length; i++) {
+            const point = this.trail[i];
+            const opacity = (i / this.trail.length) * this.life * 0.5;
+            const trailSize = (this.size * i) / this.trail.length;
+            
+            if (this.sprite) {
+                k.drawSprite({
+                    sprite: this.sprite,
+                    pos: k.vec2(point.x, point.y),
+                    scale: k.vec2(trailSize / 20),
+                    angle: point.angle,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
+                    anchor: "center",
+                });
+            } else {
+                k.drawCircle({
+                    pos: k.vec2(point.x, point.y),
+                    radius: trailSize,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
+                });
+            }
+        }
+
+        // Draw current particle
         if (this.sprite) {
             k.drawSprite({
                 sprite: this.sprite,
@@ -145,7 +181,6 @@ class Particle {
                 anchor: "center",
             });
         } else {
-            // Fallback to basic particle if no sprite is loaded
             k.drawCircle({
                 pos: k.vec2(this.x, this.y),
                 radius: this.size,

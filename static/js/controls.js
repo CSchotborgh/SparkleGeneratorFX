@@ -52,6 +52,13 @@ document.getElementById('collisionEnabled').addEventListener('change', (e) => {
 document.getElementById('particleColor').addEventListener('input', (e) => {
     config.color = e.target.value;
 });
+document.getElementById('trailLength').addEventListener('input', (e) => {
+    config.trailLength = parseInt(e.target.value);
+    particles.forEach(particle => {
+        particle.trailLength = config.trailLength;
+    });
+});
+
 
 document.getElementById('presets').addEventListener('change', (e) => {
     const preset = presets[e.target.value];
