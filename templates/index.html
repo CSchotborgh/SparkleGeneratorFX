@@ -148,8 +148,18 @@
                         <textarea class="form-control mb-2" id="presetDescription" placeholder="Description (optional)"></textarea>
                         <button class="btn btn-outline-light" onclick="saveCurrentPreset()">Save Preset</button>
                         
+                        <h4 class="mt-4">Export Controls</h4>
+                        <div class="mb-3">
+                            <button id="startRecording" class="btn btn-primary">Start Recording</button>
+                            <button id="stopRecording" class="btn btn-danger" disabled>Stop Recording</button>
+                            <span id="frameCount" class="ms-2">0</span> frames
+                        </div>
+                        <div id="exportOptions" style="display: none;">
+                            <button onclick="exportToPNGSequence()" class="btn btn-outline-light">Export as PNG Sequence</button>
+                            <button onclick="exportToVideo('avi')" class="btn btn-outline-light">Export as AVI</button>
+                        </div>
                         <h4 class="mt-4">Shared Presets</h4>
-    <script src="{{ url_for('static', filename='js/video-export.js') }}"></script>
+                        <script src="{{ url_for('static', filename='js/video-export.js') }}"></script>
                         <div id="sharedPresets" class="shared-presets-container">
                             <!-- Shared presets will be loaded here -->
                         </div>
