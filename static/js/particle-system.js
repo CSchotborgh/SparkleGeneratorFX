@@ -45,8 +45,10 @@ class Particle {
     }
 
     reset() {
-        this.x = physics.vortexCenter.x;
-        this.y = physics.vortexCenter.y;
+        // Always initialize at the center of the screen
+        this.x = k.width() / 2;
+        this.y = k.height() / 2;
+        // Initialize with random velocities
         this.vx = (Math.random() - 0.5) * config.speed;
         this.vy = (Math.random() - 0.5) * config.speed;
         this.ax = 0;
@@ -56,6 +58,7 @@ class Particle {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.2;
         this.size = config.size * (0.5 + Math.random() * 0.5);
+        // Initialize trail from the center position
         this.trail = Array(this.trailLength).fill().map(() => ({
             x: this.x,
             y: this.y,
