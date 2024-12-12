@@ -252,20 +252,37 @@ class Emitter {
     constructor() {
         this.x = physics.vortexCenter.x;
         this.y = physics.vortexCenter.y;
+        this.vx = 0;
+        this.vy = 0;
+        this.lastX = this.x;
+        this.lastY = this.y;
         this.isDragging = false;
     }
 
     reset() {
         this.x = physics.vortexCenter.x;
         this.y = physics.vortexCenter.y;
+        this.vx = 0;
+        this.vy = 0;
+        this.lastX = this.x;
+        this.lastY = this.y;
+    }
+
+    update() {
+        // Calculate emitter velocity based on position change
+        this.vx = this.x - this.lastX;
+        this.vy = this.y - this.lastY;
+        this.lastX = this.x;
+        this.lastY = this.y;
     }
 
     generateParticle() {
         const particle = new Particle();
-        particle.x = this.x;
-        particle.y = this.y;
-        particle.vx = (Math.random() - 0.5) * config.speed;
-        particle.vy = (Math.random() - 0.5) * config.speed;
+        particle.x = this.x + (Math.random() - 0.5) * 10;
+        particle.y = this.y + (Math.random() - 0.5) * 10;
+        // Add emitter velocity to particle initial velocity for smoother motion
+        particle.vx = (Math.random() - 0.5) * config.speed + this.vx * 0.5;
+        particle.vy = (Math.random() - 0.5) * config.speed + this.vy * 0.5;
         return particle;
     }
 }
@@ -379,11 +396,15 @@ k.canvas.addEventListener('touchend', () => {
 
 // Main game loop
 k.onUpdate(() => {
+    // Update emitter
+    emitter.update();
+
     // Remove dead particles
     particles = particles.filter(p => p.life > 0);
 
     // Generate new particles from emitter
-    while (particles.length < config.count) {
+    const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); // Distribute particle generation over time
+    for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
         particles.push(emitter.generateParticle());
     }
 
