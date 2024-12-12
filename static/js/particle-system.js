@@ -21,7 +21,13 @@ const physics = {
     gravity: 0.1,
     wind: 0,
     friction: 0.99,
-    bounce: 0.8
+    bounce: 0.8,
+    airResistance: 0.02,
+    turbulence: 0.1,
+    vortexStrength: 0,
+    vortexCenter: { x: 0, y: 0 },
+    particleMass: 1.0,
+    collisionEnabled: false
 };
 
 // Particle class
@@ -45,12 +51,37 @@ class Particle {
     }
 
     update() {
-        // Apply physics
+        // Apply base forces
         this.ax = physics.wind;
         this.ay = physics.gravity;
         
-        this.vx += this.ax;
-        this.vy += this.ay;
+        // Apply air resistance (proportional to velocity squared)
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        if (speed > 0) {
+            this.ax -= (this.vx / speed) * physics.airResistance * speed * speed;
+            this.ay -= (this.vy / speed) * physics.airResistance * speed * speed;
+        }
+        
+        // Apply turbulence using Perlin noise
+        const time = Date.now() * 0.001;
+        this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
+        this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
+        
+        // Apply vortex effect
+        if (physics.vortexStrength !== 0) {
+            const dx = this.x - physics.vortexCenter.x;
+            const dy = this.y - physics.vortexCenter.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance > 0) {
+                const vortexForce = physics.vortexStrength / (distance * physics.particleMass);
+                this.ax += -dy * vortexForce;
+                this.ay += dx * vortexForce;
+            }
+        }
+        
+        // Update velocity and position
+        this.vx += this.ax / physics.particleMass;
+        this.vy += this.ay / physics.particleMass;
         
         this.vx *= physics.friction;
         this.vy *= physics.friction;
@@ -66,6 +97,32 @@ class Particle {
         if (this.y < 0 || this.y > k.height()) {
             this.vy *= -physics.bounce;
             this.y = this.y < 0 ? 0 : k.height();
+        }
+        
+        // Particle collisions if enabled
+        if (physics.collisionEnabled) {
+            for (const other of particles) {
+                if (other !== this) {
+                    const dx = other.x - this.x;
+                    const dy = other.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const minDist = (this.size + other.size) * 0.5;
+                    
+                    if (distance < minDist) {
+                        const angle = Math.atan2(dy, dx);
+                        const targetX = this.x + Math.cos(angle) * minDist;
+                        const targetY = this.y + Math.sin(angle) * minDist;
+                        
+                        const ax = (targetX - other.x) * 0.05;
+                        const ay = (targetY - other.y) * 0.05;
+                        
+                        this.vx -= ax;
+                        this.vy -= ay;
+                        other.vx += ax;
+                        other.vy += ay;
+                    }
+                }
+            }
         }
         
         // Update rotation
@@ -143,5 +200,9 @@ const presets = {
 
 // Window resize handler
 window.addEventListener('resize', () => {
-    k.setSize(window.innerWidth * 0.75, window.innerHeight);
+    const canvas = document.getElementById("gameCanvas");
+    canvas.width = window.innerWidth * 0.75;
+    canvas.height = window.innerHeight;
+    k.width = () => canvas.width;
+    k.height = () => canvas.height;
 });

@@ -28,6 +28,27 @@ document.getElementById('friction').addEventListener('input', (e) => {
     physics.friction = parseFloat(e.target.value);
 });
 
+document.getElementById('airResistance').addEventListener('input', (e) => {
+    physics.airResistance = parseFloat(e.target.value);
+});
+
+document.getElementById('turbulence').addEventListener('input', (e) => {
+    physics.turbulence = parseFloat(e.target.value);
+});
+
+document.getElementById('vortexStrength').addEventListener('input', (e) => {
+    physics.vortexStrength = parseFloat(e.target.value);
+    physics.vortexCenter = { x: k.width() / 2, y: k.height() / 2 };
+});
+
+document.getElementById('particleMass').addEventListener('input', (e) => {
+    physics.particleMass = parseFloat(e.target.value);
+});
+
+document.getElementById('collisionEnabled').addEventListener('change', (e) => {
+    physics.collisionEnabled = e.target.checked;
+});
+
 document.getElementById('particleColor').addEventListener('input', (e) => {
     config.color = e.target.value;
 });
