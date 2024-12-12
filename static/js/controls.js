@@ -100,7 +100,7 @@ document.getElementById('imageImport').addEventListener('change', (e) => {
             img.onload = function() {
                 // Create a sprite from the loaded image
                 const canvas = document.createElement('canvas');
-                const maxSize = 100; // Maximum size for the particle image
+                const maxSize = 64; // Smaller max size for better performance
                 const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
                 
                 canvas.width = img.width * scale;
@@ -113,9 +113,11 @@ document.getElementById('imageImport').addEventListener('change', (e) => {
                 
                 // Create and load the sprite
                 k.loadSprite("particle", scaledDataURL).then(() => {
-                    // Update all particles to use the new sprite
+                    // Update all particles to use the new sprite and reset them
                     particles.forEach(particle => {
                         particle.sprite = "particle";
+                        particle.originalSize = Math.max(canvas.width, canvas.height);
+                        particle.reset(); // Reset to apply new sprite settings
                     });
                 });
             };

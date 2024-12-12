@@ -159,10 +159,11 @@ class Particle {
             const trailSize = this.size * (1 - i / this.trail.length);
             
             if (this.sprite) {
+                const scale = (trailSize / (this.originalSize || 20)) * 2;
                 k.drawSprite({
                     sprite: this.sprite,
                     pos: k.vec2(point.x, point.y),
-                    scale: k.vec2(trailSize / 20),
+                    scale: k.vec2(scale, scale),
                     angle: point.angle,
                     color: k.rgb(...hexToRgb(config.color), opacity),
                     anchor: "center",
