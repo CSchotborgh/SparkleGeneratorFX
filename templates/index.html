@@ -116,6 +116,21 @@
                         <button class="btn btn-outline-light mb-2" onclick="exportToJS()">Export JS</button>
                         <button class="btn btn-outline-light mb-2" onclick="exportToCSS()">Export CSS</button>
                         <button class="btn btn-outline-light mb-2" onclick="exportToPNG()">Export PNG</button>
+
+                        <h4 class="mt-4">Video Recording</h4>
+                        <div class="recording-controls">
+                            <button id="startRecording" class="btn btn-outline-light mb-2" onclick="startRecording()">Start Recording</button>
+                            <button id="stopRecording" class="btn btn-outline-light mb-2" onclick="stopRecording()" disabled>Stop Recording</button>
+                            <div id="frameCount" class="text-light mb-2">0 frames</div>
+                        </div>
+                        <div id="exportOptions" style="display: none;">
+                            <h5>Export Recording</h5>
+                            <button class="btn btn-outline-light mb-2" onclick="exportToPNGSequence()">Export PNG Sequence</button>
+                            <button class="btn btn-outline-light mb-2" onclick="exportToVideo('avi')">Export AVI</button>
+                            <button class="btn btn-outline-light mb-2" onclick="exportToVideo('mp4')">Export MP4</button>
+                            <button class="btn btn-outline-light mb-2" onclick="exportToVideo('mov')">Export MOV</button>
+                            <button class="btn btn-outline-light mb-2" onclick="exportToVideo('mkv')">Export MKV</button>
+                        </div>
                     </div>
 
                     <div class="import-group mt-4">
@@ -134,6 +149,7 @@
                         <button class="btn btn-outline-light" onclick="saveCurrentPreset()">Save Preset</button>
                         
                         <h4 class="mt-4">Shared Presets</h4>
+    <script src="{{ url_for('static', filename='js/video-export.js') }}"></script>
                         <div id="sharedPresets" class="shared-presets-container">
                             <!-- Shared presets will be loaded here -->
                         </div>
