@@ -65,3 +65,60 @@ h3, h4 {
     margin-bottom: 20px;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
+
+.shared-preset {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.preset-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.preset-header h5 {
+    margin: 0;
+    color: #fff;
+}
+
+.likes {
+    color: #ff6b6b;
+}
+
+.preset-description {
+    color: #ccc;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+.preset-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.preset-actions .btn {
+    flex: 1;
+}
+
+.shared-presets-container {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.shared-presets-container::-webkit-scrollbar {
+    width: 5px;
+}
+
+.shared-presets-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.shared-presets-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}

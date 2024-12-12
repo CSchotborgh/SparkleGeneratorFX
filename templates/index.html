@@ -119,6 +119,18 @@
                             <button class="btn btn-outline-light" onclick="stopAnimation()">Stop</button>
                         </div>
                     </div>
+
+                    <div class="sharing-group mt-4">
+                        <h4>Share Preset</h4>
+                        <input type="text" class="form-control mb-2" id="presetName" placeholder="Preset Name">
+                        <textarea class="form-control mb-2" id="presetDescription" placeholder="Description (optional)"></textarea>
+                        <button class="btn btn-outline-light" onclick="saveCurrentPreset()">Save Preset</button>
+                        
+                        <h4 class="mt-4">Shared Presets</h4>
+                        <div id="sharedPresets" class="shared-presets-container">
+                            <!-- Shared presets will be loaded here -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,5 +141,6 @@
     <script src="{{ url_for('static', filename='js/particle-system.js') }}"></script>
     <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
     <script src="{{ url_for('static', filename='js/export.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/preset-sharing.js') }}"></script>
 </body>
 </html>
