@@ -33,7 +33,8 @@ let config = {
     color: "#ffffff",
     preset: "sparkle",
     trailLength: 10,  // Added trail length configuration
-    reverseTrail: false // Trail direction control
+    reverseTrail: false, // Trail direction control
+    followMouse: true // Track if particles should follow mouse
 };
 
 // Particle class
@@ -45,8 +46,14 @@ class Particle {
     }
 
     reset() {
-        this.x = k.mousePos().x;
-        this.y = k.mousePos().y;
+        if (config.followMouse) {
+            this.x = k.mousePos().x;
+            this.y = k.mousePos().y;
+        } else {
+            // Keep the current position if not following mouse
+            this.x = this.x || k.width() / 2;
+            this.y = this.y || k.height() / 2;
+        }
         this.vx = (Math.random() - 0.5) * config.speed;
         this.vy = (Math.random() - 0.5) * config.speed;
         this.ax = 0;
@@ -347,6 +354,51 @@ window.addEventListener('resize', () => {
         
         // Update trail positions if needed
         particle.trail = particle.trail.map(point => ({
+// Click/touch handling
+let lastClickTime = 0;
+const doubleClickDelay = 300; // milliseconds
+
+// Handle mouse clicks
+k.canvas.addEventListener('click', (e) => {
+    const currentTime = Date.now();
+    if (currentTime - lastClickTime < doubleClickDelay) {
+        // Double click - resume following
+        config.followMouse = true;
+        lastClickTime = 0;
+    } else {
+        // Single click - stop following
+        config.followMouse = false;
+        lastClickTime = currentTime;
+    }
+});
+
+// Handle touch events for mobile
+k.canvas.addEventListener('touchstart', (e) => {
+    const currentTime = Date.now();
+    if (currentTime - lastClickTime < doubleClickDelay) {
+        // Double tap - resume following
+        config.followMouse = true;
+        lastClickTime = 0;
+    } else {
+        // Single tap - stop following
+        config.followMouse = false;
+        lastClickTime = currentTime;
+    }
+    e.preventDefault(); // Prevent scrolling
+});
+
+// Update mouse position for touch events
+k.canvas.addEventListener('touchmove', (e) => {
+    if (config.followMouse) {
+        const touch = e.touches[0];
+        const rect = k.canvas.getBoundingClientRect();
+        k.mousePos = () => ({
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top
+        });
+    }
+    e.preventDefault(); // Prevent scrolling
+});
             x: Math.min(point.x, newWidth),
             y: Math.min(point.y, newHeight),
             angle: point.angle
