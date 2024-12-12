@@ -45,8 +45,8 @@ class Particle {
     }
 
     reset() {
-        this.x = k.mousePos().x;
-        this.y = k.mousePos().y;
+        this.x = physics.vortexCenter.x;
+        this.y = physics.vortexCenter.y;
         this.vx = (Math.random() - 0.5) * config.speed;
         this.vy = (Math.random() - 0.5) * config.speed;
         this.ax = 0;
