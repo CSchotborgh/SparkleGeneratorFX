@@ -59,6 +59,18 @@ document.getElementById('trailLength').addEventListener('input', (e) => {
     });
 });
 
+document.getElementById('reverseTrail').addEventListener('change', (e) => {
+    config.reverseTrail = e.target.checked;
+    // Reset trails when direction changes to avoid visual artifacts
+    particles.forEach(particle => {
+        particle.trail = Array(particle.trailLength).fill().map(() => ({
+            x: particle.x,
+            y: particle.y,
+            angle: particle.angle
+        }));
+    });
+});
+
 
 document.getElementById('presets').addEventListener('change', (e) => {
     const preset = presets[e.target.value];

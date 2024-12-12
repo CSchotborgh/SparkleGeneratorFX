@@ -32,7 +32,8 @@ let config = {
     speed: 5,
     color: "#ffffff",
     preset: "sparkle",
-    trailLength: 10  // Added trail length configuration
+    trailLength: 10,  // Added trail length configuration
+    reverseTrail: false // Trail direction control
 };
 
 // Particle class
@@ -140,13 +141,22 @@ class Particle {
         // Update rotation
         this.angle += this.spin;
         
-        // Update trail
-        this.trail.pop();
-        this.trail.unshift({
-            x: this.x,
-            y: this.y,
-            angle: this.angle
-        });
+        // Update trail based on direction
+        if (config.reverseTrail) {
+            this.trail.shift();
+            this.trail.push({
+                x: this.x,
+                y: this.y,
+                angle: this.angle
+            });
+        } else {
+            this.trail.pop();
+            this.trail.unshift({
+                x: this.x,
+                y: this.y,
+                angle: this.angle
+            });
+        }
         
         this.life -= this.decay;
 
