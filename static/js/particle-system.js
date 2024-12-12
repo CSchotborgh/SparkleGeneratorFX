@@ -64,23 +64,7 @@ class Particle {
     }
 
     update() {
-        if (isDragging) {
-            // When dragging, move particles towards the drag target
-            const dx = dragTarget.x - this.x;
-            const dy = dragTarget.y - this.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance > 0) {
-                this.vx = (dx / distance) * config.speed;
-                this.vy = (dy / distance) * config.speed;
-            }
-            
-            this.x += this.vx;
-            this.y += this.vy;
-            return;
-        }
-        
-        // Normal physics when not dragging
+        // Apply physics to particle
         this.ax = physics.wind;
         this.ay = physics.gravity;
         
@@ -263,40 +247,61 @@ function createParticleBurst(x, y, count = 20) {
     }
 }
 
-// Drag state
-let isDragging = false;
-let dragTarget = { x: 0, y: 0 };
+// Emitter class to manage particle generation
+class Emitter {
+    constructor() {
+        this.x = physics.vortexCenter.x;
+        this.y = physics.vortexCenter.y;
+        this.isDragging = false;
+    }
+
+    reset() {
+        this.x = physics.vortexCenter.x;
+        this.y = physics.vortexCenter.y;
+    }
+
+    generateParticle() {
+        const particle = new Particle();
+        particle.x = this.x;
+        particle.y = this.y;
+        particle.vx = (Math.random() - 0.5) * config.speed;
+        particle.vy = (Math.random() - 0.5) * config.speed;
+        return particle;
+    }
+}
+
+// Create emitter instance
+const emitter = new Emitter();
 
 // Event listeners for drag and burst effects
 k.canvas.addEventListener('mousedown', (e) => {
     if (e.button === 0) { // Left click
-        isDragging = true;
+        emitter.isDragging = true;
         const rect = k.canvas.getBoundingClientRect();
-        dragTarget.x = e.clientX - rect.left;
-        dragTarget.y = e.clientY - rect.top;
+        emitter.x = e.clientX - rect.left;
+        emitter.y = e.clientY - rect.top;
     }
 });
 
 k.canvas.addEventListener('mousemove', (e) => {
-    if (isDragging) {
+    if (emitter.isDragging) {
         const rect = k.canvas.getBoundingClientRect();
-        dragTarget.x = e.clientX - rect.left;
-        dragTarget.y = e.clientY - rect.top;
+        emitter.x = e.clientX - rect.left;
+        emitter.y = e.clientY - rect.top;
     }
 });
 
 k.canvas.addEventListener('mouseup', (e) => {
     if (e.button === 0) { // Left click release
-        isDragging = false;
-        // Reset all particles to center
-        particles.forEach(particle => particle.reset());
+        emitter.isDragging = false;
+        emitter.reset();
     }
 });
 
 k.canvas.addEventListener('mouseleave', () => {
-    if (isDragging) {
-        isDragging = false;
-        particles.forEach(particle => particle.reset());
+    if (emitter.isDragging) {
+        emitter.isDragging = false;
+        emitter.reset();
     }
 });
 
@@ -337,9 +342,25 @@ k.canvas.addEventListener('touchend', () => {
 
 // Main game loop
 k.onUpdate(() => {
+    // Remove dead particles
+    particles = particles.filter(p => p.life > 0);
+
+    // Generate new particles from emitter
+    while (particles.length < config.count) {
+        particles.push(emitter.generateParticle());
+    }
+
+    // Update and draw particles
     particles.forEach(particle => {
         particle.update();
         particle.draw();
+    });
+
+    // Draw emitter position indicator (optional, for debugging)
+    k.drawCircle({
+        pos: k.vec2(emitter.x, emitter.y),
+        radius: 3,
+        color: k.rgb(255, 0, 0, 0.5),
     });
 });
 
