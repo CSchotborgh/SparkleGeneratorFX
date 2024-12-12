@@ -12,6 +12,22 @@ document.getElementById('particleSpeed').addEventListener('input', (e) => {
     config.speed = parseInt(e.target.value);
 });
 
+document.getElementById('gravity').addEventListener('input', (e) => {
+    physics.gravity = parseFloat(e.target.value);
+});
+
+document.getElementById('wind').addEventListener('input', (e) => {
+    physics.wind = parseFloat(e.target.value);
+});
+
+document.getElementById('bounce').addEventListener('input', (e) => {
+    physics.bounce = parseFloat(e.target.value);
+});
+
+document.getElementById('friction').addEventListener('input', (e) => {
+    physics.friction = parseFloat(e.target.value);
+});
+
 document.getElementById('particleColor').addEventListener('input', (e) => {
     config.color = e.target.value;
 });
