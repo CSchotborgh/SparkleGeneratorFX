@@ -29,7 +29,7 @@ const physics = {
     collisionEnabled: false
 };
 
-// Configuration object for particle system
+// Configuration object
 const config = {
     count: 50,
     size: 5,
@@ -38,7 +38,7 @@ const config = {
     preset: "sparkle",
     trailLength: 10,
     reverseTrail: false,
-    followMouse: true // Track if particles should follow mouse
+    followMouse: true
 };
 
 // Particle class
@@ -54,12 +54,11 @@ class Particle {
     }
 
     reset() {
+        const mousePos = k.mousePos();
         if (config.followMouse) {
-            const mousePos = k.mousePos();
             this.x = mousePos.x;
             this.y = mousePos.y;
         } else {
-            // Keep the current position if not following mouse
             this.x = this.x || k.width() / 2;
             this.y = this.y || k.height() / 2;
         }
@@ -76,7 +75,6 @@ class Particle {
     update() {
         // Update trail
         if (config.trailLength > 0) {
-            // Add current position to trail
             if (config.reverseTrail) {
                 this.trail.push({
                     x: this.x,
@@ -100,7 +98,6 @@ class Particle {
 
         // Apply physics
         if (physics.collisionEnabled) {
-            // Check collisions with other particles
             particles.forEach(other => {
                 if (other !== this) {
                     const dx = other.x - this.x;
@@ -109,12 +106,10 @@ class Particle {
                     const minDistance = config.size * 2;
 
                     if (distance < minDistance) {
-                        // Calculate collision response
                         const angle = Math.atan2(dy, dx);
                         const targetX = this.x + Math.cos(angle) * minDistance;
                         const targetY = this.y + Math.sin(angle) * minDistance;
 
-                        // Move particles apart
                         const moveX = (targetX - other.x) * 0.05;
                         const moveY = (targetY - other.y) * 0.05;
 
@@ -189,6 +184,7 @@ class Particle {
 
     draw() {
         const size = this.sprite ? config.size * (this.originalSize / 64) : config.size;
+        const [r, g, b] = hexToRgb(config.color);
 
         // Draw trail
         if (config.trailLength > 0) {
@@ -199,7 +195,6 @@ class Particle {
                         sprite: this.sprite,
                         pos: k.vec2(point.x, point.y),
                         angle: point.angle,
-                        color: k.rgb(1, 1, 1),
                         opacity: alpha * 0.5,
                         scale: size / this.originalSize
                     });
@@ -207,7 +202,7 @@ class Particle {
                     k.drawCircle({
                         pos: k.vec2(point.x, point.y),
                         radius: size,
-                        color: k.rgb(...hexToRgb(config.color).map(c => c / 255)),
+                        color: k.rgb(r/255, g/255, b/255),
                         opacity: alpha * 0.5
                     });
                 }
@@ -226,7 +221,7 @@ class Particle {
             k.drawCircle({
                 pos: k.vec2(this.x, this.y),
                 radius: size,
-                color: k.rgb(...hexToRgb(config.color).map(c => c / 255))
+                color: k.rgb(r/255, g/255, b/255)
             });
         }
     }
@@ -318,7 +313,7 @@ window.addEventListener('resize', () => {
     });
 });
 
-// Export presets
+// Export presets (unchanged from original)
 const presets = {
     sparkle: {
         count: 50,
