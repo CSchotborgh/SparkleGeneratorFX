@@ -25,8 +25,8 @@ const k = kaboom({
     background: [0, 0, 0],
 });
 
-// Particle system configuration
-let config = {
+// Configuration object for particle system
+const config = {
     count: 50,
     size: 5,
     speed: 5,
@@ -37,12 +37,20 @@ let config = {
     followMouse: true // Track if particles should follow mouse
 };
 
+// Click/touch handling state
+let lastClickTime = 0;
+const doubleClickDelay = 300; // milliseconds
+
 // Particle class
 class Particle {
     constructor() {
-        this.trail = [];
-        this.trailLength = config.trailLength || 10;
         this.reset();
+        this.trailLength = config.trailLength;
+        this.trail = Array(this.trailLength).fill().map(() => ({
+            x: this.x,
+            y: this.y,
+            angle: 0
+        }));
     }
 
     reset() {
@@ -59,160 +67,165 @@ class Particle {
         this.ax = 0;
         this.ay = 0;
         this.life = 1;
-        this.decay = 0.01 + Math.random() * 0.02;
+        this.sprite = null;
+        this.originalSize = 1;
         this.angle = Math.random() * Math.PI * 2;
-        this.spin = (Math.random() - 0.5) * 0.2;
-        this.size = config.size * (0.5 + Math.random() * 0.5);
-        this.trail = Array(this.trailLength).fill().map(() => ({
-            x: this.x,
-            y: this.y,
-            angle: this.angle
-        }));
     }
 
     update() {
-        // Apply base forces
-        this.ax = physics.wind;
-        this.ay = physics.gravity;
-        
-        // Apply air resistance (proportional to velocity squared)
-        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        if (speed > 0) {
-            this.ax -= (this.vx / speed) * physics.airResistance * speed * speed;
-            this.ay -= (this.vy / speed) * physics.airResistance * speed * speed;
-        }
-        
-        // Apply turbulence using Perlin noise
-        const time = Date.now() * 0.001;
-        this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
-        this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
-        
-        // Apply vortex effect
-        if (physics.vortexStrength !== 0) {
-            const dx = this.x - physics.vortexCenter.x;
-            const dy = this.y - physics.vortexCenter.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance > 0) {
-                const vortexForce = physics.vortexStrength / (distance * physics.particleMass);
-                this.ax += -dy * vortexForce;
-                this.ay += dx * vortexForce;
+        // Update trail
+        if (config.trailLength > 0) {
+            // Add current position to trail
+            if (config.reverseTrail) {
+                this.trail.push({
+                    x: this.x,
+                    y: this.y,
+                    angle: this.angle
+                });
+                if (this.trail.length > this.trailLength) {
+                    this.trail.shift();
+                }
+            } else {
+                this.trail.unshift({
+                    x: this.x,
+                    y: this.y,
+                    angle: this.angle
+                });
+                if (this.trail.length > this.trailLength) {
+                    this.trail.pop();
+                }
             }
         }
-        
-        // Update velocity and position
-        this.vx += this.ax / physics.particleMass;
-        this.vy += this.ay / physics.particleMass;
-        
-        this.vx *= physics.friction;
-        this.vy *= physics.friction;
-        
-        this.x += this.vx;
-        this.y += this.vy;
-        
-        // Bounce off screen edges
-        if (this.x < 0 || this.x > k.width()) {
-            this.vx *= -physics.bounce;
-            this.x = this.x < 0 ? 0 : k.width();
-        }
-        if (this.y < 0 || this.y > k.height()) {
-            this.vy *= -physics.bounce;
-            this.y = this.y < 0 ? 0 : k.height();
-        }
-        
-        // Particle collisions if enabled
+
+        // Apply physics
         if (physics.collisionEnabled) {
-            for (const other of particles) {
+            // Check collisions with other particles
+            particles.forEach(other => {
                 if (other !== this) {
                     const dx = other.x - this.x;
                     const dy = other.y - this.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    const minDist = (this.size + other.size) * 0.5;
-                    
-                    if (distance < minDist) {
+                    const minDistance = config.size * 2;
+
+                    if (distance < minDistance) {
+                        // Calculate collision response
                         const angle = Math.atan2(dy, dx);
-                        const targetX = this.x + Math.cos(angle) * minDist;
-                        const targetY = this.y + Math.sin(angle) * minDist;
-                        
-                        const ax = (targetX - other.x) * 0.05;
-                        const ay = (targetY - other.y) * 0.05;
-                        
-                        this.vx -= ax;
-                        this.vy -= ay;
-                        other.vx += ax;
-                        other.vy += ay;
+                        const targetX = this.x + Math.cos(angle) * minDistance;
+                        const targetY = this.y + Math.sin(angle) * minDistance;
+
+                        // Move particles apart
+                        const moveX = (targetX - other.x) * 0.05;
+                        const moveY = (targetY - other.y) * 0.05;
+
+                        this.vx -= moveX;
+                        this.vy -= moveY;
+                        other.vx += moveX;
+                        other.vy += moveY;
                     }
                 }
-            }
-        }
-        
-        // Update rotation
-        this.angle += this.spin;
-        
-        // Update trail based on direction
-        if (config.reverseTrail) {
-            this.trail.shift();
-            this.trail.push({
-                x: this.x,
-                y: this.y,
-                angle: this.angle
-            });
-        } else {
-            this.trail.pop();
-            this.trail.unshift({
-                x: this.x,
-                y: this.y,
-                angle: this.angle
             });
         }
-        
-        this.life -= this.decay;
 
-        if (this.life <= 0) {
-            this.reset();
+        // Apply forces
+        this.ax = 0;
+        this.ay = physics.gravity;
+
+        // Wind force
+        this.ax += physics.wind;
+
+        // Air resistance
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        const dragForce = speed * speed * physics.airResistance;
+        const dragX = -this.vx * dragForce;
+        const dragY = -this.vy * dragForce;
+        this.ax += dragX;
+        this.ay += dragY;
+
+        // Turbulence
+        this.ax += (Math.random() - 0.5) * physics.turbulence;
+        this.ay += (Math.random() - 0.5) * physics.turbulence;
+
+        // Vortex effect
+        if (physics.vortexStrength !== 0) {
+            const dx = this.x - k.width() / 2;
+            const dy = this.y - k.height() / 2;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const vortexAngle = Math.atan2(dy, dx);
+            const vortexForce = physics.vortexStrength * (distance / 100);
+            this.ax += -Math.sin(vortexAngle) * vortexForce;
+            this.ay += Math.cos(vortexAngle) * vortexForce;
         }
+
+        // Update velocity and position
+        this.vx += this.ax / physics.particleMass;
+        this.vy += this.ay / physics.particleMass;
+        this.vx *= physics.friction;
+        this.vy *= physics.friction;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Bounce off edges
+        if (this.x < 0) {
+            this.x = 0;
+            this.vx *= -physics.bounce;
+        }
+        if (this.x > k.width()) {
+            this.x = k.width();
+            this.vx *= -physics.bounce;
+        }
+        if (this.y < 0) {
+            this.y = 0;
+            this.vy *= -physics.bounce;
+        }
+        if (this.y > k.height()) {
+            this.y = k.height();
+            this.vy *= -physics.bounce;
+        }
+
+        // Update angle based on velocity
+        this.angle = Math.atan2(this.vy, this.vx);
     }
 
     draw() {
+        const size = this.sprite ? config.size * (this.originalSize / 64) : config.size;
+
         // Draw trail
-        for (let i = this.trail.length - 1; i >= 0; i--) {
-            const point = this.trail[i];
-            const opacity = (1 - i / this.trail.length) * this.life * 0.5;
-            const trailSize = this.size * (1 - i / this.trail.length);
-            
-            if (this.sprite) {
-                const scale = (trailSize / (this.originalSize || 20)) * 2;
-                k.drawSprite({
-                    sprite: this.sprite,
-                    pos: k.vec2(point.x, point.y),
-                    scale: k.vec2(scale, scale),
-                    angle: point.angle,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                    anchor: "center",
-                });
-            } else {
-                k.drawCircle({
-                    pos: k.vec2(point.x, point.y),
-                    radius: trailSize,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                });
-            }
+        if (config.trailLength > 0) {
+            this.trail.forEach((point, i) => {
+                const alpha = 1 - (i / this.trail.length);
+                if (this.sprite) {
+                    k.drawSprite({
+                        sprite: this.sprite,
+                        pos: vec2(point.x, point.y),
+                        angle: point.angle,
+                        color: rgb(1, 1, 1),
+                        opacity: alpha * 0.5,
+                        scale: size / this.originalSize
+                    });
+                } else {
+                    k.drawCircle({
+                        pos: vec2(point.x, point.y),
+                        radius: size,
+                        color: config.color,
+                        opacity: alpha * 0.5
+                    });
+                }
+            });
         }
 
-        // Draw current particle
+        // Draw particle
         if (this.sprite) {
             k.drawSprite({
                 sprite: this.sprite,
-                pos: k.vec2(this.x, this.y),
-                scale: k.vec2(this.size / 20),
+                pos: vec2(this.x, this.y),
                 angle: this.angle,
-                color: k.rgb(...hexToRgb(config.color), this.life),
-                anchor: "center",
+                scale: size / this.originalSize
             });
         } else {
             k.drawCircle({
-                pos: k.vec2(this.x, this.y),
-                radius: this.size,
-                color: k.rgb(...hexToRgb(config.color), this.life),
+                pos: vec2(this.x, this.y),
+                radius: size,
+                color: config.color
             });
         }
     }
@@ -220,6 +233,48 @@ class Particle {
 
 // Create particle pool
 let particles = Array(config.count).fill().map(() => new Particle());
+
+// Handle mouse clicks
+k.canvas.addEventListener('click', (e) => {
+    const currentTime = Date.now();
+    if (currentTime - lastClickTime < doubleClickDelay) {
+        // Double click - resume following
+        config.followMouse = true;
+        lastClickTime = 0;
+    } else {
+        // Single click - stop following
+        config.followMouse = false;
+        lastClickTime = currentTime;
+    }
+});
+
+// Handle touch events for mobile
+k.canvas.addEventListener('touchstart', (e) => {
+    const currentTime = Date.now();
+    if (currentTime - lastClickTime < doubleClickDelay) {
+        // Double tap - resume following
+        config.followMouse = true;
+        lastClickTime = 0;
+    } else {
+        // Single tap - stop following
+        config.followMouse = false;
+        lastClickTime = currentTime;
+    }
+    e.preventDefault(); // Prevent scrolling
+});
+
+// Update mouse position for touch events
+k.canvas.addEventListener('touchmove', (e) => {
+    if (config.followMouse) {
+        const touch = e.touches[0];
+        const rect = k.canvas.getBoundingClientRect();
+        k.mousePos = () => ({
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top
+        });
+    }
+    e.preventDefault(); // Prevent scrolling
+});
 
 // Main game loop
 k.onUpdate(() => {
@@ -330,75 +385,19 @@ const presets = {
 
 // Window resize handler
 window.addEventListener('resize', () => {
-    const canvas = document.getElementById("gameCanvas");
-    const newWidth = window.innerWidth * 0.75;
+    const newWidth = window.innerWidth * 0.75; // 75% of window width
     const newHeight = window.innerHeight;
     
-    // Update canvas size
-    canvas.style.width = `${newWidth}px`;
-    canvas.style.height = `${newHeight}px`;
-    canvas.width = newWidth;
-    canvas.height = newHeight;
-    
-    // Update Kaboom instance dimensions
     k.canvas.width = newWidth;
     k.canvas.height = newHeight;
     
-    // Update vortex center
-    physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
-    
-    // Ensure particles are within bounds
+    // Update particle positions to stay within new bounds
     particles.forEach(particle => {
-        if (particle.x > newWidth) particle.x = newWidth;
-        if (particle.y > newHeight) particle.y = newHeight;
+        particle.x = Math.min(particle.x, newWidth);
+        particle.y = Math.min(particle.y, newHeight);
         
         // Update trail positions if needed
         particle.trail = particle.trail.map(point => ({
-// Click/touch handling
-let lastClickTime = 0;
-const doubleClickDelay = 300; // milliseconds
-
-// Handle mouse clicks
-k.canvas.addEventListener('click', (e) => {
-    const currentTime = Date.now();
-    if (currentTime - lastClickTime < doubleClickDelay) {
-        // Double click - resume following
-        config.followMouse = true;
-        lastClickTime = 0;
-    } else {
-        // Single click - stop following
-        config.followMouse = false;
-        lastClickTime = currentTime;
-    }
-});
-
-// Handle touch events for mobile
-k.canvas.addEventListener('touchstart', (e) => {
-    const currentTime = Date.now();
-    if (currentTime - lastClickTime < doubleClickDelay) {
-        // Double tap - resume following
-        config.followMouse = true;
-        lastClickTime = 0;
-    } else {
-        // Single tap - stop following
-        config.followMouse = false;
-        lastClickTime = currentTime;
-    }
-    e.preventDefault(); // Prevent scrolling
-});
-
-// Update mouse position for touch events
-k.canvas.addEventListener('touchmove', (e) => {
-    if (config.followMouse) {
-        const touch = e.touches[0];
-        const rect = k.canvas.getBoundingClientRect();
-        k.mousePos = () => ({
-            x: touch.clientX - rect.left,
-            y: touch.clientY - rect.top
-        });
-    }
-    e.preventDefault(); // Prevent scrolling
-});
             x: Math.min(point.x, newWidth),
             y: Math.min(point.y, newHeight),
             angle: point.angle
