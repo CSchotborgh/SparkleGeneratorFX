@@ -80,15 +80,26 @@ class Particle {
         this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
         this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
         
+        // Apply attraction to emitter position
+        const dx = emitter.x - this.x;
+        const dy = emitter.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > 0) {
+            const attractionStrength = 0.3; // Adjust this value to control attraction force
+            const attractionForce = attractionStrength / (distance * physics.particleMass);
+            this.ax += dx * attractionForce;
+            this.ay += dy * attractionForce;
+        }
+        
         // Apply vortex effect
         if (physics.vortexStrength !== 0) {
-            const dx = this.x - physics.vortexCenter.x;
-            const dy = this.y - physics.vortexCenter.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance > 0) {
-                const vortexForce = physics.vortexStrength / (distance * physics.particleMass);
-                this.ax += -dy * vortexForce;
-                this.ay += dx * vortexForce;
+            const vx = this.x - physics.vortexCenter.x;
+            const vy = this.y - physics.vortexCenter.y;
+            const vortexDist = Math.sqrt(vx * vx + vy * vy);
+            if (vortexDist > 0) {
+                const vortexForce = physics.vortexStrength / (vortexDist * physics.particleMass);
+                this.ax += -vy * vortexForce;
+                this.ay += vx * vortexForce;
             }
         }
         
