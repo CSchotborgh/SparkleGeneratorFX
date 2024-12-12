@@ -55,18 +55,47 @@ document.getElementById('imageImport').addEventListener('change', (e) => {
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
+                const maxSize = 300; // Limit image size for performance
+                const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
                 
-                // Extract colors from image and apply to particles
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // Extract colors and positions from image
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                particles.forEach((particle, i) => {
-                    const pixel = i * 4;
-                    const color = `rgb(${imageData.data[pixel]}, ${imageData.data[pixel + 1]}, ${imageData.data[pixel + 2]})`;
-                    particle.color = color;
+                const pixels = [];
+                
+                // Sample pixels for colors and positions
+                for (let y = 0; y < canvas.height; y += 2) {
+                    for (let x = 0; x < canvas.width; x += 2) {
+                        const i = (y * canvas.width + x) * 4;
+                        const alpha = imageData.data[i + 3];
+                        if (alpha > 128) { // Only use visible pixels
+                            pixels.push({
+                                x: x / canvas.width,
+                                y: y / canvas.height,
+                                color: `#${imageData.data[i].toString(16).padStart(2, '0')}${imageData.data[i + 1].toString(16).padStart(2, '0')}${imageData.data[i + 2].toString(16).padStart(2, '0')}`
+                            });
+                        }
+                    }
+                }
+                
+                // Update particle system
+                config.count = Math.min(200, pixels.length);
+                particles = Array(config.count).fill().map((_, i) => {
+                    const pixel = pixels[i % pixels.length];
+                    const particle = new Particle();
+                    particle.x = pixel.x * k.width();
+                    particle.y = pixel.y * k.height();
+                    config.color = pixel.color;
+                    return particle;
                 });
+                
+                // Update UI
+                document.getElementById('particleCount').value = config.count;
+                document.getElementById('particleColor').value = pixels[0].color;
             };
             img.src = event.target.result;
         };
