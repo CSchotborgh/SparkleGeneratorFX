@@ -313,10 +313,13 @@ window.addEventListener('resize', () => {
     const newWidth = window.innerWidth * 0.75;
     const newHeight = window.innerHeight;
     
+    // Update canvas size
+    canvas.style.width = `${newWidth}px`;
+    canvas.style.height = `${newHeight}px`;
     canvas.width = newWidth;
     canvas.height = newHeight;
     
-    // Update Kaboom canvas size
-    k.canvas.width = newWidth;
-    k.canvas.height = newHeight;
+    // Update Kaboom instance
+    k.width = newWidth;
+    k.height = newHeight;
 });

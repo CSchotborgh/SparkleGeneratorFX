@@ -91,39 +91,55 @@ document.getElementById('presets').addEventListener('change', (e) => {
 });
 
 // Image import handler
-document.getElementById('imageImport').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                // Create a sprite from the loaded image
-                const canvas = document.createElement('canvas');
-                const maxSize = 64; // Smaller max size for better performance
-                const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-                
-                canvas.width = img.width * scale;
-                canvas.height = img.height * scale;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Create a data URL from the scaled image
-                const scaledDataURL = canvas.toDataURL('image/png');
-                
-                // Create and load the sprite
-                k.loadSprite("particle", scaledDataURL).then(() => {
-                    // Update all particles to use the new sprite and reset them
-                    particles.forEach(particle => {
-                        particle.sprite = "particle";
-                        particle.originalSize = Math.max(canvas.width, canvas.height);
-                        particle.reset(); // Reset to apply new sprite settings
-                    });
-                });
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
+document.getElementById('imageImport').addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    animationFrames = [];
+    
+    try {
+        for (const file of files) {
+            const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            const img = await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = dataUrl;
+            });
+
+            const canvas = document.createElement('canvas');
+            const maxSize = 64;
+            const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+            
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            const scaledDataURL = canvas.toDataURL('image/png');
+            const spriteName = `particle_${animationFrames.length}`;
+            
+            await k.loadSprite(spriteName, scaledDataURL);
+            
+            animationFrames.push({
+                sprite: spriteName,
+                originalSize: Math.max(canvas.width, canvas.height)
+            });
+        }
+
+        if (animationFrames.length > 0) {
+            particles.forEach(particle => {
+                particle.sprite = animationFrames[0].sprite;
+                particle.originalSize = animationFrames[0].originalSize;
+                particle.reset();
+            });
+        }
+    } catch (error) {
+        console.error('Error loading images:', error);
     }
 });
 
@@ -141,20 +157,26 @@ function startAnimation() {
             clearInterval(animationInterval);
         }
         
-        animationInterval = setInterval(() => {
-            // Update particles with next frame data
-            const frame = animationFrames[currentFrame];
-            particles.forEach((particle, i) => {
-                const frameParticle = frame.particles[i];
-                particle.x = frameParticle.x;
-                particle.y = frameParticle.y;
-                particle.size = frameParticle.size;
-                config.color = frameParticle.color;
-            });
+        try {
+            animationInterval = setInterval(() => {
+                if (!isAnimating) return;
+                
+                // Update particles with next frame data
+                const frame = animationFrames[currentFrame];
+                if (frame && frame.sprite) {
+                    particles.forEach(particle => {
+                        particle.sprite = frame.sprite;
+                        particle.originalSize = frame.originalSize;
+                    });
+                }
 
-            // Advance to next frame
-            currentFrame = (currentFrame + 1) % animationFrames.length;
-        }, 1000 / frameRate);
+                // Advance to next frame
+                currentFrame = (currentFrame + 1) % animationFrames.length;
+            }, 1000 / frameRate);
+        } catch (error) {
+            console.error('Animation error:', error);
+            stopAnimation();
+        }
     }
 }
 
