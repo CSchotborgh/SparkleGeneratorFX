@@ -67,15 +67,18 @@ document.getElementById('imageImport').addEventListener('change', (e) => {
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const pixels = [];
                 
-                // Sample pixels for colors and positions
+                // Sample pixels for colors, positions, and calculate size based on brightness
                 for (let y = 0; y < canvas.height; y += 2) {
                     for (let x = 0; x < canvas.width; x += 2) {
                         const i = (y * canvas.width + x) * 4;
                         const alpha = imageData.data[i + 3];
                         if (alpha > 128) { // Only use visible pixels
+                            // Calculate brightness (0-1) from RGB values
+                            const brightness = (imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / (255 * 3);
                             pixels.push({
                                 x: x / canvas.width,
                                 y: y / canvas.height,
+                                size: 1 + brightness * 2, // Scale size based on brightness
                                 color: `#${imageData.data[i].toString(16).padStart(2, '0')}${imageData.data[i + 1].toString(16).padStart(2, '0')}${imageData.data[i + 2].toString(16).padStart(2, '0')}`
                             });
                         }
@@ -89,6 +92,7 @@ document.getElementById('imageImport').addEventListener('change', (e) => {
                     const particle = new Particle();
                     particle.x = pixel.x * k.width();
                     particle.y = pixel.y * k.height();
+                    particle.size = config.size * pixel.size; // Apply size scaling
                     config.color = pixel.color;
                     return particle;
                 });
