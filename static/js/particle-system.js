@@ -1,9 +1,27 @@
+// Initialize dimensions
+const initialWidth = window.innerWidth * 0.75;
+const initialHeight = window.innerHeight;
+
+// Physics parameters
+const physics = {
+    gravity: 0.1,
+    wind: 0,
+    friction: 0.99,
+    bounce: 0.8,
+    airResistance: 0.02,
+    turbulence: 0.1,
+    vortexStrength: 0,
+    vortexCenter: { x: initialWidth / 2, y: initialHeight / 2 },
+    particleMass: 1.0,
+    collisionEnabled: false
+};
+
 // Initialize Kaboom.js
 const k = kaboom({
     global: false,
     canvas: document.getElementById("gameCanvas"),
-    width: window.innerWidth * 0.75,
-    height: window.innerHeight,
+    width: initialWidth,
+    height: initialHeight,
     background: [0, 0, 0],
 });
 
@@ -15,20 +33,6 @@ let config = {
     color: "#ffffff",
     preset: "sparkle",
     trailLength: 10  // Added trail length configuration
-};
-
-// Physics parameters
-const physics = {
-    gravity: 0.1,
-    wind: 0,
-    friction: 0.99,
-    bounce: 0.8,
-    airResistance: 0.02,
-    turbulence: 0.1,
-    vortexStrength: 0,
-    vortexCenter: { x: 0, y: 0 },
-    particleMass: 1.0,
-    collisionEnabled: false
 };
 
 // Particle class
@@ -319,7 +323,23 @@ window.addEventListener('resize', () => {
     canvas.width = newWidth;
     canvas.height = newHeight;
     
-    // Update Kaboom instance
-    k.width = newWidth;
-    k.height = newHeight;
+    // Update Kaboom instance dimensions
+    k.canvas.width = newWidth;
+    k.canvas.height = newHeight;
+    
+    // Update vortex center
+    physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
+    
+    // Ensure particles are within bounds
+    particles.forEach(particle => {
+        if (particle.x > newWidth) particle.x = newWidth;
+        if (particle.y > newHeight) particle.y = newHeight;
+        
+        // Update trail positions if needed
+        particle.trail = particle.trail.map(point => ({
+            x: Math.min(point.x, newWidth),
+            y: Math.min(point.y, newHeight),
+            angle: point.angle
+        }));
+    });
 });
