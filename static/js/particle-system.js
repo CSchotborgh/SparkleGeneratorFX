@@ -305,42 +305,18 @@ k.canvas.addEventListener('mousemove', (e) => {
         const rect = k.canvas.getBoundingClientRect();
         emitter.x = e.clientX - rect.left;
         emitter.y = e.clientY - rect.top;
-        
-        // Update existing particles to follow the emitter
-        particles.forEach(particle => {
-            if (!particle.hasOwnProperty('offsetX')) {
-                particle.offsetX = particle.x - emitter.x;
-                particle.offsetY = particle.y - emitter.y;
-            }
-            particle.x = emitter.x + particle.offsetX;
-            particle.y = emitter.y + particle.offsetY;
-        });
     }
 });
 
 k.canvas.addEventListener('mouseup', (e) => {
     if (e.button === 0) { // Left click release
         emitter.isDragging = false;
-        emitter.reset();
-        // Reset all particles
-        particles.forEach(particle => {
-            delete particle.offsetX;
-            delete particle.offsetY;
-            particle.reset();
-        });
     }
 });
 
 k.canvas.addEventListener('mouseleave', () => {
     if (emitter.isDragging) {
         emitter.isDragging = false;
-        emitter.reset();
-        // Reset all particles
-        particles.forEach(particle => {
-            delete particle.offsetX;
-            delete particle.offsetY;
-            particle.reset();
-        });
     }
 });
 
@@ -370,28 +346,11 @@ k.canvas.addEventListener('touchmove', (e) => {
         const touch = e.touches[0];
         emitter.x = touch.clientX - rect.left;
         emitter.y = touch.clientY - rect.top;
-        
-        // Update existing particles to follow the emitter
-        particles.forEach(particle => {
-            if (!particle.hasOwnProperty('offsetX')) {
-                particle.offsetX = particle.x - emitter.x;
-                particle.offsetY = particle.y - emitter.y;
-            }
-            particle.x = emitter.x + particle.offsetX;
-            particle.y = emitter.y + particle.offsetY;
-        });
     }
 }, { passive: false });
 
 k.canvas.addEventListener('touchend', () => {
     emitter.isDragging = false;
-    emitter.reset();
-    // Reset all particles to center
-    particles.forEach(particle => {
-        delete particle.offsetX;
-        delete particle.offsetY;
-        particle.reset();
-    });
 });
 
 // Main game loop
