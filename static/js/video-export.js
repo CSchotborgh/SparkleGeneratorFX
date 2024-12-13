@@ -5,47 +5,81 @@ let recordingStartTime = null;
 const FRAME_RATE = 30;
 let recordingInterval = null;
 
+// Initialize event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    const startButton = document.getElementById('startRecording');
+    const stopButton = document.getElementById('stopRecording');
+    const exportOptions = document.getElementById('exportOptions');
+
+    if (startButton && stopButton) {
+        startButton.addEventListener('click', startRecording);
+        stopButton.addEventListener('click', stopRecording);
+    }
+});
+
 // Start recording
 function startRecording() {
-    if (isRecording) return;
+    if (isRecording || !k) return;
+    
     isRecording = true;
     recordedFrames = [];
     recordingStartTime = Date.now();
     
     // Update UI
-    document.getElementById('startRecording').disabled = true;
-    document.getElementById('stopRecording').disabled = false;
+    const startButton = document.getElementById('startRecording');
+    const stopButton = document.getElementById('stopRecording');
+    const exportOptions = document.getElementById('exportOptions');
+    
+    if (startButton) startButton.disabled = true;
+    if (stopButton) stopButton.disabled = false;
+    if (exportOptions) exportOptions.style.display = 'none';
     
     // Capture frames at specified frame rate
-    recordingInterval = setInterval(() => {
-        // Get the Kaboom canvas
-        const canvas = k.canvas;
-        if (!canvas) {
-            console.error('Canvas not found');
-            return;
-        }
+    recordingInterval = setInterval(captureFrame, 1000 / FRAME_RATE);
+}
 
-        // Create a temporary canvas for capturing the frame with alpha channel
+// Stop recording
+function stopRecording() {
+    if (!isRecording) return;
+    
+    isRecording = false;
+    if (recordingInterval) {
+        clearInterval(recordingInterval);
+        recordingInterval = null;
+    }
+    
+    // Update UI
+    const startButton = document.getElementById('startRecording');
+    const stopButton = document.getElementById('stopRecording');
+    const exportOptions = document.getElementById('exportOptions');
+    
+    if (startButton) startButton.disabled = false;
+    if (stopButton) stopButton.disabled = true;
+    if (exportOptions) exportOptions.style.display = 'block';
+}
+
+// Capture a single frame
+function captureFrame() {
+    if (!k || !k.canvas) {
+        console.error('Kaboom canvas not available');
+        return;
+    }
+
+    try {
+        // Create a temporary canvas with alpha channel support
         const tempCanvas = document.createElement('canvas');
-        const ctx = k.canvas.getContext('2d');
-        
-        if (!ctx) {
-            console.error('Could not get Kaboom canvas context');
-            return;
-        }
-        
         tempCanvas.width = k.canvas.width;
         tempCanvas.height = k.canvas.height;
         const tempCtx = tempCanvas.getContext('2d', { alpha: true });
-        
+
         if (!tempCtx) {
             console.error('Could not get temporary canvas context');
             return;
         }
-        
+
         // Clear with transparent background
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-        
+
         // If there's a background image, draw it first
         if (backgroundSprite && backgroundImage) {
             const scale = Math.max(tempCanvas.width / backgroundImage.width, tempCanvas.height / backgroundImage.height);
@@ -55,57 +89,37 @@ function startRecording() {
             const y = (tempCanvas.height - height) / 2;
             tempCtx.drawImage(backgroundImage, x, y, width, height);
         }
-        
+
         // Draw the current frame from Kaboom canvas
-        tempCtx.drawImage(canvas, 0, 0);
-        
+        tempCtx.drawImage(k.canvas, 0, 0);
+
         // Get the image data with alpha channel
         const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
         const data = imageData.data;
-        
+
         // Ensure alpha values are preserved
         for (let i = 3; i < data.length; i += 4) {
             if (data[i] === 0) {
                 data[i - 1] = data[i - 2] = data[i - 3] = 0;
             }
         }
-        
+
         // Update canvas with preserved alpha
         tempCtx.putImageData(imageData, 0, 0);
-        
+
         // Convert to PNG with transparency
         const frame = tempCanvas.toDataURL('image/png');
         recordedFrames.push(frame);
-        
-        // Update frame count display
-        document.getElementById('frameCount').textContent = recordedFrames.length;
-    }, 1000 / FRAME_RATE);
-}
 
-// Stop recording
-function stopRecording() {
-    if (!isRecording) return;
-    isRecording = false;
-    clearInterval(recordingInterval);
-    
-    // Update UI
-    document.getElementById('startRecording').disabled = false;
-    document.getElementById('stopRecording').disabled = true;
-    
-    // Show export options
-    const exportOptions = document.getElementById('exportOptions');
-    if (exportOptions) {
-        exportOptions.style.display = 'block';
-    } else {
-        console.error('Export options container not found');
-    }
-    
-    // Hide export options when starting new recording
-    document.getElementById('startRecording').addEventListener('click', () => {
-        if (exportOptions) {
-            exportOptions.style.display = 'none';
+        // Update frame count display
+        const frameCount = document.getElementById('frameCount');
+        if (frameCount) {
+            frameCount.textContent = recordedFrames.length;
         }
-    });
+    } catch (error) {
+        console.error('Error capturing frame:', error);
+        stopRecording();
+    }
 }
 
 // Export as PNG sequence
@@ -114,6 +128,7 @@ function exportToPNGSequence() {
         alert('No frames recorded. Please record some footage first.');
         return;
     }
+    
     recordedFrames.forEach((frame, index) => {
         const link = document.createElement('a');
         link.download = `particle-frame-${String(index).padStart(6, '0')}.png`;
@@ -155,9 +170,8 @@ async function exportToVideo(format) {
                 frameRate: FRAME_RATE
             })
         });
-    
-    if (response.ok) {
-        try {
+
+        if (response.ok) {
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -165,15 +179,11 @@ async function exportToVideo(format) {
             link.href = url;
             link.click();
             URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Error processing video:', error);
-            alert(`Error processing video: ${error.message}`);
+        } else {
+            const errorText = await response.text();
+            console.error('Error exporting video:', errorText);
+            alert('Error exporting video. Please try using the WebM format for best compatibility with transparency.');
         }
-    } else {
-        const errorText = await response.text();
-        console.error('Error exporting video:', errorText);
-        alert('Error exporting video. Please try using the WebM format for best compatibility with transparency.');
-    }
     } catch (error) {
         console.error('Export error:', error);
         alert('Failed to export video. Please try again with a shorter recording or different format.');
