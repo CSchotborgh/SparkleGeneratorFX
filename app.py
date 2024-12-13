@@ -101,15 +101,25 @@ def export_video():
         # FFmpeg command based on format
         cmd = ['ffmpeg', '-framerate', str(frame_rate), '-i', str(temp_path / 'frame_%06d.png')]
         
-        # AVI format encoding settings with alpha channel support
-        cmd.extend([
-            '-c:v', 'prores_ks',  # ProRes codec with alpha support
-            '-profile:v', '4444',  # ProRes 4444 profile for alpha channel
-            '-pix_fmt', 'yuva444p10le',  # 10-bit YUV with alpha
-            '-q:v', '1',  # Highest quality
-            '-vendor', 'ap10',  # Apple ProRes identifier
-            '-movflags', '+faststart'  # Enable streaming
-        ])
+        if format == 'avi':
+            # AVI format with uncompressed RGBA
+            cmd.extend([
+                '-c:v', 'utvideo',  # Use utvideo codec for lossless compression
+                '-pix_fmt', 'rgba',  # Use RGBA pixel format for alpha support
+                '-pred', 'median',   # Use median prediction for better compression
+                '-tune', 'animation' # Optimize for animation content
+            ])
+        else:
+            # Default to QuickTime/MOV with ProRes 4444
+            cmd.extend([
+                '-c:v', 'prores_ks',     # ProRes codec with alpha support
+                '-profile:v', '4444',     # ProRes 4444 profile for alpha channel
+                '-pix_fmt', 'yuva444p10le', # 10-bit YUV with alpha
+                '-vendor', 'ap10',        # Apple ProRes identifier
+                '-q:v', '1',             # Highest quality
+                '-movflags', '+faststart' # Enable streaming
+            ])
+            format = 'mov'  # Force MOV container for ProRes
             
         # Add output file
         cmd.extend(['-y', str(output_path)])
