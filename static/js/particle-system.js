@@ -403,8 +403,8 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
 
 // Main game loop
 k.onUpdate(() => {
-    // Set background color (black with alpha for transparency)
-    k.setBackground(k.rgb(0, 0, 0));
+    // Set background color (black with transparency)
+    k.setBackground([0, 0, 0, 0]);
 
     // Draw background if available
     if (backgroundSprite && backgroundImage) {
@@ -416,8 +416,9 @@ k.onUpdate(() => {
 
         k.drawSprite({
             sprite: backgroundSprite,
-            pos: k.vec2(x, y),
-            scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
+            pos: vec2(x, y),
+            scale: vec2(width / backgroundImage.width, height / backgroundImage.height),
+            opacity: 1,
         });
     }
 
