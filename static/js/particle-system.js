@@ -41,9 +41,10 @@ const physics = {
     collisionEnabled: false
 };
 
-// Initialize variables for background
+// Background image state
 let backgroundImage = null;
 let backgroundSprite = null;
+let backgroundObject = null;
 
 // Particle system configuration
 let config = {
@@ -280,6 +281,7 @@ function initializeParticleSystem() {
 // Setup event listeners
 function setupEventListeners() {
     try {
+        // Mouse events for particle emitter
         k.canvas.addEventListener('mousedown', (e) => {
             if (e.button === 0) {
                 emitter.isDragging = true;
@@ -307,6 +309,100 @@ function setupEventListeners() {
             emitter.isDragging = false;
         });
 
+        // Background image upload handler
+        document.getElementById('backgroundImage').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                // Create a new image element
+                backgroundImage = await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = dataUrl;
+                });
+
+                // Remove existing background sprite if it exists
+                if (backgroundSprite) {
+                    backgroundSprite.destroy();
+                }
+
+                // Create a unique sprite name
+                const spriteName = 'background_' + Date.now();
+                
+                // Load the sprite into Kaboom
+                await k.loadSprite(spriteName, dataUrl);
+                backgroundSprite = spriteName;
+
+                // Calculate scale to fit canvas while maintaining aspect ratio
+                const scale = Math.min(
+                    k.width() / backgroundImage.width,
+                    k.height() / backgroundImage.height
+                );
+                const width = backgroundImage.width * scale;
+                const height = backgroundImage.height * scale;
+                const x = (k.width() - width) / 2;
+                const y = (k.height() - height) / 2;
+
+                // Remove existing background object if it exists
+                if (backgroundObject) {
+                    backgroundObject.destroy();
+                }
+
+                // Add the background sprite to the scene
+                backgroundObject = k.add([
+                    k.sprite(backgroundSprite),
+                    k.pos(x, y),
+                    k.scale(scale),
+                    k.z(-1),  // Place behind particles
+                    "background"
+                ]);
+
+                // Show preview
+                const previewImg = document.getElementById('backgroundPreviewImage');
+                const previewDiv = document.getElementById('backgroundPreview');
+                if (previewImg && previewDiv) {
+                    previewImg.src = dataUrl;
+                    previewDiv.style.display = 'block';
+                }
+
+                console.log('Background image loaded successfully');
+            } catch (error) {
+                console.error('Error loading background image:', error);
+                alert('Error loading background image: ' + error.message);
+            }
+        });
+
+        // Remove background handler
+        document.getElementById('removeBackground').addEventListener('click', () => {
+            if (backgroundObject) {
+                backgroundObject.destroy();
+                backgroundObject = null;
+            }
+            if (backgroundSprite) {
+                backgroundSprite = null;
+            }
+            backgroundImage = null;
+
+            // Clear preview
+            const previewDiv = document.getElementById('backgroundPreview');
+            if (previewDiv) {
+                previewDiv.style.display = 'none';
+            }
+            const imageInput = document.getElementById('backgroundImage');
+            if (imageInput) {
+                imageInput.value = '';
+            }
+        });
+
         // Window resize handler
         window.addEventListener('resize', () => {
             const newWidth = window.innerWidth * 0.75;
@@ -317,6 +413,21 @@ function setupEventListeners() {
                 physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
                 k.canvas.width = newWidth;
                 k.canvas.height = newHeight;
+
+                // Update background position and scale if it exists
+                if (backgroundObject && backgroundImage) {
+                    const scale = Math.min(
+                        newWidth / backgroundImage.width,
+                        newHeight / backgroundImage.height
+                    );
+                    const width = backgroundImage.width * scale;
+                    const height = backgroundImage.height * scale;
+                    const x = (newWidth - width) / 2;
+                    const y = (newHeight - height) / 2;
+                    
+                    backgroundObject.pos = k.vec2(x, y);
+                    backgroundObject.scale = k.vec2(scale, scale);
+                }
             }
         });
     } catch (error) {
@@ -324,108 +435,7 @@ function setupEventListeners() {
     }
 }
 
-// Background image handler
-let backgroundObject = null;
-
-document.getElementById('backgroundImage').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.match(/^image\/(png|jpeg|jpg)$/i)) {
-        alert('Please upload a valid PNG or JPG image file.');
-        return;
-    }
-
-    try {
-        const dataUrl = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-
-        // Show preview
-        const previewImg = document.getElementById('backgroundPreviewImage');
-        const previewDiv = document.getElementById('backgroundPreview');
-        previewImg.src = dataUrl;
-        previewDiv.style.display = 'block';
-
-        // Load and validate the background image
-        const img = await new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error('Failed to load the image'));
-            img.src = dataUrl;
-        });
-
-        // Create a temporary canvas with alpha channel support
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = img.width;
-        tempCanvas.height = img.height;
-        const tempCtx = tempCanvas.getContext('2d', { alpha: true });
-
-        if (!tempCtx) {
-            throw new Error('Could not get temporary canvas context');
-        }
-
-        // Clear with transparent background
-        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-        tempCtx.drawImage(img, 0, 0);
-
-        // Remove previous background if it exists
-        if (backgroundObject) {
-            backgroundObject.destroy();
-            backgroundObject = null;
-        }
-
-        // Create a new sprite
-        const spriteName = 'background_' + Date.now();
-        await k.loadSprite(spriteName, tempCanvas.toDataURL('image/png'));
-        backgroundSprite = spriteName;
-
-        // Calculate scale to fit canvas while maintaining aspect ratio
-        const scale = Math.min(
-            k.width() / img.width,
-            k.height() / img.height
-        );
-        const width = img.width * scale;
-        const height = img.height * scale;
-        const x = (k.width() - width) / 2;
-        const y = (k.height() - height) / 2;
-
-        // Add background sprite to the scene
-        backgroundObject = k.add([
-            k.sprite(backgroundSprite),
-            k.pos(x, y),
-            k.scale(scale),
-            k.z(-1), // Place behind particles
-            "background" // Add tag for easy reference
-        ]);
-
-        console.log('Background image loaded successfully');
-    } catch (error) {
-        console.error('Error loading background image:', error);
-        alert('Error loading background image: ' + error.message);
-    }
-});
-
-// Remove background handler
-document.getElementById('removeBackground').addEventListener('click', () => {
-    if (backgroundObject) {
-        backgroundObject.destroy();
-        backgroundObject = null;
-    }
-    if (backgroundSprite) {
-        backgroundSprite = null;
-    }
-    document.getElementById('backgroundPreview').style.display = 'none';
-    document.getElementById('backgroundImage').value = '';
-});
-
-
-
-// Preset configurations (restored from original)
+// Preset configurations
 const presets = {
     sparkle: {
         count: 50,
