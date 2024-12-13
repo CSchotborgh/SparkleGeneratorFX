@@ -56,7 +56,7 @@ function stopRecording() {
     // Update UI
     document.getElementById('startRecording').disabled = false;
     document.getElementById('stopRecording').disabled = true;
-    document.getElementById('exportOptions').style.display = 'block';
+    document.getElementById('recordingExportOptions').style.display = 'block';
 }
 
 // Export as PNG sequence
