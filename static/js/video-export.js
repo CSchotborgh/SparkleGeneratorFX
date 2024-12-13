@@ -25,14 +25,24 @@ function startRecording() {
             return;
         }
 
-        // Get the canvas context with alpha channel enabled
-        const ctx = canvas.getContext('2d', { alpha: true });
-        if (!ctx) {
+        // Create a temporary canvas for capturing the frame with alpha channel
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d', { alpha: true });
+        
+        if (!tempCtx) {
             console.error('Could not get canvas context');
             return;
         }
-
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Clear the temporary canvas with transparent background
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        // Draw the current frame to the temporary canvas
+        tempCtx.drawImage(canvas, 0, 0);
+        
+        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
         
         // Create a temporary canvas for transparent background
         const tempCanvas = document.createElement('canvas');
