@@ -90,10 +90,18 @@ function exportToPNG() {
         return;
     }
 
-    // Get the canvas context
-    const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) {
-        console.error('Could not get canvas context');
+    // Get the canvas context with explicit error handling
+    let ctx;
+    try {
+        ctx = canvas.getContext('2d', { 
+            alpha: true,
+            willReadFrequently: true 
+        });
+        if (!ctx) {
+            throw new Error('Canvas context not available');
+        }
+    } catch (error) {
+        console.error('Error getting canvas context:', error);
         return;
     }
 

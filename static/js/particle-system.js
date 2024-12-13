@@ -404,8 +404,9 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
 
 // Main game loop
 k.onUpdate(() => {
-    // Clear canvas with semi-transparent black
+    // Clear canvas with transparent background
     k.setBackground(k.rgb(0, 0, 0, 0));
+    k.setColor(k.rgb(0, 0, 0, 0));
 
     // Draw background if available
     if (backgroundSprite && backgroundImage) {
