@@ -439,6 +439,21 @@ function initializeParticleSystem() {
             // Clear background
             k.setBackground(k.rgb(0, 0, 0, 0));
 
+            // Draw background if available
+            if (backgroundSprite && backgroundImage) {
+                const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
+                const width = backgroundImage.width * scale;
+                const height = backgroundImage.height * scale;
+                const x = (k.width() - width) / 2;
+                const y = (k.height() - height) / 2;
+
+                k.drawSprite({
+                    sprite: backgroundSprite,
+                    pos: k.vec2(x, y),
+                    scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
+                });
+            }
+
             // Update emitter
             emitter.update();
 
@@ -469,27 +484,20 @@ function initializeParticleSystem() {
                 lastTime = performance.now();
             }
 
-        // Draw background if available
-        if (backgroundSprite && backgroundImage) {
-            const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-            const width = backgroundImage.width * scale;
-            const height = backgroundImage.height * scale;
-            const x = (k.width() - width) / 2;
-            const y = (k.height() - height) / 2;
-
-            k.drawSprite({
-                sprite: backgroundSprite,
-                pos: k.vec2(x, y),
-                scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
+            // Draw emitter position indicator (optional, for debugging)
+            k.drawCircle({
+                pos: k.vec2(emitter.x, emitter.y),
+                radius: 3,
+                color: k.rgb(255, 0, 0, 0.5),
             });
+        } catch (error) {
+            console.error('Error in game loop:', error);
+            // Attempt to recover by reinitializing if necessary
+            if (!particles || !emitter) {
+                console.log('Attempting to recover by reinitializing...');
+                initializeParticles();
+            }
         }
-
-        // Draw emitter position indicator (optional, for debugging)
-        k.drawCircle({
-            pos: k.vec2(emitter.x, emitter.y),
-            radius: 3,
-            color: k.rgb(255, 0, 0, 0.5),
-        });
     });
 });
 
