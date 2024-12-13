@@ -104,22 +104,20 @@ def export_video():
         if format == 'avi':
             # AVI format with uncompressed RGBA
             cmd.extend([
-                '-c:v', 'utvideo',  # Use utvideo codec for lossless compression
-                '-pix_fmt', 'rgba',  # Use RGBA pixel format for alpha support
-                '-pred', 'median',   # Use median prediction for better compression
-                '-tune', 'animation' # Optimize for animation content
+                '-c:v', 'png',        # Use PNG codec for lossless compression with alpha
+                '-pix_fmt', 'rgba',   # Use RGBA pixel format for alpha support
+                '-preset', 'veryslow' # Maximum compression
             ])
         else:
-            # Default to QuickTime/MOV with ProRes 4444
+            # Default to WebM with VP9 codec for better transparency support
             cmd.extend([
-                '-c:v', 'prores_ks',     # ProRes codec with alpha support
-                '-profile:v', '4444',     # ProRes 4444 profile for alpha channel
-                '-pix_fmt', 'yuva444p10le', # 10-bit YUV with alpha
-                '-vendor', 'ap10',        # Apple ProRes identifier
-                '-q:v', '1',             # Highest quality
-                '-movflags', '+faststart' # Enable streaming
+                '-c:v', 'libvpx-vp9',  # VP9 codec
+                '-pix_fmt', 'yuva420p', # YUV with alpha
+                '-lossless', '1',       # Lossless encoding
+                '-quality', 'best',     # Best quality
+                '-auto-alt-ref', '0'    # Disable alternate reference frames
             ])
-            format = 'mov'  # Force MOV container for ProRes
+            format = 'webm'  # Use WebM container for VP9
             
         # Add output file
         cmd.extend(['-y', str(output_path)])

@@ -39,13 +39,7 @@ function startRecording() {
         // Clear with transparent background
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
         
-        // Draw the current frame to the temporary canvas
-        tempCtx.drawImage(canvas, 0, 0);
-        
-        // Get the image data to preserve transparency
-        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-        
-        // Clear again to ensure transparency
+        // Clear with transparent background
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
         
         // If there's a background image, draw it first
@@ -58,7 +52,21 @@ function startRecording() {
             tempCtx.drawImage(backgroundImage, x, y, width, height);
         }
         
-        // Draw the current frame with particles
+        // Draw the current frame from Kaboom canvas
+        tempCtx.drawImage(canvas, 0, 0);
+        
+        // Get the image data with alpha channel
+        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        const data = imageData.data;
+        
+        // Ensure alpha values are preserved
+        for (let i = 3; i < data.length; i += 4) {
+            if (data[i] === 0) {
+                data[i - 1] = data[i - 2] = data[i - 3] = 0;
+            }
+        }
+        
+        // Update canvas with preserved alpha
         tempCtx.putImageData(imageData, 0, 0);
         
         // Convert to PNG with transparency
