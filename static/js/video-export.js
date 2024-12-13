@@ -128,10 +128,14 @@ function captureFrame() {
         const frame = tempCanvas.toDataURL('image/png');
         recordedFrames.push(frame);
 
-        // Update frame counter immediately after adding the frame
+        // Update frame counters immediately after adding the frame
         const frameCount = document.getElementById('frameCount');
+        const recordedFrameCount = document.getElementById('recordedFrameCount');
         if (frameCount) {
-            frameCount.textContent = recordedFrames.length.toString();
+            frameCount.textContent = FRAME_RATE.toString();
+        }
+        if (recordedFrameCount) {
+            recordedFrameCount.textContent = recordedFrames.length.toString();
         }
     } catch (error) {
         console.error('Error capturing frame:', error);
