@@ -16,6 +16,10 @@ const physics = {
     collisionEnabled: false
 };
 
+// Initialize variables for background
+let backgroundImage = null;
+let backgroundSprite = null;
+
 // Initialize Kaboom.js
 const k = kaboom({
     global: false,
@@ -367,8 +371,57 @@ k.canvas.addEventListener('touchend', () => {
     emitter.isDragging = false;
 });
 
+// Background image handler
+document.getElementById('backgroundImage').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        // Load the background image
+        backgroundImage = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
+
+        // Create a sprite from the background image
+        const spriteName = 'background';
+        await k.loadSprite(spriteName, dataUrl);
+        backgroundSprite = spriteName;
+    } catch (error) {
+        console.error('Error loading background image:', error);
+    }
+});
+
 // Main game loop
 k.onUpdate(() => {
+    // Clear the canvas
+    k.clearCanvas();
+
+    // Draw background if available
+    if (backgroundSprite) {
+        const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
+        const width = backgroundImage.width * scale;
+        const height = backgroundImage.height * scale;
+        const x = (k.width() - width) / 2;
+        const y = (k.height() - height) / 2;
+
+        k.drawSprite({
+            sprite: backgroundSprite,
+            pos: k.vec2(x, y),
+            width: width,
+            height: height,
+        });
+    }
+
     // Update emitter
     emitter.update();
 
