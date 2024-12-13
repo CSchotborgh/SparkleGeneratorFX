@@ -325,6 +325,9 @@ function setupEventListeners() {
 }
 
 // Background image handler
+let backgroundSprite = null;
+let backgroundObject = null;
+
 document.getElementById('backgroundImage').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -339,69 +342,86 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
         const dataUrl = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => {
-                console.error('Error reading file:', error);
-                reject(new Error('Failed to read the image file'));
-            };
+            reader.onerror = reject;
             reader.readAsDataURL(file);
         });
 
+        // Show preview
+        const previewImg = document.getElementById('backgroundPreviewImage');
+        const previewDiv = document.getElementById('backgroundPreview');
+        previewImg.src = dataUrl;
+        previewDiv.style.display = 'block';
+
         // Load and validate the background image
-        backgroundImage = await new Promise((resolve, reject) => {
+        const img = await new Promise((resolve, reject) => {
             const img = new Image();
-            img.onload = () => {
-                // Check image dimensions
-                if (img.width > 4096 || img.height > 4096) {
-                    reject(new Error('Image dimensions are too large. Maximum size is 4096x4096 pixels.'));
-                    return;
-                }
-                resolve(img);
-            };
+            img.onload = () => resolve(img);
             img.onerror = () => reject(new Error('Failed to load the image'));
             img.src = dataUrl;
         });
 
-        // Create a temporary canvas to handle the image with transparency
+        // Create a temporary canvas with alpha channel support
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = backgroundImage.width;
-        tempCanvas.height = backgroundImage.height;
-        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = img.width;
+        tempCanvas.height = img.height;
+        const tempCtx = tempCanvas.getContext('2d', { alpha: true });
 
-        // Draw the image while preserving transparency
+        if (!tempCtx) {
+            throw new Error('Could not get temporary canvas context');
+        }
+
+        // Clear with transparent background
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-        tempCtx.drawImage(backgroundImage, 0, 0);
+        tempCtx.drawImage(img, 0, 0);
 
-        // Create a sprite from the processed image
-        const spriteName = 'background';
+        // Remove previous background if it exists
+        if (backgroundObject) {
+            backgroundObject.destroy();
+            backgroundObject = null;
+        }
+
+        // Create a new sprite
+        const spriteName = 'background_' + Date.now();
         await k.loadSprite(spriteName, tempCanvas.toDataURL('image/png'));
         backgroundSprite = spriteName;
 
-        // Update the game canvas background
-        if (k) {
-            k.setBackground(k.rgb(0, 0, 0, 0)); // Clear existing background
-            const scale = Math.min(
-                k.width() / backgroundImage.width,
-                k.height() / backgroundImage.height
-            );
-            const width = backgroundImage.width * scale;
-            const height = backgroundImage.height * scale;
-            const x = (k.width() - width) / 2;
-            const y = (k.height() - height) / 2;
-            
-            // Add background sprite to the scene
-            k.add([
-                k.sprite(backgroundSprite),
-                k.pos(x, y),
-                k.scale(scale),
-                k.z(-1), // Place behind particles
-            ]);
-        }
+        // Calculate scale to fit canvas while maintaining aspect ratio
+        const scale = Math.min(
+            k.width() / img.width,
+            k.height() / img.height
+        );
+        const width = img.width * scale;
+        const height = img.height * scale;
+        const x = (k.width() - width) / 2;
+        const y = (k.height() - height) / 2;
+
+        // Add background sprite to the scene
+        backgroundObject = k.add([
+            k.sprite(backgroundSprite),
+            k.pos(x, y),
+            k.scale(scale),
+            k.z(-1), // Place behind particles
+            "background" // Add tag for easy reference
+        ]);
 
         console.log('Background image loaded successfully');
     } catch (error) {
         console.error('Error loading background image:', error);
-        alert(error.message || 'Failed to load background image');
+        alert('Error loading background image: ' + error.message);
     }
+});
+
+// Remove background handler
+document.getElementById('removeBackground').addEventListener('click', () => {
+    if (backgroundObject) {
+        backgroundObject.destroy();
+        backgroundObject = null;
+    }
+    if (backgroundSprite) {
+        backgroundSprite = null;
+    }
+    document.getElementById('backgroundPreview').style.display = 'none';
+    document.getElementById('backgroundImage').value = '';
 });
 
 
