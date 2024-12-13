@@ -162,7 +162,8 @@
                         </div>
                         <div id="exportOptions" style="display: none;">
                             <button onclick="exportToPNGSequence()" class="btn btn-outline-light">Export as PNG Sequence</button>
-                            <button onclick="exportToVideo('avi')" class="btn btn-outline-light">Export as AVI</button>
+                            <button onclick="exportToVideo('webm')" class="btn btn-outline-light">Export as WebM (Best for transparency)</button>
+                            <button onclick="exportToVideo('avi')" class="btn btn-outline-light">Export as AVI (Alpha support)</button>
                         </div>
                         <h4 class="mt-4">Shared Presets</h4>
                         <script src="{{ url_for('static', filename='js/video-export.js') }}"></script>
