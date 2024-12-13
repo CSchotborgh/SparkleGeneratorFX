@@ -18,16 +18,33 @@ function startRecording() {
     
     // Capture frames at specified frame rate
     recordingInterval = setInterval(() => {
-        const canvas = document.getElementById('gameCanvas');
-        // Get the canvas context and save its current state
-        const ctx = canvas.getContext('2d');
+        // Get the Kaboom canvas
+        const canvas = k.canvas;
+        if (!canvas) {
+            console.error('Canvas not found');
+            return;
+        }
+
+        // Get the canvas context with alpha channel enabled
+        const ctx = canvas.getContext('2d', { alpha: true });
+        if (!ctx) {
+            console.error('Could not get canvas context');
+            return;
+        }
+
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         
         // Create a temporary canvas for transparent background
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
-        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Get context with alpha channel enabled
+        const tempCtx = tempCanvas.getContext('2d', { alpha: true });
+        if (!tempCtx) {
+            console.error('Could not get temporary canvas context');
+            return;
+        }
         
         // Clear with transparent background
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);

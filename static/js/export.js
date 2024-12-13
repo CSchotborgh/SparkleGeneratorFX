@@ -83,15 +83,34 @@ function exportToCSS() {
 }
 
 function exportToPNG() {
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    // Get the Kaboom canvas
+    const canvas = k.canvas;
+    if (!canvas) {
+        console.error('Canvas not found');
+        return;
+    }
+
+    // Get the canvas context
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) {
+        console.error('Could not get canvas context');
+        return;
+    }
+
+    // Get the current frame with transparency
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     
     // Create a temporary canvas for transparent background
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Get context with alpha channel enabled
+    const tempCtx = tempCanvas.getContext('2d', { alpha: true });
+    if (!tempCtx) {
+        console.error('Could not get temporary canvas context');
+        return;
+    }
     
     // Clear with transparent background
     tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
