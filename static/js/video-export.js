@@ -97,39 +97,14 @@ function captureFrame() {
         // Clear with transparent background
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
 
-        // If there's a background image, draw it first
-        if (backgroundSprite && backgroundImage) {
-            const scale = Math.max(tempCanvas.width / backgroundImage.width, tempCanvas.height / backgroundImage.height);
-            const width = backgroundImage.width * scale;
-            const height = backgroundImage.height * scale;
-            const x = (tempCanvas.width - width) / 2;
-            const y = (tempCanvas.height - height) / 2;
-            tempCtx.drawImage(backgroundImage, x, y, width, height);
-        }
-
         // Draw the current frame from Kaboom canvas
         tempCtx.drawImage(k.canvas, 0, 0);
-
-        // Get the image data with alpha channel
-        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-        const data = imageData.data;
-
-        // Process alpha channel - premultiply RGB by alpha
-        for (let i = 0; i < data.length; i += 4) {
-            const alpha = data[i + 3] / 255;
-            data[i] = Math.round(data[i] * alpha);
-            data[i + 1] = Math.round(data[i + 1] * alpha);
-            data[i + 2] = Math.round(data[i + 2] * alpha);
-        }
-
-        // Update canvas with processed alpha
-        tempCtx.putImageData(imageData, 0, 0);
 
         // Convert to PNG with transparency
         const frame = tempCanvas.toDataURL('image/png');
         recordedFrames.push(frame);
 
-        // Update frame counters immediately after adding the frame
+        // Update frame counters
         const frameCount = document.getElementById('frameCount');
         const recordedFrameCount = document.getElementById('recordedFrameCount');
         if (frameCount) {
@@ -157,63 +132,4 @@ function exportToPNGSequence() {
         link.href = frame;
         link.click();
     });
-}
-
-// Send frames to server for video export
-async function exportToVideo(format) {
-    if (recordedFrames.length === 0) {
-        alert('No frames recorded. Please record some footage first.');
-        return;
-    }
-
-    // Show loading message
-    const loadingMsg = document.createElement('div');
-    loadingMsg.id = 'exportLoadingMsg';
-    loadingMsg.style.position = 'fixed';
-    loadingMsg.style.top = '50%';
-    loadingMsg.style.left = '50%';
-    loadingMsg.style.transform = 'translate(-50%, -50%)';
-    loadingMsg.style.padding = '20px';
-    loadingMsg.style.background = 'rgba(0, 0, 0, 0.8)';
-    loadingMsg.style.color = 'white';
-    loadingMsg.style.borderRadius = '5px';
-    loadingMsg.textContent = 'Exporting video... Please wait.';
-    document.body.appendChild(loadingMsg);
-
-    try {
-        const response = await fetch('/export-video', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                frames: recordedFrames,
-                format: format,
-                frameRate: FRAME_RATE
-            })
-        });
-
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.download = `particle-animation.${format}`;
-            link.href = url;
-            link.click();
-            URL.revokeObjectURL(url);
-        } else {
-            const errorText = await response.text();
-            console.error('Error exporting video:', errorText);
-            alert('Error exporting video. Please try using the WebM format for best compatibility with transparency.');
-        }
-    } catch (error) {
-        console.error('Export error:', error);
-        alert('Failed to export video. Please try again with a shorter recording or different format.');
-    } finally {
-        // Remove loading message
-        const loadingMsg = document.getElementById('exportLoadingMsg');
-        if (loadingMsg) {
-            loadingMsg.remove();
-        }
-    }
 }

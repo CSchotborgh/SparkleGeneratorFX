@@ -76,65 +76,7 @@ def like_preset(preset_id):
     db.session.commit()
     return jsonify({'likes': preset.likes})
 
-@app.route('/export-video', methods=['POST'])
-def export_video():
-    data = request.get_json()
-    frames = data['frames']
-    format = data.get('format', 'mp4')
-    frame_rate = data.get('frameRate', 30)
-    
-    # Create temporary directory for frames
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path = Path(temp_dir)
-        
-        # Save frames as PNG files
-        for i, frame in enumerate(frames):
-            # Remove data URL prefix
-            image_data = frame.split(',')[1]
-            frame_path = temp_path / f"frame_{i:06d}.png"
-            with open(frame_path, 'wb') as f:
-                f.write(base64.b64decode(image_data))
-        
-        # Output video path
-        output_path = temp_path / f"output.{format}"
-        
-        # FFmpeg command based on format
-        cmd = ['ffmpeg', '-framerate', str(frame_rate), '-i', str(temp_path / 'frame_%06d.png')]
-        
-        if format == 'avi':
-            # AVI format with uncompressed RGBA
-            cmd.extend([
-                '-c:v', 'png',           # Use PNG codec for lossless compression with alpha
-                '-pix_fmt', 'rgba',      # Use RGBA pixel format for alpha support
-                '-g', '1'               # Each frame is a keyframe
-            ])
-        else:
-            # Default to WebM with VP8 codec for better compatibility
-            format = 'webm'
-            cmd.extend([
-                '-c:v', 'libvpx',        # VP8 codec
-                '-pix_fmt', 'yuva420p',  # YUV with alpha
-                '-auto-alt-ref', '0',    # Disable alternate reference frames
-                '-b:v', '2M',           # High bitrate for quality
-                '-quality', 'good',      # Good quality setting
-                '-cpu-used', '0',       # Highest quality setting
-                '-metadata:s:v:0', 'alpha_mode="1"'  # Enable alpha channel
-            ])
-            
-        # Add output file
-        cmd.extend(['-y', str(output_path)])
-        
-        try:
-            subprocess.run(cmd, check=True, capture_output=True)
-            with open(output_path, 'rb') as f:
-                return send_file(
-                    f,
-                    mimetype=f'video/{format}',
-                    as_attachment=True,
-                    download_name=f'particle-animation.{format}'
-                )
-        except subprocess.CalledProcessError as e:
-            return str(e.stderr), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
