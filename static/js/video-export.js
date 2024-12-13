@@ -27,17 +27,21 @@ function startRecording() {
 
         // Create a temporary canvas for capturing the frame with alpha channel
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
-        const tempCtx = tempCanvas.getContext('2d', { alpha: true });
+        const ctx = k.canvas.getContext('2d');
         
-        if (!tempCtx) {
-            console.error('Could not get canvas context');
+        if (!ctx) {
+            console.error('Could not get Kaboom canvas context');
             return;
         }
         
-        // Clear with transparent background
-        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        tempCanvas.width = k.canvas.width;
+        tempCanvas.height = k.canvas.height;
+        const tempCtx = tempCanvas.getContext('2d', { alpha: true });
+        
+        if (!tempCtx) {
+            console.error('Could not get temporary canvas context');
+            return;
+        }
         
         // Clear with transparent background
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);

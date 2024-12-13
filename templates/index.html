@@ -148,33 +148,50 @@
                         <textarea class="form-control mb-2" id="presetDescription" placeholder="Description (optional)"></textarea>
                         <button class="btn btn-outline-light" onclick="saveCurrentPreset()">Save Preset</button>
                         
-                        <h4 class="mt-4">Background Image</h4>
-                        <div class="mb-3">
-                            <label for="backgroundImage" class="form-label">Upload Background Image (JPG/PNG)</label>
-                            <input type="file" class="form-control" id="backgroundImage" accept=".jpg,.jpeg,.png">
-                        </div>
-                        
-                        <h4 class="mt-4">Video Recording</h4>
-                        <div class="mb-3">
-                            <button id="startRecording" class="btn btn-primary">Start Recording</button>
-                            <button id="stopRecording" class="btn btn-danger" disabled>Stop Recording</button>
-                            <span id="frameCount" class="ms-2">0</span> frames
-                        </div>
+                        <!-- Video Recording Section -->
+                        <div class="recording-section mb-4">
+                            <h4 class="mt-4">Video Recording</h4>
+                            <div class="mb-3">
+                                <button id="startRecording" class="btn btn-primary">Start Recording</button>
+                                <button id="stopRecording" class="btn btn-danger" disabled>Stop Recording</button>
+                                <span class="ms-3">Recorded frames: <span id="frameCount">0</span></span>
+                            </div>
 
-                        <div id="exportOptions" style="display: none;" class="mb-4">
-                            <h4 class="mt-4">Export Options</h4>
-                            <div class="d-grid gap-2">
-                                <button onclick="exportToPNGSequence()" class="btn btn-outline-light">Export as PNG Sequence</button>
-                                <button onclick="exportToVideo('webm')" class="btn btn-outline-primary">Export as WebM (Best for Transparency)</button>
-                                <button onclick="exportToVideo('avi')" class="btn btn-outline-secondary">Export as AVI</button>
+                            <div id="exportOptions" style="display: none;">
+                                <h5 class="mt-3">Export Options</h5>
+                                <div class="d-grid gap-2">
+                                    <button onclick="exportToVideo('webm')" class="btn btn-primary">
+                                        <i class="fas fa-file-video"></i> Export as WebM (Best for Transparency)
+                                    </button>
+                                    <button onclick="exportToVideo('avi')" class="btn btn-secondary">
+                                        <i class="fas fa-file-video"></i> Export as AVI
+                                    </button>
+                                    <button onclick="exportToPNGSequence()" class="btn btn-light">
+                                        <i class="fas fa-images"></i> Export as PNG Sequence
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <h4 class="mt-4">Shared Presets</h4>
-                        <script src="{{ url_for('static', filename='js/video-export.js') }}"></script>
-                        <div id="sharedPresets" class="shared-presets-container">
-                            <!-- Shared presets will be loaded here -->
+                        <!-- Background Image Section -->
+                        <div class="background-section mb-4">
+                            <h4 class="mt-4">Background Image</h4>
+                            <div class="mb-3">
+                                <label for="backgroundImage" class="form-label">Upload Background Image (JPG/PNG)</label>
+                                <input type="file" class="form-control" id="backgroundImage" accept=".jpg,.jpeg,.png">
+                            </div>
                         </div>
+
+                        <!-- Shared Presets Section -->
+                        <div class="presets-section">
+                            <h4 class="mt-4">Shared Presets</h4>
+                            <div id="sharedPresets" class="shared-presets-container">
+                                <!-- Shared presets will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Load video export script -->
+                        <script src="{{ url_for('static', filename='js/video-export.js') }}"></script>
                     </div>
                 </div>
             </div>
