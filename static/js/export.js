@@ -83,49 +83,47 @@ function exportToCSS() {
 }
 
 function exportToPNG() {
-    try {
-        // Get the Kaboom canvas
-        const canvas = k.canvas;
-        if (!canvas) {
-            throw new Error('Canvas not found');
-        }
-
-        // Create a temporary canvas
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
-        
-        const tempCtx = tempCanvas.getContext('2d');
-        if (!tempCtx) {
-            throw new Error('Could not get temporary canvas context');
-        }
-        
-        // Clear with transparent background
-        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-        
-        // If there's a background image, draw it first
-        if (backgroundSprite && backgroundImage) {
-            const scale = Math.max(tempCanvas.width / backgroundImage.width, tempCanvas.height / backgroundImage.height);
-            const width = backgroundImage.width * scale;
-            const height = backgroundImage.height * scale;
-            const x = (tempCanvas.width - width) / 2;
-            const y = (tempCanvas.height - height) / 2;
-            tempCtx.drawImage(backgroundImage, x, y, width, height);
-        }
-        
-        // Draw the Kaboom canvas content
-        tempCtx.drawImage(canvas, 0, 0);
-        
-        // Convert to PNG with transparency
-        const dataURL = tempCanvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = 'particle-system.png';
-        link.href = dataURL;
-        link.click();
-    } catch (error) {
-        console.error('Error exporting PNG:', error.message);
-        alert('Error exporting PNG: ' + error.message);
+    // Get the Kaboom canvas
+    const canvas = k.canvas;
+    if (!canvas) {
+        console.error('Canvas not found');
+        return;
     }
+
+    // Get the canvas context
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) {
+        console.error('Could not get canvas context');
+        return;
+    }
+
+    // Get the current frame with transparency
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    
+    // Create a temporary canvas for transparent background
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    
+    // Get context with alpha channel enabled
+    const tempCtx = tempCanvas.getContext('2d', { alpha: true });
+    if (!tempCtx) {
+        console.error('Could not get temporary canvas context');
+        return;
+    }
+    
+    // Clear with transparent background
+    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+    
+    // Draw the current frame
+    tempCtx.putImageData(imageData, 0, 0);
+    
+    // Convert to PNG with transparency
+    const dataURL = tempCanvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = 'particle-system.png';
+    link.href = dataURL;
+    link.click();
 }
 
 function downloadFile(content, filename, contentType) {

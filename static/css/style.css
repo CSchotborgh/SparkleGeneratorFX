@@ -122,30 +122,3 @@ h3, h4 {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 3px;
 }
-.frame-counter-overlay {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 14px;
-    z-index: 1000;
-    pointer-events: none;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.frame-counter-overlay span {
-    font-family: monospace;
-    font-weight: bold;
-    color: #00ff00;
-}
-
-.frame-counter-overlay div {
-    display: flex;
-    justify-content: space-between;
-    min-width: 150px;
-}
