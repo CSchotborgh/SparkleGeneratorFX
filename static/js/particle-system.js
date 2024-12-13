@@ -401,8 +401,31 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
     }
 });
 
+// FPS tracking variables
+let lastTime = performance.now();
+let frameCount = 0;
+let currentFPS = 0;
+const FPS_UPDATE_INTERVAL = 500; // Update FPS display every 500ms
+let lastFPSUpdate = performance.now();
+
 // Main game loop
 k.onUpdate(() => {
+    // FPS calculation
+    const currentTime = performance.now();
+    frameCount++;
+    
+    if (currentTime - lastFPSUpdate > FPS_UPDATE_INTERVAL) {
+        currentFPS = Math.round((frameCount * 1000) / (currentTime - lastFPSUpdate));
+        frameCount = 0;
+        lastFPSUpdate = currentTime;
+        
+        // Update FPS counter in overlay
+        const fpsElement = document.getElementById('frameCount');
+        if (fpsElement) {
+            fpsElement.textContent = currentFPS;
+        }
+    }
+    
     // Set background color (black with alpha for transparency)
     k.setBackground(k.rgb(0, 0, 0));
 
