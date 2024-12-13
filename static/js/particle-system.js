@@ -442,12 +442,7 @@ k.onUpdate(() => {
         particle.draw();
     });
 
-    // Draw emitter position indicator (optional, for debugging)
-    k.drawCircle({
-        pos: k.vec2(emitter.x, emitter.y),
-        radius: 3,
-        color: k.rgb(255, 0, 0, 0.5),
-    });
+    // Emitter visualization removed while maintaining functionality
 });
 
 // Helper function to convert hex to RGB
