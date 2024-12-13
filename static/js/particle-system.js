@@ -325,7 +325,6 @@ function setupEventListeners() {
 }
 
 // Background image handler
-let backgroundSprite = null;
 let backgroundObject = null;
 
 document.getElementById('backgroundImage').addEventListener('change', async (e) => {
