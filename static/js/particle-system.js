@@ -1,6 +1,5 @@
 // Initialize dimensions and state
 let k = null;
-let canvas = null;
 let gameContainer = null;
 const dimensions = {
     width: window.innerWidth * 0.75,
@@ -11,10 +10,8 @@ const dimensions = {
 const state = {
     background: {
         sprite: null,
-        image: null,
-        object: null
-    },
-    initialized: false
+        image: null
+    }
 };
 
 // Physics parameters
@@ -50,6 +47,11 @@ async function initGame() {
     console.log('Starting game initialization...');
     
     try {
+        // Clean up existing Kaboom instance
+        if (k) {
+            k.destroy();
+        }
+
         // Create or get game container
         gameContainer = document.querySelector('.game-container');
         if (!gameContainer) {
@@ -57,57 +59,24 @@ async function initGame() {
             gameContainer.className = 'game-container';
             document.body.appendChild(gameContainer);
         }
-        
-        // Clean up existing canvas if it exists
-        if (canvas) {
-            gameContainer.removeChild(canvas);
-        }
 
-        // Create new canvas
-        canvas = document.createElement('canvas');
-        canvas.id = 'gameCanvas';
-        canvas.style.background = 'transparent';
-        canvas.width = dimensions.width;
-        canvas.height = dimensions.height;
-        gameContainer.appendChild(canvas);
-        
-        console.log('Canvas created with dimensions:', dimensions);
-
-        // Wait for Kaboom to be available
-        if (typeof kaboom === 'undefined') {
-            throw new Error('Kaboom is not loaded');
-        }
-
-        // Initialize Kaboom with canvas and transparency
+        // Initialize Kaboom
         k = kaboom({
-            canvas: canvas,
             width: dimensions.width,
             height: dimensions.height,
             background: [0, 0, 0, 0],
             scale: 1,
-            debug: true,
-            clearColor: [0, 0, 0, 0]
+            global: false,
+            clearColor: [0, 0, 0, 0],
+            canvas: gameContainer,
+            debug: true
         });
 
-        console.log('Kaboom initialized successfully');
-
-        // Create layers
+        // Set up layers
         k.layers([
-            "background",  // Background layer
-            "game"        // Game layer (particles)
+            "background",
+            "game"
         ], "game");
-
-        // Initialize background layer
-        k.use("background");
-        k.add([
-            k.rect(dimensions.width, dimensions.height),
-            k.color(0, 0, 0, 0),
-            k.pos(0, 0),
-            k.z(-1)
-        ]);
-
-        // Switch to game layer
-        k.use("game");
 
         // Initialize particles
         particles = Array(config.count).fill().map(() => new Particle());
@@ -115,10 +84,19 @@ async function initGame() {
         // Set up event listeners
         setupEventListeners();
         
-        // Mark as initialized
-        state.initialized = true;
+        // Add resize handler for the container
+        window.addEventListener('resize', () => {
+            dimensions.width = window.innerWidth * 0.75;
+            dimensions.height = window.innerHeight;
+            if (k) {
+                k.setSize(dimensions.width, dimensions.height);
+                if (state.background.sprite) {
+                    handleBackgroundImage(state.background.image);
+                }
+            }
+        });
+
         console.log('Game initialization complete');
-        
         return true;
     } catch (error) {
         console.error('Error initializing game:', error);
@@ -221,29 +199,29 @@ class Particle {
 
 // Background image handler
 async function handleBackgroundImage(file) {
-    if (!k || !state.initialized) {
+    if (!k) {
         console.error('Game not initialized');
         return;
     }
 
     try {
-        console.log('Loading background image...');
-
-        // Clear existing background
-        k.use("background");
-        if (state.background.object) {
-            state.background.object.destroy();
+        let dataUrl;
+        if (file instanceof File) {
+            // Create data URL from file
+            dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        } else if (file instanceof Image) {
+            // Use existing image on resize
+            dataUrl = file.src;
+        } else {
+            throw new Error('Invalid input type');
         }
 
-        // Create data URL from file
-        const dataUrl = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-
-        // Load image to get dimensions
+        // Load image
         const img = await new Promise((resolve, reject) => {
             const image = new Image();
             image.onload = () => resolve(image);
@@ -254,27 +232,45 @@ async function handleBackgroundImage(file) {
         // Store image reference
         state.background.image = img;
 
-        // Create and load sprite
+        // Generate unique sprite name
         const spriteName = `bg_${Date.now()}`;
+        
+        // Load sprite
         await k.loadSprite(spriteName, dataUrl);
 
-        // Calculate scaling to cover canvas while maintaining aspect ratio
+        // Calculate scaling to fill canvas while maintaining aspect ratio
         const scale = Math.max(
             dimensions.width / img.width,
             dimensions.height / img.height
         );
 
-        // Create background object
-        state.background.object = k.add([
+        // Center the background
+        const scaledWidth = img.width * scale;
+        const scaledHeight = img.height * scale;
+        const xPos = (dimensions.width - scaledWidth) / 2;
+        const yPos = (dimensions.height - scaledHeight) / 2;
+
+        // Switch to background layer
+        k.use("background");
+
+        // Clear previous background objects
+        k.destroyAll("background");
+
+        // Add new background
+        k.add([
             k.sprite(spriteName),
-            k.pos(0, 0),
+            k.pos(xPos, yPos),
             k.scale(scale),
             k.layer("background"),
-            k.z(-1)
+            k.z(-1),
+            k.area(),
+            "background"
         ]);
 
-        // Store sprite name
         state.background.sprite = spriteName;
+        
+        // Switch back to game layer
+        k.use("game");
 
         console.log('Background image loaded successfully');
         return true;
@@ -296,26 +292,26 @@ function hexToRgb(hex) {
 
 // Game loop
 function gameLoop() {
-    if (!state.initialized || !k) return;
+    if (!k) return;
 
     try {
-        // Clear canvas with transparency
+        // Clear canvas
         k.clear();
 
-        // Update background if exists
-        k.use("background");
-        if (state.background.object) {
-            state.background.object.use(k.layer("background"));
+        // Draw background if exists
+        if (state.background.object && state.background.sprite) {
+            k.use("background");
+            state.background.object.draw();
         }
 
-        // Update particles
+        // Draw particles
         k.use("game");
         particles.forEach(particle => {
             particle.update();
             particle.draw();
         });
 
-        // Generate new particles if needed
+        // Maintain particle count
         while (particles.length < config.count) {
             particles.push(new Particle());
         }
