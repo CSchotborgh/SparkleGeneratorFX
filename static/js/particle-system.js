@@ -4,24 +4,57 @@ const initialHeight = window.innerHeight;
 
 // Initialize Kaboom.js
 let k;
-document.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.getElementById("gameCanvas");
-    if (!canvas) {
-        console.error("Canvas element not found!");
-        return;
-    }
-    
+let backgroundSprite = null;
+let backgroundImage = null;
+let backgroundObject = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // Wait for canvas container to be ready
+        const container = document.querySelector('.game-container');
+        if (!container) {
+            throw new Error('Game container not found');
+        }
+
+        // Create or get canvas
+        let canvas = document.getElementById("gameCanvas");
+        if (!canvas) {
+            canvas = document.createElement("canvas");
+            canvas.id = "gameCanvas";
+            container.appendChild(canvas);
+        }
+
+        // Set initial canvas properties
+        canvas.style.background = 'transparent';
+        canvas.width = initialWidth;
+        canvas.height = initialHeight;
+
+        // Initialize Kaboom
         k = kaboom({
             global: false,
-            canvas: canvas,
             width: initialWidth,
             height: initialHeight,
+            canvas: canvas,
             background: [0, 0, 0, 0],
-            debug: true,
+            scale: 1,
+            debug: false,
+            clearColor: [0, 0, 0, 0]
         });
+
+        // Create layers
+        k.layers([
+            "bg",    // background layer
+            "game",  // particle layer
+            "ui"     // UI layer
+        ], "game");
+
+        // Initialize background sprite containers
+        window.backgroundSprite = null;
+        window.backgroundImage = null;
+        window.backgroundObject = null;
+
         console.log("Kaboom initialized successfully");
-        initializeParticleSystem();
+        await initializeParticleSystem();
     } catch (error) {
         console.error("Error initializing Kaboom:", error);
     }
@@ -41,10 +74,9 @@ const physics = {
     collisionEnabled: false
 };
 
-// Background image state
-let backgroundImage = null;
-let backgroundSprite = null;
-let backgroundObject = null;
+// Background state
+let currentBackgroundSprite = null;
+let backgroundGameObj = null;
 
 // Particle system configuration
 let config = {
@@ -250,9 +282,9 @@ function initializeParticleSystem() {
         // Start game loop
         k.onUpdate(() => {
             try {
-                // Clear background
-                k.setBackground(k.rgb(0, 0, 0, 0));
-
+                // Use game layer for particles
+                k.use("game");
+                
                 // Update emitter
                 emitter.update();
 
@@ -312,9 +344,19 @@ function setupEventListeners() {
         // Background image upload handler
         document.getElementById('backgroundImage').addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            if (!file) return;
+            if (!file || !k) {
+                console.error('No file selected or Kaboom not initialized');
+                return;
+            }
 
             try {
+                // Clear existing background
+                if (window.backgroundObject) {
+                    window.backgroundObject.destroy();
+                    window.backgroundObject = null;
+                }
+
+                // Read file as data URL
                 const dataUrl = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result);
@@ -322,51 +364,47 @@ function setupEventListeners() {
                     reader.readAsDataURL(file);
                 });
 
-                // Create a new image element
-                backgroundImage = await new Promise((resolve, reject) => {
+                // Create and load image
+                window.backgroundImage = await new Promise((resolve, reject) => {
                     const img = new Image();
                     img.onload = () => resolve(img);
                     img.onerror = reject;
                     img.src = dataUrl;
                 });
 
-                // Remove existing background sprite if it exists
-                if (backgroundSprite) {
-                    backgroundSprite.destroy();
-                }
-
-                // Create a unique sprite name
-                const spriteName = 'background_' + Date.now();
+                // Generate unique sprite name
+                const spriteName = `bg_${Date.now()}`;
                 
-                // Load the sprite into Kaboom
+                // Load sprite into Kaboom
                 await k.loadSprite(spriteName, dataUrl);
-                backgroundSprite = spriteName;
+                window.backgroundSprite = spriteName;
 
-                // Calculate scale to fit canvas while maintaining aspect ratio
-                const scale = Math.min(
-                    k.width() / backgroundImage.width,
-                    k.height() / backgroundImage.height
-                );
-                const width = backgroundImage.width * scale;
-                const height = backgroundImage.height * scale;
-                const x = (k.width() - width) / 2;
-                const y = (k.height() - height) / 2;
+                // Switch to background layer
+                k.use("bg");
 
-                // Remove existing background object if it exists
-                if (backgroundObject) {
-                    backgroundObject.destroy();
-                }
+                // Calculate scale to fit canvas
+                const scaleX = k.width() / window.backgroundImage.width;
+                const scaleY = k.height() / window.backgroundImage.height;
+                const scale = Math.max(scaleX, scaleY);
 
-                // Add the background sprite to the scene
-                backgroundObject = k.add([
-                    k.sprite(backgroundSprite),
+                // Calculate centered position
+                const x = (k.width() - (window.backgroundImage.width * scale)) / 2;
+                const y = (k.height() - (window.backgroundImage.height * scale)) / 2;
+
+                // Add background object
+                window.backgroundObject = k.add([
+                    k.sprite(window.backgroundSprite),
                     k.pos(x, y),
                     k.scale(scale),
-                    k.z(-1),  // Place behind particles
+                    k.z(-1),
+                    k.layer("bg"),
                     "background"
                 ]);
 
-                // Show preview
+                // Switch back to game layer
+                k.use("game");
+
+                // Update UI preview
                 const previewImg = document.getElementById('backgroundPreviewImage');
                 const previewDiv = document.getElementById('backgroundPreview');
                 if (previewImg && previewDiv) {
@@ -383,14 +421,11 @@ function setupEventListeners() {
 
         // Remove background handler
         document.getElementById('removeBackground').addEventListener('click', () => {
-            if (backgroundObject) {
-                backgroundObject.destroy();
-                backgroundObject = null;
+            if (backgroundGameObj) {
+                backgroundGameObj.destroy();
+                backgroundGameObj = null;
+                currentBackgroundSprite = null;
             }
-            if (backgroundSprite) {
-                backgroundSprite = null;
-            }
-            backgroundImage = null;
 
             // Clear preview
             const previewDiv = document.getElementById('backgroundPreview');
@@ -409,24 +444,17 @@ function setupEventListeners() {
             const newHeight = window.innerHeight;
 
             if (k) {
+                // Update canvas size
                 k.setBackground(k.rgb(0, 0, 0, 0));
-                physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
                 k.canvas.width = newWidth;
                 k.canvas.height = newHeight;
 
-                // Update background position and scale if it exists
-                if (backgroundObject && backgroundImage) {
-                    const scale = Math.min(
-                        newWidth / backgroundImage.width,
-                        newHeight / backgroundImage.height
-                    );
-                    const width = backgroundImage.width * scale;
-                    const height = backgroundImage.height * scale;
-                    const x = (newWidth - width) / 2;
-                    const y = (newHeight - height) / 2;
-                    
-                    backgroundObject.pos = k.vec2(x, y);
-                    backgroundObject.scale = k.vec2(scale, scale);
+                // Update physics center
+                physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
+
+                // Update background if exists
+                if (backgroundGameObj) {
+                    backgroundGameObj.scaleTo();
                 }
             }
         });
