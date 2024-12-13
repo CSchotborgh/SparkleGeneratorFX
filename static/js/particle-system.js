@@ -21,13 +21,31 @@ let backgroundImage = null;
 let backgroundSprite = null;
 
 // Initialize Kaboom.js
-const k = kaboom({
-    global: false,
-    canvas: document.getElementById("gameCanvas"),
-    width: initialWidth,
-    height: initialHeight,
-    background: [0, 0, 0],
+let k;
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById("gameCanvas");
+    if (!canvas) {
+        console.error("Canvas element not found");
+        return;
+    }
+    
+    k = kaboom({
+        global: false,
+        canvas: canvas,
+        width: initialWidth,
+        height: initialHeight,
+        background: [0, 0, 0],
+    });
+    
+    // Initialize the game after Kaboom is ready
+    initializeGame();
 });
+
+function initializeGame() {
+    if (!k) {
+        console.error("Kaboom not initialized");
+        return;
+    }
 
 // Particle system configuration
 let config = {
@@ -402,29 +420,43 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
 });
 
 // FPS tracking variables
-let lastTime = performance.now();
 let frameCount = 0;
+let lastTime = performance.now();
 let currentFPS = 0;
 const FPS_UPDATE_INTERVAL = 500; // Update FPS display every 500ms
 let lastFPSUpdate = performance.now();
 
-// Main game loop
-k.onUpdate(() => {
-    // FPS calculation
+// Function to update FPS counter
+function updateFPSCounter() {
     const currentTime = performance.now();
+    const deltaTime = currentTime - lastFPSUpdate;
     frameCount++;
-    
-    if (currentTime - lastFPSUpdate > FPS_UPDATE_INTERVAL) {
-        currentFPS = Math.round((frameCount * 1000) / (currentTime - lastFPSUpdate));
-        frameCount = 0;
-        lastFPSUpdate = currentTime;
+
+    if (deltaTime >= FPS_UPDATE_INTERVAL) {
+        // Calculate FPS
+        currentFPS = Math.round((frameCount * 1000) / deltaTime);
         
         // Update FPS counter in overlay
         const fpsElement = document.getElementById('frameCount');
         if (fpsElement) {
-            fpsElement.textContent = currentFPS;
+            fpsElement.textContent = currentFPS.toString();
         }
+        
+        // Reset counters
+        frameCount = 0;
+        lastFPSUpdate = currentTime;
     }
+    
+    // Call next frame
+    requestAnimationFrame(updateFPSCounter);
+}
+
+// Start FPS counter
+requestAnimationFrame(updateFPSCounter);
+
+// Main game loop
+k.onUpdate(() => {
+    // FPS is now handled separately by requestAnimationFrame
     
     // Set background color (black with alpha for transparency)
     k.setBackground(k.rgb(0, 0, 0));
