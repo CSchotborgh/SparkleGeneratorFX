@@ -45,6 +45,16 @@ document.getElementById('particleMass').addEventListener('input', (e) => {
     physics.particleMass = parseFloat(e.target.value);
 });
 
+document.getElementById('particleLife').addEventListener('input', (e) => {
+    physics.particleLife = parseFloat(e.target.value);
+    // Update existing particles' life value
+    particles.forEach(particle => {
+        if (particle.life > physics.particleLife) {
+            particle.life = physics.particleLife;
+        }
+    });
+});
+
 document.getElementById('collisionEnabled').addEventListener('change', (e) => {
     physics.collisionEnabled = e.target.checked;
 });

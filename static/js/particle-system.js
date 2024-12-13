@@ -13,6 +13,7 @@ const physics = {
     vortexStrength: 0,
     vortexCenter: { x: initialWidth / 2, y: initialHeight / 2 },
     particleMass: 1.0,
+    particleLife: 1.0,
     collisionEnabled: false
 };
 
@@ -57,8 +58,8 @@ class Particle {
         this.vy = (Math.random() - 0.5) * config.speed;
         this.ax = 0;
         this.ay = 0;
-        this.life = 1;
-        this.decay = 0.01 + Math.random() * 0.02;
+        this.life = physics.particleLife;
+        this.decay = (0.01 + Math.random() * 0.02) / physics.particleLife;
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.2;
         this.size = config.size * (0.5 + Math.random() * 0.5);
