@@ -406,7 +406,12 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
 k.onUpdate(() => {
     // Clear canvas with transparent background
     k.setBackground(k.rgb(0, 0, 0, 0));
-    k.setColor(k.rgb(0, 0, 0, 0));
+    k.drawRect({
+        pos: k.vec2(0, 0),
+        width: k.width(),
+        height: k.height(),
+        color: k.rgb(0, 0, 0, 0)
+    });
 
     // Draw background if available
     if (backgroundSprite && backgroundImage) {
