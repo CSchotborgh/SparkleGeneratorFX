@@ -92,6 +92,10 @@ function stopRecording() {
 
 // Export as PNG sequence
 function exportToPNGSequence() {
+    if (recordedFrames.length === 0) {
+        alert('No frames recorded. Please record some footage first.');
+        return;
+    }
     recordedFrames.forEach((frame, index) => {
         const link = document.createElement('a');
         link.download = `particle-frame-${String(index).padStart(6, '0')}.png`;
@@ -102,17 +106,37 @@ function exportToPNGSequence() {
 
 // Send frames to server for video export
 async function exportToVideo(format) {
-    const response = await fetch('/export-video', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            frames: recordedFrames,
-            format: format,
-            frameRate: FRAME_RATE
-        })
-    });
+    if (recordedFrames.length === 0) {
+        alert('No frames recorded. Please record some footage first.');
+        return;
+    }
+
+    // Show loading message
+    const loadingMsg = document.createElement('div');
+    loadingMsg.id = 'exportLoadingMsg';
+    loadingMsg.style.position = 'fixed';
+    loadingMsg.style.top = '50%';
+    loadingMsg.style.left = '50%';
+    loadingMsg.style.transform = 'translate(-50%, -50%)';
+    loadingMsg.style.padding = '20px';
+    loadingMsg.style.background = 'rgba(0, 0, 0, 0.8)';
+    loadingMsg.style.color = 'white';
+    loadingMsg.style.borderRadius = '5px';
+    loadingMsg.textContent = 'Exporting video... Please wait.';
+    document.body.appendChild(loadingMsg);
+
+    try {
+        const response = await fetch('/export-video', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                frames: recordedFrames,
+                format: format,
+                frameRate: FRAME_RATE
+            })
+        });
     
     if (response.ok) {
         try {
@@ -130,6 +154,16 @@ async function exportToVideo(format) {
     } else {
         const errorText = await response.text();
         console.error('Error exporting video:', errorText);
-        alert(`Error exporting video: ${errorText}\nPlease try a different format or reduce the recording duration.`);
+        alert('Error exporting video. Please try using the WebM format for best compatibility with transparency.');
+    }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Failed to export video. Please try again with a shorter recording or different format.');
+    } finally {
+        // Remove loading message
+        const loadingMsg = document.getElementById('exportLoadingMsg');
+        if (loadingMsg) {
+            loadingMsg.remove();
+        }
     }
 }

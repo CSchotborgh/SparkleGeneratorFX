@@ -104,20 +104,23 @@ def export_video():
         if format == 'avi':
             # AVI format with uncompressed RGBA
             cmd.extend([
-                '-c:v', 'png',        # Use PNG codec for lossless compression with alpha
-                '-pix_fmt', 'rgba',   # Use RGBA pixel format for alpha support
-                '-preset', 'veryslow' # Maximum compression
+                '-c:v', 'png',           # Use PNG codec for lossless compression with alpha
+                '-pix_fmt', 'rgba',      # Use RGBA pixel format for alpha support
+                '-preset', 'veryslow',   # Maximum compression
+                '-g', '1'               # Each frame is a keyframe
             ])
         else:
             # Default to WebM with VP9 codec for better transparency support
+            format = 'webm'  # Force WebM container for VP9
             cmd.extend([
-                '-c:v', 'libvpx-vp9',  # VP9 codec
-                '-pix_fmt', 'yuva420p', # YUV with alpha
-                '-lossless', '1',       # Lossless encoding
-                '-quality', 'best',     # Best quality
+                '-c:v', 'libvpx-vp9',    # VP9 codec
+                '-pix_fmt', 'yuva420p',  # YUV with alpha
+                '-lossless', '1',        # Lossless encoding
+                '-b:v', '2M',           # High bitrate for quality
+                '-deadline', 'best',     # Best quality encoding
+                '-cpu-used', '0',       # Highest quality setting
                 '-auto-alt-ref', '0'    # Disable alternate reference frames
             ])
-            format = 'webm'  # Use WebM container for VP9
             
         # Add output file
         cmd.extend(['-y', str(output_path)])
