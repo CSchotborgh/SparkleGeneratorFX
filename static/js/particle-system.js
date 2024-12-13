@@ -403,11 +403,11 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
 
 // Main game loop
 k.onUpdate(() => {
-    // Clear the canvas
-    k.clearCanvas();
+    // Clear the canvas with background color
+    k.clear();
 
     // Draw background if available
-    if (backgroundSprite) {
+    if (backgroundSprite && backgroundImage) {
         const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
         const width = backgroundImage.width * scale;
         const height = backgroundImage.height * scale;
@@ -416,7 +416,7 @@ k.onUpdate(() => {
 
         k.drawSprite({
             sprite: backgroundSprite,
-            pos: k.vec2(x, y),
+            pos: vec2(x, y),
             width: width,
             height: height,
         });
