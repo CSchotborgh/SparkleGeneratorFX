@@ -101,11 +101,11 @@ def export_video():
         # FFmpeg command based on format
         cmd = ['ffmpeg', '-framerate', str(frame_rate), '-i', str(temp_path / 'frame_%06d.png')]
         
-        # AVI format encoding settings
+        # AVI format encoding settings with alpha channel support
         cmd.extend([
-            '-c:v', 'mpeg4',
-            '-q:v', '6',
-            '-pix_fmt', 'yuv420p'
+            '-c:v', 'qtrle',  # Apple QuickTime Animation codec (supports alpha)
+            '-q:v', '3',      # Higher quality
+            '-pix_fmt', 'rgba'  # Use RGBA pixel format for transparency
         ])
             
         # Add output file

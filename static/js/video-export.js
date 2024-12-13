@@ -49,7 +49,20 @@ function startRecording() {
         // Clear with transparent background
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
         
-        // Draw the current frame
+        // Clear with transparent background
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        // If there's a background image, draw it first
+        if (backgroundSprite && backgroundImage) {
+            const scale = Math.max(tempCanvas.width / backgroundImage.width, tempCanvas.height / backgroundImage.height);
+            const width = backgroundImage.width * scale;
+            const height = backgroundImage.height * scale;
+            const x = (tempCanvas.width - width) / 2;
+            const y = (tempCanvas.height - height) / 2;
+            tempCtx.drawImage(backgroundImage, x, y, width, height);
+        }
+        
+        // Draw the current frame with particles
         tempCtx.putImageData(imageData, 0, 0);
         
         // Convert to PNG with transparency
