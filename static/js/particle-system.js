@@ -2,6 +2,16 @@
 const initialWidth = window.innerWidth * 0.75;
 const initialHeight = window.innerHeight;
 
+// Initialize Kaboom.js
+let k = kaboom({
+    global: false,
+    canvas: document.getElementById("gameCanvas"),
+    width: initialWidth,
+    height: initialHeight,
+    background: [0, 0, 0, 0],
+    debug: true,
+});
+
 // Physics parameters
 const physics = {
     gravity: 0.1,
@@ -20,33 +30,6 @@ const physics = {
 let backgroundImage = null;
 let backgroundSprite = null;
 
-// Initialize Kaboom.js
-let k;
-document.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.getElementById("gameCanvas");
-    if (!canvas) {
-        console.error("Canvas element not found");
-        return;
-    }
-    
-    k = kaboom({
-        global: false,
-        canvas: canvas,
-        width: initialWidth,
-        height: initialHeight,
-        background: [0, 0, 0],
-    });
-    
-    // Initialize the game after Kaboom is ready
-    initializeGame();
-});
-
-function initializeGame() {
-    if (!k) {
-        console.error("Kaboom not initialized");
-        return;
-    }
-
 // Particle system configuration
 let config = {
     count: 50,
@@ -54,9 +37,12 @@ let config = {
     speed: 5,
     color: "#ffffff",
     preset: "sparkle",
-    trailLength: 10,  // Added trail length configuration
-    reverseTrail: false // Trail direction control
+    trailLength: 10,
+    reverseTrail: false
 };
+
+// Create particle pool
+let particles = [];
 
 // Particle class
 class Particle {
@@ -67,10 +53,9 @@ class Particle {
     }
 
     reset() {
-        // Always initialize at the center of the screen
+        // Initialize at center
         this.x = k.width() / 2;
         this.y = k.height() / 2;
-        // Initialize with random velocities
         this.vx = (Math.random() - 0.5) * config.speed;
         this.vy = (Math.random() - 0.5) * config.speed;
         this.ax = 0;
@@ -80,7 +65,6 @@ class Particle {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.2;
         this.size = config.size * (0.5 + Math.random() * 0.5);
-        // Initialize trail from the center position
         this.trail = Array(this.trailLength).fill().map(() => ({
             x: this.x,
             y: this.y,
@@ -89,22 +73,22 @@ class Particle {
     }
 
     update() {
-        // Apply physics to particle
+        // Apply physics
         this.ax = physics.wind;
         this.ay = physics.gravity;
-        
+
         // Apply air resistance (proportional to velocity squared)
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
         if (speed > 0) {
             this.ax -= (this.vx / speed) * physics.airResistance * speed * speed;
             this.ay -= (this.vy / speed) * physics.airResistance * speed * speed;
         }
-        
+
         // Apply turbulence using Perlin noise
         const time = Date.now() * 0.001;
         this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
         this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
-        
+
         // Apply attraction to emitter position
         const dx = emitter.x - this.x;
         const dy = emitter.y - this.y;
@@ -115,7 +99,7 @@ class Particle {
             this.ax += dx * attractionForce;
             this.ay += dy * attractionForce;
         }
-        
+
         // Apply vortex effect
         if (physics.vortexStrength !== 0) {
             const vx = this.x - physics.vortexCenter.x;
@@ -127,17 +111,17 @@ class Particle {
                 this.ay += vx * vortexForce;
             }
         }
-        
+
         // Update velocity and position
         this.vx += this.ax / physics.particleMass;
         this.vy += this.ay / physics.particleMass;
-        
+
         this.vx *= physics.friction;
         this.vy *= physics.friction;
-        
+
         this.x += this.vx;
         this.y += this.vy;
-        
+
         // Bounce off screen edges
         if (this.x < 0 || this.x > k.width()) {
             this.vx *= -physics.bounce;
@@ -147,7 +131,7 @@ class Particle {
             this.vy *= -physics.bounce;
             this.y = this.y < 0 ? 0 : k.height();
         }
-        
+
         // Particle collisions if enabled
         if (physics.collisionEnabled) {
             for (const other of particles) {
@@ -156,15 +140,15 @@ class Particle {
                     const dy = other.y - this.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const minDist = (this.size + other.size) * 0.5;
-                    
+
                     if (distance < minDist) {
                         const angle = Math.atan2(dy, dx);
                         const targetX = this.x + Math.cos(angle) * minDist;
                         const targetY = this.y + Math.sin(angle) * minDist;
-                        
+
                         const ax = (targetX - other.x) * 0.05;
                         const ay = (targetY - other.y) * 0.05;
-                        
+
                         this.vx -= ax;
                         this.vy -= ay;
                         other.vx += ax;
@@ -173,82 +157,84 @@ class Particle {
                 }
             }
         }
-        
+
         // Update rotation
         this.angle += this.spin;
-        
-        // Update trail based on direction
+
+        // Update trail
         if (config.reverseTrail) {
             this.trail.shift();
-            this.trail.push({
-                x: this.x,
-                y: this.y,
-                angle: this.angle
-            });
+            this.trail.push({ x: this.x, y: this.y, angle: this.angle });
         } else {
             this.trail.pop();
-            this.trail.unshift({
-                x: this.x,
-                y: this.y,
-                angle: this.angle
-            });
+            this.trail.unshift({ x: this.x, y: this.y, angle: this.angle });
         }
-        
-        this.life -= this.decay;
 
-        if (this.life <= 0) {
-            this.reset();
-        }
+        // Update life
+        this.life -= this.decay;
+        if (this.life <= 0) this.reset();
     }
 
     draw() {
         // Draw trail
-        for (let i = this.trail.length - 1; i >= 0; i--) {
-            const point = this.trail[i];
+        this.trail.forEach((point, i) => {
             const opacity = (1 - i / this.trail.length) * this.life * 0.5;
-            const trailSize = this.size * (1 - i / this.trail.length);
-            
-            if (this.sprite) {
-                const scale = (trailSize / (this.originalSize || 20)) * 2;
-                k.drawSprite({
-                    sprite: this.sprite,
-                    pos: k.vec2(point.x, point.y),
-                    scale: k.vec2(scale, scale),
-                    angle: point.angle,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                    anchor: "center",
-                });
-            } else {
-                k.drawCircle({
-                    pos: k.vec2(point.x, point.y),
-                    radius: trailSize,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                });
-            }
-        }
-
-        // Draw current particle
-        if (this.sprite) {
-            k.drawSprite({
-                sprite: this.sprite,
-                pos: k.vec2(this.x, this.y),
-                scale: k.vec2(this.size / 20),
-                angle: this.angle,
-                color: k.rgb(...hexToRgb(config.color), this.life),
-                anchor: "center",
-            });
-        } else {
             k.drawCircle({
-                pos: k.vec2(this.x, this.y),
-                radius: this.size,
-                color: k.rgb(...hexToRgb(config.color), this.life),
+                pos: k.vec2(point.x, point.y),
+                radius: this.size * (1 - i / this.trail.length),
+                color: k.rgb(...hexToRgb(config.color), opacity)
             });
-        }
+        });
+
+        // Draw particle
+        k.drawCircle({
+            pos: k.vec2(this.x, this.y),
+            radius: this.size,
+            color: k.rgb(...hexToRgb(config.color), this.life)
+        });
     }
 }
 
-// Create particle pool
-let particles = Array(config.count).fill().map(() => new Particle());
+// Initialize particles
+function initializeParticles() {
+    particles = Array(config.count).fill().map(() => new Particle());
+}
+
+// FPS tracking
+let frameCount = 0;
+let lastTime = performance.now();
+let fps = 0;
+
+// Update FPS counter
+function updateFPS() {
+    const now = performance.now();
+    const delta = now - lastTime;
+    frameCount++;
+
+    if (delta >= 1000) {
+        fps = Math.round((frameCount * 1000) / delta);
+        frameCount = 0;
+        lastTime = now;
+
+        // Update FPS display
+        const fpsCounter = document.getElementById('frameCount');
+        if (fpsCounter) {
+            fpsCounter.textContent = fps;
+        }
+    }
+
+    requestAnimationFrame(updateFPS);
+}
+
+// Helper function to convert hex to RGB
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+    ] : [255, 255, 255];
+}
 
 // Particle burst function
 function createParticleBurst(x, y, count = 20) {
@@ -256,27 +242,21 @@ function createParticleBurst(x, y, count = 20) {
         const particle = new Particle();
         particle.x = x;
         particle.y = y;
-        
+
         // Create radial burst effect
         const angle = Math.random() * Math.PI * 2;
         const speed = config.speed * (1 + Math.random());
         particle.vx = Math.cos(angle) * speed;
         particle.vy = Math.sin(angle) * speed;
-        
+
         // Shorter life for burst particles
         particle.decay = 0.02 + Math.random() * 0.03;
-        
-        // Set sprite if using image-based particles
-        if (animationFrames.length > 0) {
-            particle.sprite = animationFrames[currentFrame].sprite;
-            particle.originalSize = animationFrames[currentFrame].originalSize;
-        }
-        
+
         return particle;
     });
-    
+
     particles.push(...burstParticles);
-    
+
     // Trim excess particles
     while (particles.length > config.count * 2) {
         particles.shift();
@@ -419,100 +399,76 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
     }
 });
 
-// FPS tracking variables
-let frameCount = 0;
-let lastTime = performance.now();
-let currentFPS = 0;
-const FPS_UPDATE_INTERVAL = 500; // Update FPS display every 500ms
-let lastFPSUpdate = performance.now();
 
-// Function to update FPS counter
-function updateFPSCounter() {
-    const currentTime = performance.now();
-    const deltaTime = currentTime - lastFPSUpdate;
-    frameCount++;
+// Initialize the system
+document.addEventListener('DOMContentLoaded', () => {
+    // Start FPS counter
+    updateFPS();
 
-    if (deltaTime >= FPS_UPDATE_INTERVAL) {
-        // Calculate FPS
-        currentFPS = Math.round((frameCount * 1000) / deltaTime);
-        
-        // Update FPS counter in overlay
-        const fpsElement = document.getElementById('frameCount');
-        if (fpsElement) {
-            fpsElement.textContent = currentFPS.toString();
+    // Initialize particles
+    initializeParticles();
+
+    // Start game loop
+    k.onUpdate(() => {
+        // Clear background
+        k.setBackground(k.rgb(0, 0, 0, 0));
+
+        // Update emitter
+        emitter.update();
+
+        // Remove dead particles
+        particles = particles.filter(p => p.life > 0);
+
+        // Generate new particles from emitter
+        const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); // Distribute particle generation over time
+        for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
+            particles.push(emitter.generateParticle());
         }
-        
-        // Reset counters
-        frameCount = 0;
-        lastFPSUpdate = currentTime;
-    }
-    
-    // Call next frame
-    requestAnimationFrame(updateFPSCounter);
-}
 
-// Start FPS counter
-requestAnimationFrame(updateFPSCounter);
-
-// Main game loop
-k.onUpdate(() => {
-    // FPS is now handled separately by requestAnimationFrame
-    
-    // Set background color (black with alpha for transparency)
-    k.setBackground(k.rgb(0, 0, 0));
-
-    // Draw background if available
-    if (backgroundSprite && backgroundImage) {
-        const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-        const width = backgroundImage.width * scale;
-        const height = backgroundImage.height * scale;
-        const x = (k.width() - width) / 2;
-        const y = (k.height() - height) / 2;
-
-        k.drawSprite({
-            sprite: backgroundSprite,
-            pos: k.vec2(x, y),
-            scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
+        // Update and draw particles
+        particles.forEach(particle => {
+            particle.update();
+            particle.draw();
         });
-    }
 
-    // Update emitter
-    emitter.update();
+        // Draw background if available
+        if (backgroundSprite && backgroundImage) {
+            const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
+            const width = backgroundImage.width * scale;
+            const height = backgroundImage.height * scale;
+            const x = (k.width() - width) / 2;
+            const y = (k.height() - height) / 2;
 
-    // Remove dead particles
-    particles = particles.filter(p => p.life > 0);
+            k.drawSprite({
+                sprite: backgroundSprite,
+                pos: k.vec2(x, y),
+                scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
+            });
+        }
 
-    // Generate new particles from emitter
-    const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); // Distribute particle generation over time
-    for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
-        particles.push(emitter.generateParticle());
-    }
-
-    // Update and draw particles
-    particles.forEach(particle => {
-        particle.update();
-        particle.draw();
-    });
-
-    // Draw emitter position indicator (optional, for debugging)
-    k.drawCircle({
-        pos: k.vec2(emitter.x, emitter.y),
-        radius: 3,
-        color: k.rgb(255, 0, 0, 0.5),
+        // Draw emitter position indicator (optional, for debugging)
+        k.drawCircle({
+            pos: k.vec2(emitter.x, emitter.y),
+            radius: 3,
+            color: k.rgb(255, 0, 0, 0.5),
+        });
     });
 });
 
-// Helper function to convert hex to RGB
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16)
-    ] : [255, 255, 255];
-}
+// Window resize handler
+window.addEventListener('resize', () => {
+    const newWidth = window.innerWidth * 0.75;
+    const newHeight = window.innerHeight;
 
-// Preset configurations
+    k.setBackground(k.rgb(0, 0, 0, 0));
+    physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
+
+    // Update canvas size
+    k.canvas.width = newWidth;
+    k.canvas.height = newHeight;
+});
+
+// Preset configurations (restored from original)
 const presets = {
     sparkle: {
         count: 50,
@@ -600,36 +556,3 @@ const presets = {
         }
     }
 };
-
-// Window resize handler
-window.addEventListener('resize', () => {
-    const canvas = document.getElementById("gameCanvas");
-    const newWidth = window.innerWidth * 0.75;
-    const newHeight = window.innerHeight;
-    
-    // Update canvas size
-    canvas.style.width = `${newWidth}px`;
-    canvas.style.height = `${newHeight}px`;
-    canvas.width = newWidth;
-    canvas.height = newHeight;
-    
-    // Update Kaboom instance dimensions
-    k.canvas.width = newWidth;
-    k.canvas.height = newHeight;
-    
-    // Update vortex center
-    physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
-    
-    // Ensure particles are within bounds
-    particles.forEach(particle => {
-        if (particle.x > newWidth) particle.x = newWidth;
-        if (particle.y > newHeight) particle.y = newHeight;
-        
-        // Update trail positions if needed
-        particle.trail = particle.trail.map(point => ({
-            x: Math.min(point.x, newWidth),
-            y: Math.min(point.y, newHeight),
-            angle: point.angle
-        }));
-    });
-});

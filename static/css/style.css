@@ -133,8 +133,19 @@ h3, h4 {
     font-size: 14px;
     z-index: 1000;
     pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .frame-counter-overlay span {
     font-family: monospace;
+    font-weight: bold;
+    color: #00ff00;
+}
+
+.frame-counter-overlay div {
+    display: flex;
+    justify-content: space-between;
+    min-width: 150px;
 }
