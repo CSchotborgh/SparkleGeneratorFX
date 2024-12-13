@@ -21,8 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Start recording
 function startRecording() {
-    if (isRecording || !k || !k.canvas) {
-        console.error('Cannot start recording: Canvas not ready or already recording');
+    if (isRecording) {
+        console.error('Already recording');
+        return;
+    }
+    
+    // Wait for Kaboom canvas to be ready
+    if (!k || !k.canvas) {
+        console.error('Kaboom canvas not ready');
         return;
     }
     
@@ -45,14 +51,8 @@ function startRecording() {
     if (stopButton) stopButton.disabled = false;
     if (exportControls) exportControls.style.display = 'none';
     
-    // Ensure canvas is ready before starting capture
-    if (k.canvas.getContext('2d')) {
-        // Capture frames at specified frame rate
-        recordingInterval = setInterval(captureFrame, 1000 / FRAME_RATE);
-    } else {
-        console.error('Canvas context not available');
-        stopRecording();
-    }
+    // Start capturing frames
+    recordingInterval = setInterval(captureFrame, 1000 / FRAME_RATE);
 }
 
 // Stop recording
@@ -77,16 +77,10 @@ function stopRecording() {
 
 // Capture a single frame
 function captureFrame() {
-    if (!k || !k.canvas) {
-        console.error('Kaboom canvas not available');
+    if (!isRecording || !k || !k.canvas) {
+        console.error('Cannot capture frame: recording stopped or canvas not ready');
         stopRecording();
         return;
-    }
-    
-    // Update frame counter immediately
-    const frameCount = document.getElementById('frameCount');
-    if (frameCount) {
-        frameCount.textContent = recordedFrames.length.toString();
     }
 
     try {
@@ -97,8 +91,7 @@ function captureFrame() {
         const tempCtx = tempCanvas.getContext('2d', { alpha: true });
 
         if (!tempCtx) {
-            console.error('Could not get temporary canvas context');
-            return;
+            throw new Error('Could not get temporary canvas context');
         }
 
         // Clear with transparent background
@@ -135,12 +128,10 @@ function captureFrame() {
         const frame = tempCanvas.toDataURL('image/png');
         recordedFrames.push(frame);
 
-        // Update frame count display
+        // Update frame counter immediately after adding the frame
         const frameCount = document.getElementById('frameCount');
         if (frameCount) {
-            requestAnimationFrame(() => {
-                frameCount.textContent = recordedFrames.length.toString();
-            });
+            frameCount.textContent = recordedFrames.length.toString();
         }
     } catch (error) {
         console.error('Error capturing frame:', error);
