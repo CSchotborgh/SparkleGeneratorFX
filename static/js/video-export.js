@@ -18,41 +18,27 @@ function startRecording() {
     
     // Capture frames at specified frame rate
     recordingInterval = setInterval(() => {
-        // Get the Kaboom canvas
-        const canvas = k.canvas;
-        if (!canvas) {
-            console.error('Canvas not found');
-            return;
-        }
-
-        // Get the canvas context with alpha channel enabled
-        const ctx = canvas.getContext('2d', { alpha: true });
-        if (!ctx) {
-            console.error('Could not get canvas context');
-            return;
-        }
-
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        
-        // Create a temporary canvas for transparent background
+        // Create a temporary canvas to capture the frame
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
+        tempCanvas.width = k.width();
+        tempCanvas.height = k.height();
+        const ctx = tempCanvas.getContext('2d', { alpha: true });
         
-        // Get context with alpha channel enabled
-        const tempCtx = tempCanvas.getContext('2d', { alpha: true });
-        if (!tempCtx) {
+        if (!ctx) {
             console.error('Could not get temporary canvas context');
             return;
         }
+
+        // Clear the temporary canvas with transparency
+        ctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
         
-        // Clear with transparent background
-        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        // Draw the current frame from Kaboom's canvas to our temporary canvas
+        ctx.drawImage(k.canvas, 0, 0);
         
-        // Draw the current frame
-        tempCtx.putImageData(imageData, 0, 0);
+        // Get the image data with transparency
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
         
-        // Convert to PNG with transparency
+        // Convert the frame directly to PNG with transparency
         const frame = tempCanvas.toDataURL('image/png');
         recordedFrames.push(frame);
         
