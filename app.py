@@ -106,20 +106,19 @@ def export_video():
             cmd.extend([
                 '-c:v', 'png',           # Use PNG codec for lossless compression with alpha
                 '-pix_fmt', 'rgba',      # Use RGBA pixel format for alpha support
-                '-preset', 'veryslow',   # Maximum compression
                 '-g', '1'               # Each frame is a keyframe
             ])
         else:
-            # Default to WebM with VP9 codec for better transparency support
-            format = 'webm'  # Force WebM container for VP9
+            # Default to WebM with VP8 codec for better compatibility
+            format = 'webm'
             cmd.extend([
-                '-c:v', 'libvpx-vp9',    # VP9 codec
+                '-c:v', 'libvpx',        # VP8 codec
                 '-pix_fmt', 'yuva420p',  # YUV with alpha
-                '-lossless', '1',        # Lossless encoding
+                '-auto-alt-ref', '0',    # Disable alternate reference frames
                 '-b:v', '2M',           # High bitrate for quality
-                '-deadline', 'best',     # Best quality encoding
+                '-quality', 'good',      # Good quality setting
                 '-cpu-used', '0',       # Highest quality setting
-                '-auto-alt-ref', '0'    # Disable alternate reference frames
+                '-metadata:s:v:0', 'alpha_mode="1"'  # Enable alpha channel
             ])
             
         # Add output file

@@ -114,14 +114,15 @@ function captureFrame() {
         const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
         const data = imageData.data;
 
-        // Ensure alpha values are preserved
-        for (let i = 3; i < data.length; i += 4) {
-            if (data[i] === 0) {
-                data[i - 1] = data[i - 2] = data[i - 3] = 0;
-            }
+        // Process alpha channel - premultiply RGB by alpha
+        for (let i = 0; i < data.length; i += 4) {
+            const alpha = data[i + 3] / 255;
+            data[i] = Math.round(data[i] * alpha);
+            data[i + 1] = Math.round(data[i + 1] * alpha);
+            data[i + 2] = Math.round(data[i + 2] * alpha);
         }
 
-        // Update canvas with preserved alpha
+        // Update canvas with processed alpha
         tempCtx.putImageData(imageData, 0, 0);
 
         // Convert to PNG with transparency
