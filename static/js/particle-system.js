@@ -3,13 +3,28 @@ const initialWidth = window.innerWidth * 0.75;
 const initialHeight = window.innerHeight;
 
 // Initialize Kaboom.js
-let k = kaboom({
-    global: false,
-    canvas: document.getElementById("gameCanvas"),
-    width: initialWidth,
-    height: initialHeight,
-    background: [0, 0, 0, 0],
-    debug: true,
+let k;
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById("gameCanvas");
+    if (!canvas) {
+        console.error("Canvas element not found!");
+        return;
+    }
+    
+    try {
+        k = kaboom({
+            global: false,
+            canvas: canvas,
+            width: initialWidth,
+            height: initialHeight,
+            background: [0, 0, 0, 0],
+            debug: true,
+        });
+        console.log("Kaboom initialized successfully");
+        initializeParticleSystem();
+    } catch (error) {
+        console.error("Error initializing Kaboom:", error);
+    }
 });
 
 // Physics parameters
@@ -400,8 +415,18 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
 });
 
 
-// Initialize the system
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize the particle system
+function initializeParticleSystem() {
+    if (!k) {
+        console.error("Kaboom not initialized!");
+        return;
+    }
+
+    // Initialize particles array if not already done
+    if (!particles) {
+        particles = [];
+    }
+
     // Start FPS counter
     updateFPS();
 
@@ -410,26 +435,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Start game loop
     k.onUpdate(() => {
-        // Clear background
-        k.setBackground(k.rgb(0, 0, 0, 0));
+        try {
+            // Clear background
+            k.setBackground(k.rgb(0, 0, 0, 0));
 
-        // Update emitter
-        emitter.update();
+            // Update emitter
+            emitter.update();
 
-        // Remove dead particles
-        particles = particles.filter(p => p.life > 0);
+            // Remove dead particles
+            particles = particles.filter(p => p.life > 0);
 
-        // Generate new particles from emitter
-        const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); // Distribute particle generation over time
-        for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
-            particles.push(emitter.generateParticle());
-        }
+            // Generate new particles from emitter
+            const particlesToGenerate = Math.max(1, Math.floor(config.count / 60));
+            for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
+                particles.push(emitter.generateParticle());
+            }
 
-        // Update and draw particles
-        particles.forEach(particle => {
-            particle.update();
-            particle.draw();
-        });
+            // Update and draw particles
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            // Update FPS display
+            frameCount++;
+            if (performance.now() - lastTime >= 1000) {
+                const fps = Math.round((frameCount * 1000) / (performance.now() - lastTime));
+                const fpsDisplay = document.getElementById('frameCount');
+                if (fpsDisplay) {
+                    fpsDisplay.textContent = fps.toString();
+                }
+                frameCount = 0;
+                lastTime = performance.now();
+            }
 
         // Draw background if available
         if (backgroundSprite && backgroundImage) {
