@@ -7,13 +7,15 @@ let recordingInterval = null;
 
 // Initialize event listeners
 document.addEventListener('DOMContentLoaded', () => {
-    const startButton = document.getElementById('startRecording');
-    const stopButton = document.getElementById('stopRecording');
-    const exportOptions = document.getElementById('exportOptions');
+    const startButton = document.getElementById('startRecordingBtn');
+    const stopButton = document.getElementById('stopRecordingBtn');
+    const exportControls = document.getElementById('exportControls');
 
     if (startButton && stopButton) {
         startButton.addEventListener('click', startRecording);
         stopButton.addEventListener('click', stopRecording);
+    } else {
+        console.error('Recording buttons not found in the DOM');
     }
 });
 
@@ -26,13 +28,13 @@ function startRecording() {
     recordingStartTime = Date.now();
     
     // Update UI
-    const startButton = document.getElementById('startRecording');
-    const stopButton = document.getElementById('stopRecording');
-    const exportOptions = document.getElementById('exportOptions');
+    const startButton = document.getElementById('startRecordingBtn');
+    const stopButton = document.getElementById('stopRecordingBtn');
+    const exportControls = document.getElementById('exportControls');
     
     if (startButton) startButton.disabled = true;
     if (stopButton) stopButton.disabled = false;
-    if (exportOptions) exportOptions.style.display = 'none';
+    if (exportControls) exportControls.style.display = 'none';
     
     // Capture frames at specified frame rate
     recordingInterval = setInterval(captureFrame, 1000 / FRAME_RATE);
@@ -49,13 +51,13 @@ function stopRecording() {
     }
     
     // Update UI
-    const startButton = document.getElementById('startRecording');
-    const stopButton = document.getElementById('stopRecording');
-    const exportOptions = document.getElementById('exportOptions');
+    const startButton = document.getElementById('startRecordingBtn');
+    const stopButton = document.getElementById('stopRecordingBtn');
+    const exportControls = document.getElementById('exportControls');
     
     if (startButton) startButton.disabled = false;
     if (stopButton) stopButton.disabled = true;
-    if (exportOptions) exportOptions.style.display = 'block';
+    if (exportControls) exportControls.style.display = 'block';
 }
 
 // Capture a single frame
