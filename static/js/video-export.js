@@ -19,7 +19,24 @@ function startRecording() {
     // Capture frames at specified frame rate
     recordingInterval = setInterval(() => {
         const canvas = document.getElementById('gameCanvas');
-        const frame = canvas.toDataURL('image/png');
+        // Get the canvas context and save its current state
+        const ctx = canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Create a temporary canvas for transparent background
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Clear with transparent background
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        // Draw the current frame
+        tempCtx.putImageData(imageData, 0, 0);
+        
+        // Convert to PNG with transparency
+        const frame = tempCanvas.toDataURL('image/png');
         recordedFrames.push(frame);
         
         // Update frame count display

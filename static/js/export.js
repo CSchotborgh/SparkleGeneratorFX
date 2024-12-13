@@ -84,7 +84,23 @@ function exportToCSS() {
 
 function exportToPNG() {
     const canvas = document.getElementById('gameCanvas');
-    const dataURL = canvas.toDataURL('image/png');
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    
+    // Create a temporary canvas for transparent background
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Clear with transparent background
+    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+    
+    // Draw the current frame
+    tempCtx.putImageData(imageData, 0, 0);
+    
+    // Convert to PNG with transparency
+    const dataURL = tempCanvas.toDataURL('image/png');
     const link = document.createElement('a');
     link.download = 'particle-system.png';
     link.href = dataURL;
