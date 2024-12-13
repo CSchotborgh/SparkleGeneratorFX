@@ -36,30 +36,16 @@ function startRecording() {
             return;
         }
         
-        // Clear the temporary canvas with transparent background
+        // Clear with transparent background
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
         
         // Draw the current frame to the temporary canvas
         tempCtx.drawImage(canvas, 0, 0);
         
+        // Get the image data to preserve transparency
         const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
         
-        // Create a temporary canvas for transparent background
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
-        
-        // Get context with alpha channel enabled
-        const tempCtx = tempCanvas.getContext('2d', { alpha: true });
-        if (!tempCtx) {
-            console.error('Could not get temporary canvas context');
-            return;
-        }
-        
-        // Clear with transparent background
-        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-        
-        // Clear with transparent background
+        // Clear again to ensure transparency
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
         
         // If there's a background image, draw it first
