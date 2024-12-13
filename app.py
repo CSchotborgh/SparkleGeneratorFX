@@ -103,9 +103,12 @@ def export_video():
         
         # AVI format encoding settings with alpha channel support
         cmd.extend([
-            '-c:v', 'qtrle',  # Apple QuickTime Animation codec (supports alpha)
-            '-q:v', '3',      # Higher quality
-            '-pix_fmt', 'rgba'  # Use RGBA pixel format for transparency
+            '-c:v', 'prores_ks',  # ProRes codec with alpha support
+            '-profile:v', '4444',  # ProRes 4444 profile for alpha channel
+            '-pix_fmt', 'yuva444p10le',  # 10-bit YUV with alpha
+            '-q:v', '1',  # Highest quality
+            '-vendor', 'ap10',  # Apple ProRes identifier
+            '-movflags', '+faststart'  # Enable streaming
         ])
             
         # Add output file
