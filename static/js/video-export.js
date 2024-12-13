@@ -87,13 +87,21 @@ function stopRecording() {
     // Update UI
     document.getElementById('startRecording').disabled = false;
     document.getElementById('stopRecording').disabled = true;
-    // Make sure export options are visible
+    
+    // Show export options
     const exportOptions = document.getElementById('exportOptions');
     if (exportOptions) {
         exportOptions.style.display = 'block';
     } else {
         console.error('Export options container not found');
     }
+    
+    // Hide export options when starting new recording
+    document.getElementById('startRecording').addEventListener('click', () => {
+        if (exportOptions) {
+            exportOptions.style.display = 'none';
+        }
+    });
 }
 
 // Export as PNG sequence

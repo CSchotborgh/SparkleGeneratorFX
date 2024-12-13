@@ -160,15 +160,16 @@
                             <button id="stopRecording" class="btn btn-danger" disabled>Stop Recording</button>
                             <span id="frameCount" class="ms-2">0</span> frames
                         </div>
-                        
-                        <h4 class="mt-4">Export Options</h4>
-                        <div id="exportOptions" style="display: none;" class="mt-3">
+
+                        <div id="exportOptions" style="display: none;" class="mb-4">
+                            <h4 class="mt-4">Export Options</h4>
                             <div class="d-grid gap-2">
                                 <button onclick="exportToPNGSequence()" class="btn btn-outline-light">Export as PNG Sequence</button>
-                                <button onclick="exportToVideo('webm')" class="btn btn-outline-primary">Export as WebM (Recommended for Transparency)</button>
+                                <button onclick="exportToVideo('webm')" class="btn btn-outline-primary">Export as WebM (Best for Transparency)</button>
                                 <button onclick="exportToVideo('avi')" class="btn btn-outline-secondary">Export as AVI</button>
                             </div>
                         </div>
+
                         <h4 class="mt-4">Shared Presets</h4>
                         <script src="{{ url_for('static', filename='js/video-export.js') }}"></script>
                         <div id="sharedPresets" class="shared-presets-container">
