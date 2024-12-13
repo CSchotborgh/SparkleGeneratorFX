@@ -87,7 +87,13 @@ function stopRecording() {
     // Update UI
     document.getElementById('startRecording').disabled = false;
     document.getElementById('stopRecording').disabled = true;
-    document.getElementById('exportOptions').style.display = 'block';
+    // Make sure export options are visible
+    const exportOptions = document.getElementById('exportOptions');
+    if (exportOptions) {
+        exportOptions.style.display = 'block';
+    } else {
+        console.error('Export options container not found');
+    }
 }
 
 // Export as PNG sequence
