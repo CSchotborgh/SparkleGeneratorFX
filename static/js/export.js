@@ -83,55 +83,48 @@ function exportToCSS() {
 }
 
 function exportToPNG() {
-    // Get the Kaboom canvas
-    const canvas = k.canvas;
-    if (!canvas) {
-        console.error('Canvas not found');
-        return;
-    }
-
-    // Get the canvas context with explicit error handling
-    let ctx;
     try {
-        ctx = canvas.getContext('2d', { 
-            alpha: true,
-            willReadFrequently: true 
-        });
-        if (!ctx) {
-            throw new Error('Canvas context not available');
+        // Get the Kaboom canvas (gameCanvas is the original canvas element)
+        const canvas = document.getElementById('gameCanvas');
+        if (!canvas) {
+            throw new Error('Canvas element not found');
         }
-    } catch (error) {
-        console.error('Error getting canvas context:', error);
-        return;
-    }
 
-    // Get the current frame with transparency
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    
-    // Create a temporary canvas for transparent background
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    
-    // Get context with alpha channel enabled
-    const tempCtx = tempCanvas.getContext('2d', { alpha: true });
-    if (!tempCtx) {
-        console.error('Could not get temporary canvas context');
-        return;
+        // Create a temporary canvas
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        
+        const tempCtx = tempCanvas.getContext('2d', {
+            alpha: true,
+            willReadFrequently: true
+        });
+        
+        if (!tempCtx) {
+            throw new Error('Could not get temporary canvas context');
+        }
+
+        // Clear the temporary canvas with transparency
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        // Draw the original canvas content onto the temporary canvas
+        tempCtx.drawImage(canvas, 0, 0);
+        
+        // Convert to PNG with transparency
+        const dataURL = tempCanvas.toDataURL('image/png');
+        
+        // Create and trigger download
+        const link = document.createElement('a');
+        link.download = 'particle-system.png';
+        link.href = dataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+    } catch (error) {
+        console.error('Error exporting PNG:', error.message);
+        alert('Failed to export PNG. Please try again.');
     }
-    
-    // Clear with transparent background
-    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-    
-    // Draw the current frame
-    tempCtx.putImageData(imageData, 0, 0);
-    
-    // Convert to PNG with transparency
-    const dataURL = tempCanvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = 'particle-system.png';
-    link.href = dataURL;
-    link.click();
 }
 
 function downloadFile(content, filename, contentType) {
