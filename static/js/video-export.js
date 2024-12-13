@@ -21,11 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Start recording
 function startRecording() {
-    if (isRecording || !k) return;
+    if (isRecording || !k || !k.canvas) {
+        console.error('Cannot start recording: Canvas not ready or already recording');
+        return;
+    }
     
     isRecording = true;
     recordedFrames = [];
     recordingStartTime = Date.now();
+    
+    // Reset frame counter
+    const frameCount = document.getElementById('frameCount');
+    if (frameCount) {
+        frameCount.textContent = '0';
+    }
     
     // Update UI
     const startButton = document.getElementById('startRecordingBtn');
@@ -36,8 +45,14 @@ function startRecording() {
     if (stopButton) stopButton.disabled = false;
     if (exportControls) exportControls.style.display = 'none';
     
-    // Capture frames at specified frame rate
-    recordingInterval = setInterval(captureFrame, 1000 / FRAME_RATE);
+    // Ensure canvas is ready before starting capture
+    if (k.canvas.getContext('2d')) {
+        // Capture frames at specified frame rate
+        recordingInterval = setInterval(captureFrame, 1000 / FRAME_RATE);
+    } else {
+        console.error('Canvas context not available');
+        stopRecording();
+    }
 }
 
 // Stop recording
@@ -64,7 +79,14 @@ function stopRecording() {
 function captureFrame() {
     if (!k || !k.canvas) {
         console.error('Kaboom canvas not available');
+        stopRecording();
         return;
+    }
+    
+    // Update frame counter immediately
+    const frameCount = document.getElementById('frameCount');
+    if (frameCount) {
+        frameCount.textContent = recordedFrames.length.toString();
     }
 
     try {
@@ -116,7 +138,9 @@ function captureFrame() {
         // Update frame count display
         const frameCount = document.getElementById('frameCount');
         if (frameCount) {
-            frameCount.textContent = recordedFrames.length;
+            requestAnimationFrame(() => {
+                frameCount.textContent = recordedFrames.length.toString();
+            });
         }
     } catch (error) {
         console.error('Error capturing frame:', error);
