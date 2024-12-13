@@ -329,28 +329,78 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
     const file = e.target.files[0];
     if (!file) return;
 
+    // Validate file type
+    if (!file.type.match(/^image\/(png|jpeg|jpg)$/i)) {
+        alert('Please upload a valid PNG or JPG image file.');
+        return;
+    }
+
     try {
         const dataUrl = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
+            reader.onerror = (error) => {
+                console.error('Error reading file:', error);
+                reject(new Error('Failed to read the image file'));
+            };
             reader.readAsDataURL(file);
         });
 
-        // Load the background image
+        // Load and validate the background image
         backgroundImage = await new Promise((resolve, reject) => {
             const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = reject;
+            img.onload = () => {
+                // Check image dimensions
+                if (img.width > 4096 || img.height > 4096) {
+                    reject(new Error('Image dimensions are too large. Maximum size is 4096x4096 pixels.'));
+                    return;
+                }
+                resolve(img);
+            };
+            img.onerror = () => reject(new Error('Failed to load the image'));
             img.src = dataUrl;
         });
 
-        // Create a sprite from the background image
+        // Create a temporary canvas to handle the image with transparency
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = backgroundImage.width;
+        tempCanvas.height = backgroundImage.height;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        // Draw the image while preserving transparency
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        tempCtx.drawImage(backgroundImage, 0, 0);
+
+        // Create a sprite from the processed image
         const spriteName = 'background';
-        await k.loadSprite(spriteName, dataUrl);
+        await k.loadSprite(spriteName, tempCanvas.toDataURL('image/png'));
         backgroundSprite = spriteName;
+
+        // Update the game canvas background
+        if (k) {
+            k.setBackground(k.rgb(0, 0, 0, 0)); // Clear existing background
+            const scale = Math.min(
+                k.width() / backgroundImage.width,
+                k.height() / backgroundImage.height
+            );
+            const width = backgroundImage.width * scale;
+            const height = backgroundImage.height * scale;
+            const x = (k.width() - width) / 2;
+            const y = (k.height() - height) / 2;
+            
+            // Add background sprite to the scene
+            k.add([
+                k.sprite(backgroundSprite),
+                k.pos(x, y),
+                k.scale(scale),
+                k.z(-1), // Place behind particles
+            ]);
+        }
+
+        console.log('Background image loaded successfully');
     } catch (error) {
         console.error('Error loading background image:', error);
+        alert(error.message || 'Failed to load background image');
     }
 });
 
