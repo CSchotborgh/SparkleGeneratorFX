@@ -55,6 +55,10 @@ document.getElementById('particleLife').addEventListener('input', (e) => {
     });
 });
 
+document.getElementById('particleAcceleration').addEventListener('input', (e) => {
+    physics.acceleration = parseFloat(e.target.value);
+});
+
 document.getElementById('collisionEnabled').addEventListener('change', (e) => {
     physics.collisionEnabled = e.target.checked;
 });

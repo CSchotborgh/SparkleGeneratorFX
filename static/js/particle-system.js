@@ -14,6 +14,7 @@ const physics = {
     vortexCenter: { x: initialWidth / 2, y: initialHeight / 2 },
     particleMass: 1.0,
     particleLife: 1.0,
+    acceleration: 1.0,
     collisionEnabled: false
 };
 
@@ -111,9 +112,9 @@ class Particle {
             }
         }
         
-        // Update velocity and position
-        this.vx += this.ax / physics.particleMass;
-        this.vy += this.ay / physics.particleMass;
+        // Update velocity and position with acceleration
+        this.vx += (this.ax / physics.particleMass) * physics.acceleration;
+        this.vy += (this.ay / physics.particleMass) * physics.acceleration;
         
         this.vx *= physics.friction;
         this.vy *= physics.friction;
@@ -478,6 +479,7 @@ const presets = {
             turbulence: 0.1,
             vortexStrength: 0,
             particleMass: 1.0,
+            acceleration: 1.0,
             collisionEnabled: false
         }
     },
@@ -495,6 +497,7 @@ const presets = {
             turbulence: 0.2,
             vortexStrength: 0.2,
             particleMass: 0.5,
+            acceleration: 1.5,
             collisionEnabled: false
         }
     },
@@ -512,6 +515,7 @@ const presets = {
             turbulence: 0.05,
             vortexStrength: 0,
             particleMass: 0.8,
+            acceleration: 0.8,
             collisionEnabled: true
         }
     },
@@ -529,6 +533,7 @@ const presets = {
             turbulence: 0.02,
             vortexStrength: 0.5,
             particleMass: 1.2,
+            acceleration: 1.2,
             collisionEnabled: false
         }
     },
@@ -546,6 +551,7 @@ const presets = {
             turbulence: 0.3,
             vortexStrength: -0.1,
             particleMass: 0.7,
+            acceleration: 2.0,
             collisionEnabled: true
         }
     }
