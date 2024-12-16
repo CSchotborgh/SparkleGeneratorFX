@@ -21,7 +21,17 @@ function startTutorial() {
             {
                 element: '#physicsControls',
                 title: 'Physics Settings',
-                intro: 'Fine-tune physics parameters including gravity, wind, and particle behavior.'
+                intro: 'Fine-tune physics parameters including gravity, wind, and particle behavior.',
+                onbeforechange: function() {
+                    // Open the physics controls accordion
+                    const physicsButton = document.querySelector('button[data-bs-target="#physicsControls"]');
+                    const physicsCollapse = document.querySelector('#physicsControls');
+                    if (!physicsCollapse.classList.contains('show')) {
+                        physicsButton.click();
+                    }
+                    // Small delay to ensure accordion is open
+                    return new Promise(resolve => setTimeout(resolve, 400));
+                }
             },
             {
                 element: '#visualEffects',
