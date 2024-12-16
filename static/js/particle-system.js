@@ -410,7 +410,7 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
 // Background color handler
 document.getElementById('backgroundColor').addEventListener('input', (e) => {
     backgroundColor = e.target.value;
-    k.setBackground(hexToRgb(backgroundColor));
+    k.setBackground(k.rgb(...hexToRgb(backgroundColor)));
 });
 
 // Main game loop
