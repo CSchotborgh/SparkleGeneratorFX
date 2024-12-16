@@ -22,15 +22,26 @@ function startTutorial() {
                 element: '#physicsControls',
                 title: 'Physics Settings',
                 intro: 'Fine-tune physics parameters including gravity, wind, and particle behavior.',
+                position: 'right',
                 onbeforechange: function() {
-                    // Open the physics controls accordion
-                    const physicsButton = document.querySelector('button[data-bs-target="#physicsControls"]');
-                    const physicsCollapse = document.querySelector('#physicsControls');
-                    if (!physicsCollapse.classList.contains('show')) {
-                        physicsButton.click();
-                    }
-                    // Small delay to ensure accordion is open
-                    return new Promise(resolve => setTimeout(resolve, 400));
+                    return new Promise(resolve => {
+                        // Open the physics controls accordion
+                        const physicsButton = document.querySelector('button[data-bs-target="#physicsControls"]');
+                        const physicsCollapse = document.querySelector('#physicsControls');
+                        
+                        if (!physicsCollapse.classList.contains('show')) {
+                            physicsButton.click();
+                            // Wait for the accordion animation to complete
+                            setTimeout(() => {
+                                // Ensure the element is in view
+                                physicsCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                // Additional delay to ensure everything is ready
+                                setTimeout(resolve, 600);
+                            }, 400);
+                        } else {
+                            resolve();
+                        }
+                    });
                 }
             },
             {
