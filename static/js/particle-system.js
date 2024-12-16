@@ -601,7 +601,9 @@ document.getElementById('trailFade').addEventListener('change', (e) => {
 
 // Helper function to draw particle trail
 function drawParticleTrail(particle) {
-    if (particle.trail.length < 2) return;
+    if (!particle.trail || particle.trail.length < 2) return;
+    
+    const rgb = particle.color ? hexToRgb(particle.color) : [255, 255, 255];
     
     for (let i = 1; i < particle.trail.length; i++) {
         const start = particle.trail[i - 1];
@@ -612,12 +614,7 @@ function drawParticleTrail(particle) {
             p1: k.vec2(start.x, start.y),
             p2: k.vec2(end.x, end.y),
             width: trailWidth,
-            color: k.rgb(
-                particle.rgb[0],
-                particle.rgb[1],
-                particle.rgb[2],
-                opacity
-            ),
+            color: k.rgb(rgb[0], rgb[1], rgb[2], opacity)
         });
     }
 }
