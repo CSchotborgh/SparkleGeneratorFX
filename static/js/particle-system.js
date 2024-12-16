@@ -350,7 +350,7 @@ function drawTrajectory(predictions) {
     k.drawLines({
         pts: predictions.map(p => k.vec2(p.x, p.y)),
         width: 1,
-        color: k.rgba(255, 255, 255, 0.3),
+        color: k.rgb(255, 255, 255, { a: 0.3 }),
         z: 0
     });
 }
