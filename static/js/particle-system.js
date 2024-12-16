@@ -28,7 +28,7 @@ const k = kaboom({
     canvas: document.getElementById("gameCanvas"),
     width: initialWidth,
     height: initialHeight,
-    background: [0, 0, 0],
+    background: [46, 204, 113], // Green theme color (#2ecc71)
 });
 
 // Particle system configuration
