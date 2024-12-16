@@ -581,7 +581,47 @@ k.onUpdate(() => {
 
     // Update and draw particles
     particles.forEach(particle => {
-// Helper function to convert HSV to RGB
+// Trail configuration
+let trailWidth = 3;
+let trailOpacity = 0.5;
+let trailFade = true;
+
+// Event listeners for trail controls
+document.getElementById('trailWidth').addEventListener('input', (e) => {
+    trailWidth = parseInt(e.target.value);
+});
+
+document.getElementById('trailOpacity').addEventListener('input', (e) => {
+    trailOpacity = parseInt(e.target.value) / 100;
+});
+
+document.getElementById('trailFade').addEventListener('change', (e) => {
+    trailFade = e.target.checked;
+});
+
+// Helper function to draw particle trail
+function drawParticleTrail(particle) {
+    if (particle.trail.length < 2) return;
+    
+    const ctx = k.canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(particle.trail[0].x, particle.trail[0].y);
+    
+    for (let i = 1; i < particle.trail.length; i++) {
+        const point = particle.trail[i];
+        ctx.lineTo(point.x, point.y);
+    }
+    
+    ctx.strokeStyle = `rgba(${particle.rgb.join(',')}, ${trailFade ? 
+        trailOpacity * (i / particle.trail.length) : 
+        trailOpacity})`;
+    ctx.lineWidth = trailWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+}
+
+// Helper functions for color conversion
 function HSVtoRGB(h, s, v) {
     let r, g, b;
     const i = Math.floor(h * 6);
@@ -606,8 +646,18 @@ function HSVtoRGB(h, s, v) {
     ];
 }
 
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+    ] : [255, 255, 255];
+}
+
         particle.update();
-        particle.draw();
+        drawParticleTrail(particle);  // Draw trail first
+        particle.draw();  // Draw particle on top
         
         // Draw trajectory for hovered particle
         if (particle === hoveredParticle) {
@@ -618,16 +668,6 @@ function HSVtoRGB(h, s, v) {
 
     // Emitter visualization removed while maintaining functionality
 });
-
-// Helper function to convert hex to RGB
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16)
-    ] : [255, 255, 255];
-}
 
 // Preset configurations
 const presets = {
