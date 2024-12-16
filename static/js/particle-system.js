@@ -2,6 +2,9 @@
 const initialWidth = window.innerWidth * 0.75;
 const initialHeight = window.innerHeight;
 
+// Background configuration
+let backgroundColor = "#2ecc71"; // Default green background
+
 // Physics parameters
 const physics = {
     gravity: 0.1,
@@ -28,7 +31,7 @@ const k = kaboom({
     canvas: document.getElementById("gameCanvas"),
     width: initialWidth,
     height: initialHeight,
-    background: [46, 204, 113], // Green theme color (#2ecc71)
+    background: hexToRgb(backgroundColor),
 });
 
 // Particle system configuration
@@ -404,16 +407,17 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
     }
 });
 
+// Background color handler
+document.getElementById('backgroundColor').addEventListener('input', (e) => {
+    backgroundColor = e.target.value;
+    k.setBackground(hexToRgb(backgroundColor));
+});
+
 // Main game loop
 k.onUpdate(() => {
-    // Clear canvas with transparent background
-    k.setBackground(k.rgb(0, 0, 0, 0));
-    k.drawRect({
-        pos: k.vec2(0, 0),
-        width: k.width(),
-        height: k.height(),
-        color: k.rgb(0, 0, 0, 0)
-    });
+    // Set the background color
+    const [r, g, b] = hexToRgb(backgroundColor);
+    k.setBackground(k.rgb(r, g, b));
 
     // Draw background if available
     if (backgroundSprite && backgroundImage) {
