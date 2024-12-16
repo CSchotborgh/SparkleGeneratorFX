@@ -312,6 +312,48 @@ class Emitter {
 }
 
 // Create emitter instance
+// Trajectory prediction
+function predictTrajectory(particle, steps = 20) {
+    const predictions = [];
+    const simulatedParticle = { ...particle };
+    
+    for (let i = 0; i < steps; i++) {
+        // Apply physics to simulated particle
+        simulatedParticle.vx += (physics.wind - (simulatedParticle.vx * physics.airResistance)) * physics.acceleration;
+        simulatedParticle.vy += (physics.gravity - (simulatedParticle.vy * physics.airResistance)) * physics.acceleration;
+        
+        // Add turbulence
+        simulatedParticle.vx += (Math.random() - 0.5) * physics.turbulence;
+        simulatedParticle.vy += (Math.random() - 0.5) * physics.turbulence;
+        
+        // Update position
+        simulatedParticle.x += simulatedParticle.vx;
+        simulatedParticle.y += simulatedParticle.vy;
+        
+        // Store prediction
+        predictions.push({ x: simulatedParticle.x, y: simulatedParticle.y });
+        
+        // Check for bounds collision
+        if (simulatedParticle.x < 0 || simulatedParticle.x > k.width() ||
+            simulatedParticle.y < 0 || simulatedParticle.y > k.height()) {
+            break;
+        }
+    }
+    
+    return predictions;
+}
+
+// Draw trajectory prediction
+function drawTrajectory(predictions) {
+    if (predictions.length < 2) return;
+    
+    k.drawLines({
+        pts: predictions.map(p => k.vec2(p.x, p.y)),
+        width: 1,
+        color: k.rgba(255, 255, 255, 0.3),
+        z: 0
+    });
+}
 // Tooltip handling
 const tooltip = document.getElementById('particleTooltip');
 let hoveredParticle = null;
@@ -338,6 +380,10 @@ function updateTooltip(e) {
             `${(hoveredParticle.life * 100).toFixed(0)}%`;
         document.getElementById('particleSize').textContent = 
             hoveredParticle.size.toFixed(1);
+        
+        // Calculate and draw trajectory prediction
+        const predictions = predictTrajectory(hoveredParticle);
+        drawTrajectory(predictions);
         
         // Position tooltip
         tooltip.style.display = 'block';
@@ -522,6 +568,12 @@ k.onUpdate(() => {
     particles.forEach(particle => {
         particle.update();
         particle.draw();
+        
+        // Draw trajectory for hovered particle
+        if (particle === hoveredParticle) {
+            const predictions = predictTrajectory(particle);
+            drawTrajectory(predictions);
+        }
     });
 
     // Emitter visualization removed while maintaining functionality
