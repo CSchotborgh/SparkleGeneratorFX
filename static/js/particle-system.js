@@ -48,8 +48,13 @@ let config = {
 // Particle class
 class Particle {
     constructor() {
+        this.startColor = hexToRgb(config.color);
+        this.endColor = hexToRgb("#ff0000"); // End color for transition
         this.trail = [];
         this.trailLength = config.trailLength || 10;
+        this.life = 1.0; // Full life
+        this.colorTransitionSpeed = 0.01; // Speed of color transition
+        this.colorPosition = 0; // Position in color spectrum
         this.reset();
     }
 
@@ -194,6 +199,7 @@ class Particle {
             const point = this.trail[i];
             const opacity = (1 - i / this.trail.length) * this.life * 0.5;
             const trailSize = this.size * (1 - i / this.trail.length);
+            const interpolatedColor = this.interpolateColor(this.life);
             
             if (this.sprite) {
                 const scale = (trailSize / (this.originalSize || 20)) * 2;
@@ -202,26 +208,27 @@ class Particle {
                     pos: k.vec2(point.x, point.y),
                     scale: k.vec2(scale, scale),
                     angle: point.angle,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
+                    color: k.rgb(...interpolatedColor, opacity),
                     anchor: "center",
                 });
             } else {
                 k.drawCircle({
                     pos: k.vec2(point.x, point.y),
                     radius: trailSize,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
+                    color: k.rgb(...interpolatedColor, opacity),
                 });
             }
         }
 
         // Draw current particle
+        const interpolatedColor = this.interpolateColor(this.life);
         if (this.sprite) {
             k.drawSprite({
                 sprite: this.sprite,
                 pos: k.vec2(this.x, this.y),
                 scale: k.vec2(this.size / 20),
                 angle: this.angle,
-                color: k.rgb(...hexToRgb(config.color), this.life),
+                color: k.rgb(...interpolatedColor, this.life),
                 anchor: "center",
                 z: 1, // Set z-index to 1 to ensure particles are above background
             });
@@ -229,9 +236,17 @@ class Particle {
             k.drawCircle({
                 pos: k.vec2(this.x, this.y),
                 radius: this.size,
-                color: k.rgb(...hexToRgb(config.color), this.life),
+                color: k.rgb(...interpolatedColor, this.life),
             });
         }
+    }
+
+    interpolateColor(life) {
+        this.colorPosition = Math.min(1, this.colorPosition + this.colorTransitionSpeed * (1-life)); // Adjust color position based on life and speed
+        const r = this.startColor[0] + (this.endColor[0] - this.startColor[0]) * this.colorPosition;
+        const g = this.startColor[1] + (this.endColor[1] - this.startColor[1]) * this.colorPosition;
+        const b = this.startColor[2] + (this.endColor[2] - this.startColor[2]) * this.colorPosition;
+        return [r, g, b];
     }
 }
 
@@ -566,6 +581,31 @@ k.onUpdate(() => {
 
     // Update and draw particles
     particles.forEach(particle => {
+// Helper function to convert HSV to RGB
+function HSVtoRGB(h, s, v) {
+    let r, g, b;
+    const i = Math.floor(h * 6);
+    const f = h * 6 - i;
+    const p = v * (1 - s);
+    const q = v * (1 - f * s);
+    const t = v * (1 - (1 - f) * s);
+
+    switch (i % 6) {
+        case 0: r = v; g = t; b = p; break;
+        case 1: r = q; g = v; b = p; break;
+        case 2: r = p; g = v; b = t; break;
+        case 3: r = p; g = q; b = v; break;
+        case 4: r = t; g = p; b = v; break;
+        case 5: r = v; g = p; b = q; break;
+    }
+
+    return [
+        Math.round(r * 255),
+        Math.round(g * 255),
+        Math.round(b * 255)
+    ];
+}
+
         particle.update();
         particle.draw();
         
@@ -715,3 +755,36 @@ window.addEventListener('resize', () => {
         }));
     });
 });
+
+// Helper function to convert hex to RGB
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+    ] : [255, 255, 255];
+}
+
+
+// Helper function to convert HSV to RGB
+function HSVtoRGB(h, s, v) {
+    let r, g, b;
+
+    const i = Math.floor(h / 60);
+    const f = h / 60 - i;
+    const p = v * (1 - s);
+    const q = v * (1 - f * s);
+    const t = v * (1 - (1 - f) * s);
+
+    switch (i) {
+        case 0: r = v; g = t; b = p; break;
+        case 1: r = q; g = v; b = p; break;
+        case 2: r = p; g = v; b = t; break;
+        case 3: r = p; g = q; b = v; break;
+        case 4: r = t; g = p; b = v; break;
+        case 5: r = v; g = p; b = q; break;
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
