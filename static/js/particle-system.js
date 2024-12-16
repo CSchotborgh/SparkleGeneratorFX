@@ -421,9 +421,37 @@ k.onUpdate(() => {
 
     // Draw background if available
     if (backgroundSprite && backgroundImage) {
-        const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-        const width = backgroundImage.width * scale;
-        const height = backgroundImage.height * scale;
+        // Calculate scale to cover the entire canvas while maintaining aspect ratio
+        const canvasRatio = k.width() / k.height();
+        const imageRatio = backgroundImage.width / backgroundImage.height;
+        
+        let scale, width, height;
+        
+        if (canvasRatio > imageRatio) {
+            // Canvas is wider than image ratio - scale based on width
+            width = k.width();
+            scale = width / backgroundImage.width;
+            height = backgroundImage.height * scale;
+            if (height < k.height()) {
+                // If height is too small, scale based on height instead
+                height = k.height();
+                scale = height / backgroundImage.height;
+                width = backgroundImage.width * scale;
+            }
+        } else {
+            // Canvas is taller than image ratio - scale based on height
+            height = k.height();
+            scale = height / backgroundImage.height;
+            width = backgroundImage.width * scale;
+            if (width < k.width()) {
+                // If width is too small, scale based on width instead
+                width = k.width();
+                scale = width / backgroundImage.width;
+                height = backgroundImage.height * scale;
+            }
+        }
+        
+        // Center the image
         const x = (k.width() - width) / 2;
         const y = (k.height() - height) / 2;
 
