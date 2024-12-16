@@ -48,13 +48,8 @@ let config = {
 // Particle class
 class Particle {
     constructor() {
-        this.startColor = hexToRgb(config.color);
-        this.endColor = hexToRgb("#ff0000"); // End color for transition
         this.trail = [];
         this.trailLength = config.trailLength || 10;
-        this.life = 1.0; // Full life
-        this.colorTransitionSpeed = 0.01; // Speed of color transition
-        this.colorPosition = 0; // Position in color spectrum
         this.reset();
     }
 
@@ -199,7 +194,6 @@ class Particle {
             const point = this.trail[i];
             const opacity = (1 - i / this.trail.length) * this.life * 0.5;
             const trailSize = this.size * (1 - i / this.trail.length);
-            const interpolatedColor = this.interpolateColor(this.life);
             
             if (this.sprite) {
                 const scale = (trailSize / (this.originalSize || 20)) * 2;
@@ -208,27 +202,26 @@ class Particle {
                     pos: k.vec2(point.x, point.y),
                     scale: k.vec2(scale, scale),
                     angle: point.angle,
-                    color: k.rgb(...interpolatedColor, opacity),
+                    color: k.rgb(...hexToRgb(config.color), opacity),
                     anchor: "center",
                 });
             } else {
                 k.drawCircle({
                     pos: k.vec2(point.x, point.y),
                     radius: trailSize,
-                    color: k.rgb(...interpolatedColor, opacity),
+                    color: k.rgb(...hexToRgb(config.color), opacity),
                 });
             }
         }
 
         // Draw current particle
-        const interpolatedColor = this.interpolateColor(this.life);
         if (this.sprite) {
             k.drawSprite({
                 sprite: this.sprite,
                 pos: k.vec2(this.x, this.y),
                 scale: k.vec2(this.size / 20),
                 angle: this.angle,
-                color: k.rgb(...interpolatedColor, this.life),
+                color: k.rgb(...hexToRgb(config.color), this.life),
                 anchor: "center",
                 z: 1, // Set z-index to 1 to ensure particles are above background
             });
@@ -236,17 +229,9 @@ class Particle {
             k.drawCircle({
                 pos: k.vec2(this.x, this.y),
                 radius: this.size,
-                color: k.rgb(...interpolatedColor, this.life),
+                color: k.rgb(...hexToRgb(config.color), this.life),
             });
         }
-    }
-
-    interpolateColor(life) {
-        this.colorPosition = Math.min(1, this.colorPosition + this.colorTransitionSpeed * (1-life)); // Adjust color position based on life and speed
-        const r = this.startColor[0] + (this.endColor[0] - this.startColor[0]) * this.colorPosition;
-        const g = this.startColor[1] + (this.endColor[1] - this.startColor[1]) * this.colorPosition;
-        const b = this.startColor[2] + (this.endColor[2] - this.startColor[2]) * this.colorPosition;
-        return [r, g, b];
     }
 }
 
@@ -327,94 +312,6 @@ class Emitter {
 }
 
 // Create emitter instance
-// Trajectory prediction
-function predictTrajectory(particle, steps = 20) {
-    const predictions = [];
-    const simulatedParticle = { ...particle };
-    
-    for (let i = 0; i < steps; i++) {
-        // Apply physics to simulated particle
-        simulatedParticle.vx += (physics.wind - (simulatedParticle.vx * physics.airResistance)) * physics.acceleration;
-        simulatedParticle.vy += (physics.gravity - (simulatedParticle.vy * physics.airResistance)) * physics.acceleration;
-        
-        // Add turbulence
-        simulatedParticle.vx += (Math.random() - 0.5) * physics.turbulence;
-        simulatedParticle.vy += (Math.random() - 0.5) * physics.turbulence;
-        
-        // Update position
-        simulatedParticle.x += simulatedParticle.vx;
-        simulatedParticle.y += simulatedParticle.vy;
-        
-        // Store prediction
-        predictions.push({ x: simulatedParticle.x, y: simulatedParticle.y });
-        
-        // Check for bounds collision
-        if (simulatedParticle.x < 0 || simulatedParticle.x > k.width() ||
-            simulatedParticle.y < 0 || simulatedParticle.y > k.height()) {
-            break;
-        }
-    }
-    
-    return predictions;
-}
-
-// Draw trajectory prediction
-function drawTrajectory(predictions) {
-    if (predictions.length < 2) return;
-    
-    k.drawLines({
-        pts: predictions.map(p => k.vec2(p.x, p.y)),
-        width: 1,
-        color: k.rgb(255, 255, 255, { a: 0.3 }),
-        z: 0
-    });
-}
-// Tooltip handling
-const tooltip = document.getElementById('particleTooltip');
-let hoveredParticle = null;
-
-function updateTooltip(e) {
-    const rect = k.canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    // Find particle under cursor
-    hoveredParticle = particles.find(p => {
-        const dx = p.x - mouseX;
-        const dy = p.y - mouseY;
-        return Math.sqrt(dx * dx + dy * dy) < p.size;
-    });
-    
-    if (hoveredParticle) {
-        // Update tooltip content
-        document.getElementById('particleSpeed').textContent = 
-            Math.sqrt(hoveredParticle.vx * hoveredParticle.vx + hoveredParticle.vy * hoveredParticle.vy).toFixed(2);
-        document.getElementById('particlePosition').textContent = 
-            `${Math.round(hoveredParticle.x)}, ${Math.round(hoveredParticle.y)}`;
-        document.getElementById('particleLife').textContent = 
-            `${(hoveredParticle.life * 100).toFixed(0)}%`;
-        document.getElementById('particleSize').textContent = 
-            hoveredParticle.size.toFixed(1);
-        
-        // Calculate and draw trajectory prediction
-        const predictions = predictTrajectory(hoveredParticle);
-        drawTrajectory(predictions);
-        
-        // Position tooltip
-        tooltip.style.display = 'block';
-        tooltip.style.left = `${e.clientX + 10}px`;
-        tooltip.style.top = `${e.clientY + 10}px`;
-    } else {
-        tooltip.style.display = 'none';
-    }
-}
-
-// Add mousemove event listener for tooltip
-k.canvas.addEventListener('mousemove', updateTooltip);
-k.canvas.addEventListener('mouseleave', () => {
-    tooltip.style.display = 'none';
-    hoveredParticle = null;
-});
 const emitter = new Emitter();
 
 // Event listeners for drag and burst effects
@@ -581,73 +478,14 @@ k.onUpdate(() => {
 
     // Update and draw particles
     particles.forEach(particle => {
-// Trail configuration
-let trailWidth = 3;
-let trailOpacity = 0.5;
-let trailFade = true;
+        particle.update();
+        particle.draw();
+    });
 
-// Event listeners for trail controls
-document.getElementById('trailWidth').addEventListener('input', (e) => {
-    trailWidth = parseInt(e.target.value);
+    // Emitter visualization removed while maintaining functionality
 });
 
-document.getElementById('trailOpacity').addEventListener('input', (e) => {
-    trailOpacity = parseInt(e.target.value) / 100;
-});
-
-document.getElementById('trailFade').addEventListener('change', (e) => {
-    trailFade = e.target.checked;
-});
-
-// Helper function to draw particle trail
-function drawParticleTrail(particle) {
-    if (!particle.trail || particle.trail.length < 2) return;
-    
-    // Default to white if no color is specified
-    let rgb = [255, 255, 255];
-    if (particle.color && typeof particle.color === 'string') {
-        rgb = hexToRgb(particle.color);
-    }
-    
-    for (let i = 1; i < particle.trail.length; i++) {
-        const start = particle.trail[i - 1];
-        const end = particle.trail[i];
-        const opacity = trailFade ? trailOpacity * (i / particle.trail.length) : trailOpacity;
-        
-        k.drawLine({
-            p1: k.vec2(start.x, start.y),
-            p2: k.vec2(end.x, end.y),
-            width: trailWidth,
-            color: k.rgb(rgb[0], rgb[1], rgb[2], opacity)
-        });
-    }
-}
-
-// Helper functions for color conversion
-function HSVtoRGB(h, s, v) {
-    let r, g, b;
-    const i = Math.floor(h * 6);
-    const f = h * 6 - i;
-    const p = v * (1 - s);
-    const q = v * (1 - f * s);
-    const t = v * (1 - (1 - f) * s);
-
-    switch (i % 6) {
-        case 0: r = v; g = t; b = p; break;
-        case 1: r = q; g = v; b = p; break;
-        case 2: r = p; g = v; b = t; break;
-        case 3: r = p; g = q; b = v; break;
-        case 4: r = t; g = p; b = v; break;
-        case 5: r = v; g = p; b = q; break;
-    }
-
-    return [
-        Math.round(r * 255),
-        Math.round(g * 255),
-        Math.round(b * 255)
-    ];
-}
-
+// Helper function to convert hex to RGB
 function hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? [
@@ -656,20 +494,6 @@ function hexToRgb(hex) {
         parseInt(result[3], 16)
     ] : [255, 255, 255];
 }
-
-        particle.update();
-        drawParticleTrail(particle);  // Draw trail first
-        particle.draw();  // Draw particle on top
-        
-        // Draw trajectory for hovered particle if enabled
-        if (particle === hoveredParticle && document.getElementById('showTrajectory').checked) {
-            const predictions = predictTrajectory(particle);
-            drawTrajectory(predictions);
-        }
-    });
-
-    // Emitter visualization removed while maintaining functionality
-});
 
 // Preset configurations
 const presets = {
@@ -797,36 +621,3 @@ window.addEventListener('resize', () => {
         }));
     });
 });
-
-// Helper function to convert hex to RGB
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16)
-    ] : [255, 255, 255];
-}
-
-
-// Helper function to convert HSV to RGB
-function HSVtoRGB(h, s, v) {
-    let r, g, b;
-
-    const i = Math.floor(h / 60);
-    const f = h / 60 - i;
-    const p = v * (1 - s);
-    const q = v * (1 - f * s);
-    const t = v * (1 - (1 - f) * s);
-
-    switch (i) {
-        case 0: r = v; g = t; b = p; break;
-        case 1: r = q; g = v; b = p; break;
-        case 2: r = p; g = v; b = t; break;
-        case 3: r = p; g = q; b = v; break;
-        case 4: r = t; g = p; b = v; break;
-        case 5: r = v; g = p; b = q; break;
-    }
-
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-}

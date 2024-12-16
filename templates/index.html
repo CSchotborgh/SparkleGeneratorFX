@@ -75,18 +75,6 @@
 
         <div class="row">
             <div class="col-md-9">
-            <!-- Particle Info Tooltip -->
-            <div id="particleTooltip" class="particle-tooltip" style="display: none;">
-                <div class="tooltip-content">
-                    <div class="tooltip-header">Particle Info</div>
-                    <div class="tooltip-body">
-                        <div class="info-row"><span>Speed:</span> <span id="particleSpeed">0</span></div>
-                        <div class="info-row"><span>Position:</span> <span id="particlePosition">0, 0</span></div>
-                        <div class="info-row"><span>Life:</span> <span id="particleLife">100%</span></div>
-                        <div class="info-row"><span>Size:</span> <span id="particleSize">5</span></div>
-                    </div>
-                </div>
-            </div>
                 <canvas id="gameCanvas"></canvas>
             </div>
             <div class="col-md-3">
@@ -196,29 +184,9 @@
                                         <input type="range" class="form-range" id="trailLength" min="0" max="30" value="10">
                                     </div>
                                     <div class="control-group">
-                                        <label for="trailWidth">Trail Width</label>
-                                        <input type="range" class="form-range" id="trailWidth" min="1" max="10" value="3">
-                                    </div>
-                                    <div class="control-group">
-                                        <label for="trailOpacity">Trail Opacity</label>
-                                        <input type="range" class="form-range" id="trailOpacity" min="0" max="100" value="50">
-                                    </div>
-                                    <div class="control-group">
-                                        <label for="trailFade">Trail Fade</label>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="trailFade" checked>
-                                        </div>
-                                    </div>
-                                    <div class="control-group">
                                         <label for="reverseTrail">Reverse Trail</label>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="reverseTrail">
-                                        </div>
-                                    </div>
-                                    <div class="control-group">
-                                        <label for="showTrajectory">Show Trajectory</label>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="showTrajectory">
                                         </div>
                                     </div>
                                 </div>
