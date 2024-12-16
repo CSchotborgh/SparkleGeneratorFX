@@ -603,7 +603,11 @@ document.getElementById('trailFade').addEventListener('change', (e) => {
 function drawParticleTrail(particle) {
     if (!particle.trail || particle.trail.length < 2) return;
     
-    const rgb = particle.color ? hexToRgb(particle.color) : [255, 255, 255];
+    // Default to white if no color is specified
+    let rgb = [255, 255, 255];
+    if (particle.color && typeof particle.color === 'string') {
+        rgb = hexToRgb(particle.color);
+    }
     
     for (let i = 1; i < particle.trail.length; i++) {
         const start = particle.trail[i - 1];
@@ -611,10 +615,10 @@ function drawParticleTrail(particle) {
         const opacity = trailFade ? trailOpacity * (i / particle.trail.length) : trailOpacity;
         
         k.drawLine({
-            p1: k.vec2(start.x, start.y),
-            p2: k.vec2(end.x, end.y),
+            p1: vec2(start.x, start.y),
+            p2: vec2(end.x, end.y),
             width: trailWidth,
-            color: k.rgb(rgb[0], rgb[1], rgb[2], opacity)
+            color: rgb.concat(opacity)
         });
     }
 }
