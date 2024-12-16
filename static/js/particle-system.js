@@ -615,10 +615,10 @@ function drawParticleTrail(particle) {
         const opacity = trailFade ? trailOpacity * (i / particle.trail.length) : trailOpacity;
         
         k.drawLine({
-            p1: vec2(start.x, start.y),
-            p2: vec2(end.x, end.y),
+            p1: k.vec2(start.x, start.y),
+            p2: k.vec2(end.x, end.y),
             width: trailWidth,
-            color: rgb.concat(opacity)
+            color: k.rgb(rgb[0], rgb[1], rgb[2], opacity)
         });
     }
 }
