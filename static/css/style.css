@@ -157,15 +157,15 @@ h3, h4 {
     padding: 0.25rem 0.75rem;
     font-weight: 400;
     transition: all 0.3s ease;
-    background-color: #4a90e2;
+    background-color: #2ecc71;
     border: none;
     color: white;
 }
 
 .top-nav-container .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
-    background-color: #357abd;
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    background-color: #27ae60;
 }
 
 /* Tutorial Styles */
@@ -219,7 +219,7 @@ h3, h4 {
 }
 
 .modal-title {
-    color: #4a90e2;
+    color: #2ecc71;
 }
 
 .modal-body {
@@ -227,10 +227,10 @@ h3, h4 {
 }
 
 .modal-body .welcome-section {
-    background-color: rgba(74, 144, 226, 0.1);
+    background-color: rgba(46, 204, 113, 0.1);
     padding: 1rem;
     border-radius: 4px;
-    border-left: 3px solid #4a90e2;
+    border-left: 3px solid #2ecc71;
 }
 
 .modal-body .welcome-section h5 {
