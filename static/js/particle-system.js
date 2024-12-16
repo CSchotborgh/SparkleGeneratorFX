@@ -312,6 +312,48 @@ class Emitter {
 }
 
 // Create emitter instance
+// Tooltip handling
+const tooltip = document.getElementById('particleTooltip');
+let hoveredParticle = null;
+
+function updateTooltip(e) {
+    const rect = k.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Find particle under cursor
+    hoveredParticle = particles.find(p => {
+        const dx = p.x - mouseX;
+        const dy = p.y - mouseY;
+        return Math.sqrt(dx * dx + dy * dy) < p.size;
+    });
+    
+    if (hoveredParticle) {
+        // Update tooltip content
+        document.getElementById('particleSpeed').textContent = 
+            Math.sqrt(hoveredParticle.vx * hoveredParticle.vx + hoveredParticle.vy * hoveredParticle.vy).toFixed(2);
+        document.getElementById('particlePosition').textContent = 
+            `${Math.round(hoveredParticle.x)}, ${Math.round(hoveredParticle.y)}`;
+        document.getElementById('particleLife').textContent = 
+            `${(hoveredParticle.life * 100).toFixed(0)}%`;
+        document.getElementById('particleSize').textContent = 
+            hoveredParticle.size.toFixed(1);
+        
+        // Position tooltip
+        tooltip.style.display = 'block';
+        tooltip.style.left = `${e.clientX + 10}px`;
+        tooltip.style.top = `${e.clientY + 10}px`;
+    } else {
+        tooltip.style.display = 'none';
+    }
+}
+
+// Add mousemove event listener for tooltip
+k.canvas.addEventListener('mousemove', updateTooltip);
+k.canvas.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+    hoveredParticle = null;
+});
 const emitter = new Emitter();
 
 // Event listeners for drag and burst effects
