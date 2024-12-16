@@ -157,16 +157,15 @@ h3, h4 {
     padding: 0.25rem 0.75rem;
     font-weight: 400;
     transition: all 0.3s ease;
-    background: linear-gradient(45deg, #4a90e2, #67b26f);
+    background-color: #4a90e2;
     border: none;
     color: white;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .top-nav-container .btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
-    background: linear-gradient(45deg, #67b26f, #4a90e2);
+    background-color: #357abd;
 }
 
 /* Tutorial Styles */
