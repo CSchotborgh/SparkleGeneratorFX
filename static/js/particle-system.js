@@ -657,8 +657,8 @@ function hexToRgb(hex) {
         drawParticleTrail(particle);  // Draw trail first
         particle.draw();  // Draw particle on top
         
-        // Draw trajectory for hovered particle
-        if (particle === hoveredParticle) {
+        // Draw trajectory for hovered particle if enabled
+        if (particle === hoveredParticle && document.getElementById('showTrajectory').checked) {
             const predictions = predictTrajectory(particle);
             drawTrajectory(predictions);
         }
