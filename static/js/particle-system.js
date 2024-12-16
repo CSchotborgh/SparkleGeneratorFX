@@ -603,22 +603,23 @@ document.getElementById('trailFade').addEventListener('change', (e) => {
 function drawParticleTrail(particle) {
     if (particle.trail.length < 2) return;
     
-    const ctx = k.canvas.getContext('2d');
-    ctx.beginPath();
-    ctx.moveTo(particle.trail[0].x, particle.trail[0].y);
-    
     for (let i = 1; i < particle.trail.length; i++) {
-        const point = particle.trail[i];
-        ctx.lineTo(point.x, point.y);
+        const start = particle.trail[i - 1];
+        const end = particle.trail[i];
+        const opacity = trailFade ? trailOpacity * (i / particle.trail.length) : trailOpacity;
+        
+        k.drawLine({
+            p1: k.vec2(start.x, start.y),
+            p2: k.vec2(end.x, end.y),
+            width: trailWidth,
+            color: k.rgb(
+                particle.rgb[0],
+                particle.rgb[1],
+                particle.rgb[2],
+                opacity
+            ),
+        });
     }
-    
-    ctx.strokeStyle = `rgba(${particle.rgb.join(',')}, ${trailFade ? 
-        trailOpacity * (i / particle.trail.length) : 
-        trailOpacity})`;
-    ctx.lineWidth = trailWidth;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
 }
 
 // Helper functions for color conversion
