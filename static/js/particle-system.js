@@ -3,7 +3,7 @@ const initialWidth = window.innerWidth * 0.75;
 const initialHeight = window.innerHeight;
 
 // Background configuration
-let backgroundColor = "#2ecc71"; // Default green background
+let backgroundColor = "#2ecc71"; // Default green background matching UI theme
 
 // Physics parameters
 const physics = {
