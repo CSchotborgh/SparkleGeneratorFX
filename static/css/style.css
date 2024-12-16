@@ -150,7 +150,20 @@ h3, h4 {
     left: 1rem;
     z-index: 1000;
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem;
+}
+
+.top-nav-container .btn {
+    min-width: 180px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.top-nav-container .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Tutorial Styles */
