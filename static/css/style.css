@@ -381,21 +381,21 @@ h3, h4 {
 
 #particlePanel {
     top: 20px;
-    left: calc(20px + clamp(250px, 20vw, 400px) + 10px);
+    left: calc(20px + clamp(250px, 20vw, 400px));
 }
 
 #speedPanel {
-    top: calc(20px + clamp(150px, 15vh, 200px) + 10px);
+    top: calc(20px + clamp(150px, 15vh, 200px));
     left: 20px;
 }
 
 #memoryPanel {
-    top: calc(20px + clamp(150px, 15vh, 200px) + 10px);
-    left: calc(20px + clamp(250px, 20vw, 400px) + 10px);
+    top: calc(20px + clamp(150px, 15vh, 200px));
+    left: calc(20px + clamp(250px, 20vw, 400px));
 }
 
 #positionPanel {
-    top: calc(20px + 2 * (clamp(150px, 15vh, 200px) + 10px));
+    top: calc(20px + 2 * clamp(150px, 15vh, 200px));
     left: 20px;
 }
 
