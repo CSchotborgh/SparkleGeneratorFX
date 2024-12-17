@@ -57,9 +57,9 @@ function startTutorial() {
                 position: 'right'
             },
             {
-                element: '#physicsControls',
-                title: 'Advanced Physics',
-                intro: 'Welcome to the physics control center! Here you can fine-tune gravity, wind, bounce, friction, and more to create unique particle behaviors.',
+                element: '#turbulence',
+                title: 'Physics Parameters',
+                intro: 'Experiment with turbulence, air resistance, and vortex effects to create dynamic movement patterns.',
                 position: 'right',
                 onbeforechange: function() {
                     return new Promise(resolve => {
@@ -79,9 +79,9 @@ function startTutorial() {
                 }
             },
             {
-                element: '#turbulence',
-                title: 'Physics Parameters',
-                intro: 'Experiment with turbulence, air resistance, and vortex effects to create dynamic movement patterns.',
+                element: '#physicsControls',
+                title: 'Advanced Physics',
+                intro: 'Welcome to the physics control center! Here you can fine-tune gravity, wind, bounce, friction, and more to create unique particle behaviors.',
                 position: 'right'
             },
             {
@@ -103,9 +103,9 @@ function startTutorial() {
                 position: 'right'
             },
             {
-                element: '#visualEffects',
-                title: 'Visual Effects',
-                intro: 'Enter the visual customization zone! Here you can transform the appearance of your particles.',
+                element: '#particleColor',
+                title: 'Color Selection',
+                intro: 'Choose the perfect color for your particles to match your creative vision.',
                 position: 'right',
                 onbeforechange: function() {
                     return new Promise(resolve => {
@@ -125,9 +125,9 @@ function startTutorial() {
                 }
             },
             {
-                element: '#particleColor',
-                title: 'Color Selection',
-                intro: 'Choose the perfect color for your particles to match your creative vision.',
+                element: '#visualEffects',
+                title: 'Visual Effects',
+                intro: 'Enter the visual customization zone! Here you can transform the appearance of your particles.',
                 position: 'right'
             },
             {
