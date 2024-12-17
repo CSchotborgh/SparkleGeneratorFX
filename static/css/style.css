@@ -355,8 +355,8 @@ h3, h4 {
     color: #fff;
     font-size: 14px;
     z-index: 1000;
-    width: min(400px, 90vw);
-    min-height: min-content;
+    width: clamp(300px, 40vw, 600px);
+    max-height: calc(100vh - 40px);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     cursor: move;
     user-select: none;
@@ -366,16 +366,17 @@ h3, h4 {
     gap: 10px;
     resize: both;
     overflow: hidden;
+    max-width: calc(100vw - 40px);
 }
 
 .metrics-section {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto minmax(50px, 1fr);
     gap: 5px;
     padding-bottom: 10px;
     border-bottom: 1px solid rgba(46, 204, 113, 0.2);
     min-height: 0;
-    aspect-ratio: 16/9;
+    height: clamp(100px, 15vh, 200px);
 }
 
 .metric-graph {
@@ -385,6 +386,8 @@ h3, h4 {
     border-radius: 4px;
     position: relative;
     min-height: 0;
+    aspect-ratio: 16/9;
+    object-fit: contain;
 }
 
 @media (max-width: 768px) {
