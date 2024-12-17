@@ -738,93 +738,9 @@ function updateMetrics() {
 }
 // Main game loop
 k.onUpdate(() => {
-// Handle image loading for both emitter and particles
-let particleSprite = null;
-let particleImageWidth = 0;
-let particleImageHeight = 0;
-
-document.getElementById('emitterImage').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (file && file.type === 'image/png') {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            await img.decode();
-            
-            // Create a Kaboom sprite from the image
-            emitterSprite = k.loadSprite('emitter', img.src);
-            emitter.hasCustomImage = true;
-            emitter.customImage = emitterSprite;
-            emitter.customImageWidth = img.width;
-            emitter.customImageHeight = img.height;
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-document.getElementById('particleImage').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (file && file.type === 'image/png') {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            await img.decode();
-            
-            try {
-                console.log('Loading particle image...');
-                // Create a Kaboom sprite from the image
-                particleImageWidth = img.width;
-                particleImageHeight = img.height;
-                
-                // Load the sprite asynchronously
-                k.loadSprite('particle', img.src).then(() => {
-                    console.log('Particle sprite loaded successfully');
-                    try {
-                        particleSprite = k.sprite('particle');
-                        console.log('Sprite created successfully');
-                        
-                        // Update existing particles to use the new image
-                        particles.forEach(particle => {
-                            particle.hasCustomImage = true;
-                        });
-                    } catch (spriteError) {
-                        console.error('Error creating sprite object:', spriteError);
-                    }
-                }).catch(error => {
-                    console.error('Error loading particle sprite:', error);
-                    // Reset hasCustomImage flag on error
-                    particles.forEach(particle => {
-                        particle.hasCustomImage = false;
-                    });
-                });
-            } catch (error) {
-                console.error('Error in particle image processing:', error);
-                particles.forEach(particle => {
-                    particle.hasCustomImage = false;
-                });
-            }
-        };
-        reader.readAsDataURL(file);
-    }
-});
     // Set the background color
     const [r, g, b] = hexToRgb(backgroundColor);
     k.setBackground(k.rgb(r, g, b));
-
-    // Draw emitter image if available
-    if (emitter.hasCustomImage && emitter.customImage) {
-        const scale = 0.5; // Adjust scale as needed
-        k.drawSprite({
-            sprite: emitter.customImage,
-            pos: k.vec2(emitter.x - (emitter.customImageWidth * scale) / 2, 
-                       emitter.y - (emitter.customImageHeight * scale) / 2),
-            scale: k.vec2(scale, scale),
-            opacity: 1,
-            z: 1, // Draw above background but below particles
-        });
-    }
 
     // Draw background if available
     if (backgroundSprite && backgroundImage) {
@@ -858,30 +774,7 @@ document.getElementById('particleImage').addEventListener('change', async (e) =>
     // Update and draw particles
     particles.forEach(particle => {
         particle.update();
-        if (particle.hasCustomImage && particleSprite) {
-            try {
-                // Draw custom particle image
-                const scale = (config.size / Math.max(1, particleImageWidth)) * 0.5; // Prevent division by zero
-                k.drawSprite({
-                    sprite: 'particle',
-                    pos: k.vec2(
-                        particle.x - (particleImageWidth * scale) / 2,
-                        particle.y - (particleImageHeight * scale) / 2
-                    ),
-                    scale: k.vec2(scale, scale),
-                    opacity: particle.opacity,
-                    angle: particle.angle,
-                    color: k.rgb(...hexToRgb(config.color))
-                });
-            } catch (error) {
-                console.error('Error drawing particle sprite:', error);
-                // Fallback to default particle drawing
-                particle.draw();
-            }
-        } else {
-            // Draw default particle
-            particle.draw();
-        }
+        particle.draw();
     });
 
     // Update metrics display
