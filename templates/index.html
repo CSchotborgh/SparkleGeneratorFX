@@ -471,7 +471,7 @@
             metricsPanels.forEach(panel => {
                 panel.style.display = metricsVisible ? 'block' : 'none';
             });
-            toggleMetricsButton.innerHTML = metricsVisible ? '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span>Toggle Metrics</span>' : '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span>Show Metrics</span>';
+            toggleMetricsButton.innerHTML = metricsVisible ? '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Toggle Metrics</span>' : '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Show Metrics</span>';
             feather.replace(); // Re-render Feather icons after changing innerHTML
         });
     </script>
