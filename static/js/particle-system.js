@@ -189,19 +189,11 @@ class Particle {
     }
 
     draw() {
-        const ctx = k.canvas.getContext('2d');
-        
         // Draw trail
         for (let i = this.trail.length - 1; i >= 0; i--) {
             const point = this.trail[i];
             const opacity = (1 - i / this.trail.length) * this.life * 0.5;
             const trailSize = this.size * (1 - i / this.trail.length);
-            
-            ctx.save();
-            ctx.translate(point.x, point.y);
-            ctx.rotate(point.angle);
-            ctx.globalAlpha = opacity;
-            ctx.fillStyle = config.color;
             
             if (this.sprite) {
                 const scale = (trailSize / (this.originalSize || 20)) * 2;
@@ -214,27 +206,18 @@ class Particle {
                     anchor: "center",
                 });
             } else {
-                // Generate shape based on current configuration
-                generateShape(
-                    ctx,
-                    config.shapeType || 'circle',
-                    trailSize,
-                    config.shapeRoundness || 0,
-                    config.shapeSides || 3,
-                    config.shapeRotation || 0
-                );
-                ctx.fill();
+                // Draw shapes using Kaboom's drawing functions
+                const [r, g, b] = hexToRgb(config.color);
+                k.drawCircle({
+                    pos: k.vec2(point.x, point.y),
+                    radius: trailSize / 2,
+                    color: k.rgb(r, g, b, opacity),
+                    angle: point.angle,
+                });
             }
-            ctx.restore();
         }
 
         // Draw current particle
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.angle);
-        ctx.globalAlpha = this.life;
-        ctx.fillStyle = config.color;
-        
         if (this.sprite) {
             k.drawSprite({
                 sprite: this.sprite,
@@ -246,18 +229,14 @@ class Particle {
                 z: 1,
             });
         } else {
-            // Generate shape based on current configuration
-            generateShape(
-                ctx,
-                config.shapeType || 'circle',
-                this.size,
-                config.shapeRoundness || 0,
-                config.shapeSides || 3,
-                config.shapeRotation || 0
-            );
-            ctx.fill();
-        }
-        ctx.restore();
+            // Draw current particle using Kaboom's drawing functions
+            const [r, g, b] = hexToRgb(config.color);
+            k.drawCircle({
+                pos: k.vec2(this.x, this.y),
+                radius: this.size / 2,
+                color: k.rgb(r, g, b, this.life),
+                angle: this.angle,
+            });
     }
 }
 
