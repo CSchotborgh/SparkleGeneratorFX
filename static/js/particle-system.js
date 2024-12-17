@@ -775,21 +775,35 @@ document.getElementById('particleImage').addEventListener('change', async (e) =>
             try {
                 console.log('Loading particle image...');
                 // Create a Kaboom sprite from the image
+                particleImageWidth = img.width;
+                particleImageHeight = img.height;
+                
+                // Load the sprite asynchronously
                 k.loadSprite('particle', img.src).then(() => {
                     console.log('Particle sprite loaded successfully');
-                    particleSprite = k.sprite('particle');
-                    particleImageWidth = img.width;
-                    particleImageHeight = img.height;
-                    
-                    // Update existing particles to use the new image
-                    particles.forEach(particle => {
-                        particle.hasCustomImage = true;
-                    });
+                    try {
+                        particleSprite = k.sprite('particle');
+                        console.log('Sprite created successfully');
+                        
+                        // Update existing particles to use the new image
+                        particles.forEach(particle => {
+                            particle.hasCustomImage = true;
+                        });
+                    } catch (spriteError) {
+                        console.error('Error creating sprite object:', spriteError);
+                    }
                 }).catch(error => {
                     console.error('Error loading particle sprite:', error);
+                    // Reset hasCustomImage flag on error
+                    particles.forEach(particle => {
+                        particle.hasCustomImage = false;
+                    });
                 });
             } catch (error) {
                 console.error('Error in particle image processing:', error);
+                particles.forEach(particle => {
+                    particle.hasCustomImage = false;
+                });
             }
         };
         reader.readAsDataURL(file);
@@ -850,14 +864,14 @@ document.getElementById('particleImage').addEventListener('change', async (e) =>
                 const scale = (config.size / Math.max(1, particleImageWidth)) * 0.5; // Prevent division by zero
                 k.drawSprite({
                     sprite: 'particle',
-                    pos: vec2(
+                    pos: k.vec2(
                         particle.x - (particleImageWidth * scale) / 2,
                         particle.y - (particleImageHeight * scale) / 2
                     ),
-                    scale: vec2(scale, scale),
+                    scale: k.vec2(scale, scale),
                     opacity: particle.opacity,
                     angle: particle.angle,
-                    color: rgb(...hexToRgb(config.color))
+                    color: k.rgb(...hexToRgb(config.color))
                 });
             } catch (error) {
                 console.error('Error drawing particle sprite:', error);
