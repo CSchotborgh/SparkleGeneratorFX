@@ -738,7 +738,11 @@ function updateMetrics() {
 }
 // Main game loop
 k.onUpdate(() => {
-// Handle emitter image loading
+// Handle image loading for both emitter and particles
+let particleSprite = null;
+let particleImageWidth = 0;
+let particleImageHeight = 0;
+
 document.getElementById('emitterImage').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (file && file.type === 'image/png') {
@@ -754,6 +758,29 @@ document.getElementById('emitterImage').addEventListener('change', async (e) => 
             emitter.customImage = emitterSprite;
             emitter.customImageWidth = img.width;
             emitter.customImageHeight = img.height;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('particleImage').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'image/png') {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            await img.decode();
+            
+            // Create a Kaboom sprite from the image
+            particleSprite = k.loadSprite('particle', img.src);
+            particleImageWidth = img.width;
+            particleImageHeight = img.height;
+            
+            // Update existing particles to use the new image
+            particles.forEach(particle => {
+                particle.hasCustomImage = true;
+            });
         };
         reader.readAsDataURL(file);
     }
@@ -807,7 +834,22 @@ document.getElementById('emitterImage').addEventListener('change', async (e) => 
     // Update and draw particles
     particles.forEach(particle => {
         particle.update();
-        particle.draw();
+        if (particleSprite && particle.hasCustomImage) {
+            // Draw custom particle image
+            const scale = (config.size / particleImageWidth) * 0.5; // Adjust scale based on particle size
+            k.drawSprite({
+                sprite: particleSprite,
+                pos: k.vec2(particle.x - (particleImageWidth * scale) / 2,
+                           particle.y - (particleImageHeight * scale) / 2),
+                scale: k.vec2(scale, scale),
+                opacity: particle.opacity,
+                angle: particle.angle,
+                color: k.rgb(...hexToRgb(config.color))
+            });
+        } else {
+            // Draw default particle
+            particle.draw();
+        }
     });
 
     // Update metrics display
