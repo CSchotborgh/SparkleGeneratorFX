@@ -513,6 +513,65 @@ document.addEventListener('DOMContentLoaded', initializeGraphs);
 // Metrics overlay functionality
 const metricsOverlay = document.getElementById("metricsOverlay");
 
+// Dragging functionality
+let isDragging = false;
+let currentPanel = null;
+let currentX;
+let currentY;
+let initialX;
+let initialY;
+let xOffset = 0;
+let yOffset = 0;
+
+function dragStart(e, panel) {
+    if (e.target.tagName === 'BUTTON') return;
+    
+    if (e.type === "touchstart") {
+        initialX = e.touches[0].clientX - xOffset;
+        initialY = e.touches[0].clientY - yOffset;
+    } else {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+    }
+
+    if (e.target.closest('.metrics-panel')) {
+        currentPanel = panel;
+        isDragging = true;
+    }
+}
+
+function dragEnd() {
+    initialX = currentX;
+    initialY = currentY;
+    isDragging = false;
+    currentPanel = null;
+}
+
+function drag(e) {
+    if (isDragging && currentPanel && !currentPanel.classList.contains('fullscreen')) {
+        e.preventDefault();
+
+        if (e.type === "touchmove") {
+            currentX = e.touches[0].clientX - initialX;
+            currentY = e.touches[0].clientY - initialY;
+        } else {
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+        }
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        const maxX = window.innerWidth - currentPanel.offsetWidth;
+        const maxY = window.innerHeight - currentPanel.offsetHeight;
+        
+        currentX = Math.min(Math.max(currentX, 0), maxX);
+        currentY = Math.min(Math.max(currentY, 0), maxY);
+
+        currentPanel.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+    }
+}
+
 function togglePanel(panelId) {
     const panel = document.getElementById(panelId);
     if (panel.style.display === "none") {
@@ -521,6 +580,38 @@ function togglePanel(panelId) {
         panel.style.display = "none";
     }
 }
+
+function toggleFullscreen(panelId) {
+    const panel = document.getElementById(panelId);
+    panel.classList.toggle('fullscreen');
+    
+    if (panel.classList.contains('fullscreen')) {
+        panel.style.transform = 'none';
+        xOffset = 0;
+        yOffset = 0;
+    }
+    
+    // Update graph sizes
+    Object.values(graphs).forEach(graph => {
+        if (graph && graph.resize) {
+            graph.resize();
+        }
+    });
+}
+
+// Initialize panel dragging
+document.addEventListener('DOMContentLoaded', () => {
+    const panels = document.querySelectorAll('.metrics-panel');
+    panels.forEach(panel => {
+        panel.addEventListener("touchstart", e => dragStart(e, panel), false);
+        panel.addEventListener("mousedown", e => dragStart(e, panel), false);
+        panel.addEventListener("touchend", dragEnd, false);
+        panel.addEventListener("mouseup", dragEnd, false);
+    });
+    
+    document.addEventListener("touchmove", drag, false);
+    document.addEventListener("mousemove", drag, false);
+});
 
 // Initialize panel visibility
 document.addEventListener('DOMContentLoaded', () => {

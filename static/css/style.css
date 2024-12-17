@@ -358,6 +358,20 @@ h3, h4 {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     overflow: hidden;
+    cursor: move;
+}
+
+.metrics-panel.fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 9999;
+    border-radius: 0;
+}
+
+.metrics-panel.fullscreen .metric-graph {
+    height: calc(100vh - 100px);
 }
 
 #fpsPanel {
@@ -434,7 +448,13 @@ h3, h4 {
     font-size: 16px;
 }
 
-.close-button {
+.panel-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.close-button,
+.maximize-button {
     background: none;
     border: none;
     color: #2ecc71;
@@ -444,7 +464,8 @@ h3, h4 {
     line-height: 1;
 }
 
-.close-button:hover {
+.close-button:hover,
+.maximize-button:hover {
     color: #fff;
 }
 
