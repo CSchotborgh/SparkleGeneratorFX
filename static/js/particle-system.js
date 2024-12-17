@@ -772,15 +772,25 @@ document.getElementById('particleImage').addEventListener('change', async (e) =>
             img.src = event.target.result;
             await img.decode();
             
-            // Create a Kaboom sprite from the image
-            particleSprite = k.loadSprite('particle', img.src);
-            particleImageWidth = img.width;
-            particleImageHeight = img.height;
-            
-            // Update existing particles to use the new image
-            particles.forEach(particle => {
-                particle.hasCustomImage = true;
-            });
+            try {
+                console.log('Loading particle image...');
+                // Create a Kaboom sprite from the image
+                k.loadSprite('particle', img.src).then(() => {
+                    console.log('Particle sprite loaded successfully');
+                    particleSprite = k.sprite('particle');
+                    particleImageWidth = img.width;
+                    particleImageHeight = img.height;
+                    
+                    // Update existing particles to use the new image
+                    particles.forEach(particle => {
+                        particle.hasCustomImage = true;
+                    });
+                }).catch(error => {
+                    console.error('Error loading particle sprite:', error);
+                });
+            } catch (error) {
+                console.error('Error in particle image processing:', error);
+            }
         };
         reader.readAsDataURL(file);
     }
@@ -834,18 +844,26 @@ document.getElementById('particleImage').addEventListener('change', async (e) =>
     // Update and draw particles
     particles.forEach(particle => {
         particle.update();
-        if (particleSprite && particle.hasCustomImage) {
-            // Draw custom particle image
-            const scale = (config.size / particleImageWidth) * 0.5; // Adjust scale based on particle size
-            k.drawSprite({
-                sprite: particleSprite,
-                pos: k.vec2(particle.x - (particleImageWidth * scale) / 2,
-                           particle.y - (particleImageHeight * scale) / 2),
-                scale: k.vec2(scale, scale),
-                opacity: particle.opacity,
-                angle: particle.angle,
-                color: k.rgb(...hexToRgb(config.color))
-            });
+        if (particle.hasCustomImage && particleSprite) {
+            try {
+                // Draw custom particle image
+                const scale = (config.size / Math.max(1, particleImageWidth)) * 0.5; // Prevent division by zero
+                k.drawSprite({
+                    sprite: 'particle',
+                    pos: vec2(
+                        particle.x - (particleImageWidth * scale) / 2,
+                        particle.y - (particleImageHeight * scale) / 2
+                    ),
+                    scale: vec2(scale, scale),
+                    opacity: particle.opacity,
+                    angle: particle.angle,
+                    color: rgb(...hexToRgb(config.color))
+                });
+            } catch (error) {
+                console.error('Error drawing particle sprite:', error);
+                // Fallback to default particle drawing
+                particle.draw();
+            }
         } else {
             // Draw default particle
             particle.draw();
