@@ -355,28 +355,36 @@ h3, h4 {
     color: #fff;
     font-size: 14px;
     z-index: 1000;
-    width: min(300px, 90vw);
-    max-height: 90vh;
-    overflow-y: auto;
+    width: min(400px, 90vw);
+    min-height: min-content;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     cursor: move;
     user-select: none;
-    transition: width 0.3s ease;
+    transition: all 0.3s ease;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    resize: both;
+    overflow: hidden;
 }
 
 .metrics-section {
-    margin-bottom: 15px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 5px;
     padding-bottom: 10px;
     border-bottom: 1px solid rgba(46, 204, 113, 0.2);
+    min-height: 0;
+    aspect-ratio: 16/9;
 }
 
 .metric-graph {
     width: 100%;
-    height: min(100px, 15vh);
-    margin-top: 5px;
+    height: 100%;
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
     position: relative;
+    min-height: 0;
 }
 
 @media (max-width: 768px) {
@@ -424,16 +432,20 @@ h3, h4 {
 }
 
 .metric {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: center;
+    white-space: nowrap;
 }
 
 .metric label {
     color: #aaa;
+    font-size: 0.9em;
 }
 
 .metric span {
     color: #fff;
     font-family: monospace;
+    text-align: right;
 }
