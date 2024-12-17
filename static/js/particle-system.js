@@ -7,6 +7,177 @@ const k = kaboom({
     height: window.innerHeight,
 });
 
+// Emitter class definition
+class Emitter {
+    constructor() {
+        this.x = k.width() / 2;
+        this.y = k.height() / 2;
+        this.targetX = this.x;
+        this.targetY = this.y;
+    }
+
+    update() {
+        // Smoothly move emitter towards target position
+        this.x += (this.targetX - this.x) * 0.1;
+        this.y += (this.targetY - this.y) * 0.1;
+    }
+
+    generateParticle() {
+        return new Particle(this.x, this.y);
+    }
+}
+
+// Particle class definition
+class Particle {
+    constructor(x, y) {
+        this.x = x || k.width() / 2;
+        this.y = y || k.height() / 2;
+        this.vx = (Math.random() - 0.5) * config.speed;
+        this.vy = (Math.random() - 0.5) * config.speed;
+        this.life = physics.particleLife;
+        this.sprite = null;
+        this.originalSize = null;
+        this.angle = Math.random() * Math.PI * 2;
+        this.trailLength = config.trailLength;
+        this.trail = Array(this.trailLength).fill().map(() => ({
+            x: this.x,
+            y: this.y,
+            angle: this.angle
+        }));
+    }
+
+    update() {
+        // Update trail first
+        if (config.reverseTrail) {
+            this.trail.unshift({
+                x: this.x,
+                y: this.y,
+                angle: this.angle
+            });
+            this.trail.pop();
+        } else {
+            this.trail.push({
+                x: this.x,
+                y: this.y,
+                angle: this.angle
+            });
+            this.trail.shift();
+        }
+
+        // Apply physics
+        this.vx += physics.wind;
+        this.vy += physics.gravity;
+        
+        // Apply vortex effect
+        if (physics.vortexStrength !== 0) {
+            const dx = this.x - physics.vortexCenter.x;
+            const dy = this.y - physics.vortexCenter.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+            
+            this.vx += physics.vortexStrength * Math.sin(angle) / (distance || 1);
+            this.vy -= physics.vortexStrength * Math.cos(angle) / (distance || 1);
+        }
+
+        // Apply turbulence
+        this.vx += (Math.random() - 0.5) * physics.turbulence;
+        this.vy += (Math.random() - 0.5) * physics.turbulence;
+
+        // Apply air resistance
+        this.vx *= (1 - physics.airResistance);
+        this.vy *= (1 - physics.airResistance);
+
+        // Apply friction
+        this.vx *= physics.friction;
+        this.vy *= physics.friction;
+
+        // Apply acceleration
+        this.vx *= physics.acceleration;
+        this.vy *= physics.acceleration;
+
+        // Update position
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Handle collisions with boundaries
+        if (physics.collisionEnabled) {
+            if (this.x < 0) {
+                this.x = 0;
+                this.vx *= -physics.bounce;
+            }
+            if (this.x > k.width()) {
+                this.x = k.width();
+                this.vx *= -physics.bounce;
+            }
+            if (this.y < 0) {
+                this.y = 0;
+                this.vy *= -physics.bounce;
+            }
+            if (this.y > k.height()) {
+                this.y = k.height();
+                this.vy *= -physics.bounce;
+            }
+        }
+
+        // Update life
+        this.life -= 0.016; // Roughly 60 FPS
+    }
+
+    draw() {
+        // Draw trail
+        this.trail.forEach((point, i) => {
+            const opacity = i / this.trail.length;
+            if (this.sprite) {
+                k.drawSprite({
+                    sprite: this.sprite,
+                    pos: k.vec2(point.x, point.y),
+                    opacity: opacity,
+                    angle: point.angle,
+                    scale: k.vec2(
+                        (config.size / this.originalSize) * (0.5 + opacity * 0.5),
+                        (config.size / this.originalSize) * (0.5 + opacity * 0.5)
+                    ),
+                });
+            } else {
+                k.drawCircle({
+                    pos: k.vec2(point.x, point.y),
+                    radius: config.size * (0.5 + opacity * 0.5),
+                    color: k.rgba(...hexToRgb(config.color), opacity),
+                });
+            }
+        });
+
+        // Draw particle
+        if (this.sprite) {
+            k.drawSprite({
+                sprite: this.sprite,
+                pos: k.vec2(this.x, this.y),
+                angle: this.angle,
+                scale: k.vec2(config.size / this.originalSize, config.size / this.originalSize),
+            });
+        } else {
+            k.drawCircle({
+                pos: k.vec2(this.x, this.y),
+                radius: config.size,
+                color: config.color,
+            });
+        }
+    }
+
+    reset() {
+        this.x = emitter.x;
+        this.y = emitter.y;
+        this.vx = (Math.random() - 0.5) * config.speed;
+        this.vy = (Math.random() - 0.5) * config.speed;
+        this.life = physics.particleLife;
+        this.trail = Array(this.trailLength).fill().map(() => ({
+            x: this.x,
+            y: this.y,
+            angle: this.angle
+        }));
+    }
+}
+
 // Initialize variables
 let particles = [];
 let fps = 0;
@@ -15,7 +186,10 @@ let lastTime = performance.now();
 let backgroundSprite = null;
 let backgroundImage = null;
 
-// Metrics history
+// Create emitter instance
+const emitter = new Emitter();
+
+// Initialize metrics history
 const metricsHistory = {
     fps: Array(100).fill(0),
     particleCount: Array(100).fill(0),
@@ -52,69 +226,20 @@ const physics = {
     collisionEnabled: false
 };
 
-// Keyboard Navigation
-document.addEventListener('keydown', (e) => {
-    // Toggle metrics panels with Alt + M
-    if (e.altKey && e.key.toLowerCase() === 'm') {
-        document.getElementById('toggleMetricsButton').click();
-    }
-
-    // Handle panel navigation and control
-    const focusedPanel = document.activeElement.closest('.metrics-panel');
-    if (focusedPanel) {
-        const step = e.shiftKey ? 10 : 1; // Larger steps with Shift key
-
-        switch(e.key) {
-            case 'Escape':
-                focusedPanel.style.display = 'none';
-                break;
-            case 'ArrowLeft':
-                e.preventDefault();
-                focusedPanel.style.left = `${parseInt(focusedPanel.style.left || 0) - step}px`;
-                break;
-            case 'ArrowRight':
-                e.preventDefault();
-                focusedPanel.style.left = `${parseInt(focusedPanel.style.left || 0) + step}px`;
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                focusedPanel.style.top = `${parseInt(focusedPanel.style.top || 0) - step}px`;
-                break;
-            case 'ArrowDown':
-                e.preventDefault();
-                focusedPanel.style.top = `${parseInt(focusedPanel.style.top || 0) + step}px`;
-                break;
-        }
-    }
+// Mouse and touch event handling
+k.canvas.addEventListener('mousemove', (e) => {
+    const rect = k.canvas.getBoundingClientRect();
+    emitter.targetX = e.clientX - rect.left;
+    emitter.targetY = e.clientY - rect.top;
 });
 
-// Make panels focusable
-document.querySelectorAll('.metrics-panel').forEach(panel => {
-    panel.setAttribute('tabindex', '0');
-    panel.setAttribute('role', 'region');
-    panel.setAttribute('aria-label', panel.querySelector('.metrics-header h4').textContent);
-});
-
-// Toggle all metrics panels
-document.getElementById('toggleMetricsButton').addEventListener('click', () => {
-    const panels = document.querySelectorAll('.metrics-panel');
-    const anyVisible = Array.from(panels).some(panel => panel.style.display !== 'none');
-    
-    panels.forEach(panel => {
-        panel.style.display = anyVisible ? 'none' : 'block';
-    });
-});
-
-// Initialize panel visibility
-document.addEventListener('DOMContentLoaded', () => {
-    const panels = ['fpsPanel', 'particlePanel', 'speedPanel', 'memoryPanel', 'positionPanel'];
-    panels.forEach(panelId => {
-        const panel = document.getElementById(panelId);
-        if (panel) {
-            panel.style.display = "block";
-        }
-    });
-});
+k.canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const rect = k.canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    emitter.targetX = touch.clientX - rect.left;
+    emitter.targetY = touch.clientY - rect.top;
+}, { passive: false });
 
 // Update metrics display
 function updateMetrics() {
