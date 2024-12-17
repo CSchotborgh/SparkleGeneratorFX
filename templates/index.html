@@ -22,6 +22,9 @@
             <button id="toggleMetricsButton" class="btn btn-outline-light d-flex align-items-center nowrap" tabindex="0" aria-label="Toggle Metrics Panels">
                 <i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Toggle Metrics</span>
             </button>
+            <button id="themeToggleButton" class="btn btn-outline-light d-flex align-items-center nowrap ms-2" tabindex="0" aria-label="Toggle Theme">
+                <i data-feather="sun" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Toggle Theme</span>
+            </button>
         </div>
 
         <!-- About Modal -->
@@ -456,9 +459,32 @@
     <script src="{{ url_for('static', filename='js/preset-sharing.js') }}"></script>
     <script src="{{ url_for('static', filename='js/tutorial.js') }}"></script>
     <script>
-        // Initialize Feather icons
+        // Theme management
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.body.classList.toggle('light-theme', savedTheme === 'light');
+            updateThemeIcon(savedTheme);
+        }
+
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light-theme');
+            const theme = isLight ? 'light' : 'dark';
+            localStorage.setItem('theme', theme);
+            updateThemeIcon(theme);
+        }
+
+        function updateThemeIcon(theme) {
+            const themeIcon = document.querySelector('#themeToggleButton i');
+            if (themeIcon) {
+                themeIcon.setAttribute('data-feather', theme === 'light' ? 'moon' : 'sun');
+                feather.replace();
+            }
+        }
+
+        // Initialize Feather icons and theme
         document.addEventListener('DOMContentLoaded', () => {
             feather.replace();
+            initializeTheme();
         });
 
         // Add Toggle Metrics functionality
@@ -474,6 +500,9 @@
             toggleMetricsButton.innerHTML = metricsVisible ? '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Toggle Metrics</span>' : '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Show Metrics</span>';
             feather.replace(); // Re-render Feather icons after changing innerHTML
         });
+
+        // Theme toggle button event listener
+        document.getElementById('themeToggleButton').addEventListener('click', toggleTheme);
     </script>
 </body>
 </html>

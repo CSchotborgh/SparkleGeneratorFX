@@ -342,6 +342,61 @@ h3, h4 {
     padding: 2px;
 }
 
+:root {
+    /* Light theme variables */
+    --light-bg: #ffffff;
+    --light-text: #333333;
+    --light-accent: #2ecc71;
+    --light-panel-bg: rgba(240, 240, 240, 0.9);
+    --light-border: rgba(46, 204, 113, 0.3);
+    
+    /* Dark theme variables */
+    --dark-bg: #1a1a1a;
+    --dark-text: #ffffff;
+    --dark-accent: #2ecc71;
+    --dark-panel-bg: rgba(34, 34, 34, 0.9);
+    --dark-border: rgba(46, 204, 113, 0.3);
+    
+    /* Default to dark theme */
+    --bg-color: var(--dark-bg);
+    --text-color: var(--dark-text);
+    --accent-color: var(--dark-accent);
+    --panel-bg: var(--dark-panel-bg);
+    --border-color: var(--dark-border);
+}
+
+/* Light theme class */
+.light-theme {
+    --bg-color: var(--light-bg);
+    --text-color: var(--light-text);
+    --accent-color: var(--light-accent);
+    --panel-bg: var(--light-panel-bg);
+    --border-color: var(--light-border);
+}
+
+/* Apply theme variables */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.metrics-panel {
+    background-color: var(--panel-bg);
+    border-color: var(--accent-color);
+}
+
+.btn-outline-light {
+    border-color: var(--accent-color);
+    color: var(--text-color);
+}
+
+.btn-outline-light:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--bg-color);
+}
+
 /* Accessibility Styles */
 :focus {
     outline: 2px solid #2ecc71 !important;
