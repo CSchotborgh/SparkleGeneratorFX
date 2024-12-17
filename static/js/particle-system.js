@@ -738,9 +738,42 @@ function updateMetrics() {
 }
 // Main game loop
 k.onUpdate(() => {
+// Handle emitter image loading
+document.getElementById('emitterImage').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'image/png') {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            await img.decode();
+            
+            // Create a Kaboom sprite from the image
+            emitterSprite = k.loadSprite('emitter', img.src);
+            emitter.hasCustomImage = true;
+            emitter.customImage = emitterSprite;
+            emitter.customImageWidth = img.width;
+            emitter.customImageHeight = img.height;
+        };
+        reader.readAsDataURL(file);
+    }
+});
     // Set the background color
     const [r, g, b] = hexToRgb(backgroundColor);
     k.setBackground(k.rgb(r, g, b));
+
+    // Draw emitter image if available
+    if (emitter.hasCustomImage && emitter.customImage) {
+        const scale = 0.5; // Adjust scale as needed
+        k.drawSprite({
+            sprite: emitter.customImage,
+            pos: k.vec2(emitter.x - (emitter.customImageWidth * scale) / 2, 
+                       emitter.y - (emitter.customImageHeight * scale) / 2),
+            scale: k.vec2(scale, scale),
+            opacity: 1,
+            z: 1, // Draw above background but below particles
+        });
+    }
 
     // Draw background if available
     if (backgroundSprite && backgroundImage) {
