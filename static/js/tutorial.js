@@ -59,7 +59,7 @@ function startTutorial() {
             {
                 element: '#physicsControls',
                 title: 'Advanced Physics',
-                intro: 'Fine-tune the physics simulation with comprehensive controls.',
+                intro: 'Welcome to the physics control center! Here you can fine-tune gravity, wind, bounce, friction, and more to create unique particle behaviors.',
                 position: 'right',
                 onbeforechange: function() {
                     return new Promise(resolve => {
@@ -79,21 +79,33 @@ function startTutorial() {
                 }
             },
             {
+                element: '#turbulence',
+                title: 'Physics Parameters',
+                intro: 'Experiment with turbulence, air resistance, and vortex effects to create dynamic movement patterns.',
+                position: 'right'
+            },
+            {
                 element: '#particleLife',
                 title: 'Particle Lifespan',
-                intro: 'Control how long particles exist before respawning. Create ephemeral or lasting effects.',
+                intro: 'Define how long particles exist before respawning. Short lifespans create quick bursts, while longer ones create persistent effects.',
                 position: 'right'
             },
             {
                 element: '#particleAcceleration',
                 title: 'Particle Acceleration',
-                intro: 'Adjust how quickly particles respond to forces. Higher values create more dynamic movement.',
+                intro: 'Control how quickly particles respond to forces. Higher values create more energetic and responsive movement.',
+                position: 'right'
+            },
+            {
+                element: '#collisionEnabled',
+                title: 'Collision Detection',
+                intro: 'Enable particle collisions for more realistic interactions between particles.',
                 position: 'right'
             },
             {
                 element: '#visualEffects',
                 title: 'Visual Effects',
-                intro: 'Customize appearance with colors and advanced trail effects. Create stunning visual patterns!',
+                intro: 'Enter the visual customization zone! Here you can transform the appearance of your particles.',
                 position: 'right',
                 onbeforechange: function() {
                     return new Promise(resolve => {
@@ -113,15 +125,27 @@ function startTutorial() {
                 }
             },
             {
+                element: '#particleColor',
+                title: 'Color Selection',
+                intro: 'Choose the perfect color for your particles to match your creative vision.',
+                position: 'right'
+            },
+            {
+                element: '#trailLength',
+                title: 'Trail Effects',
+                intro: 'Adjust the length of particle trails to create stunning motion effects.',
+                position: 'right'
+            },
+            {
                 element: '#reverseTrail',
                 title: 'Trail Direction',
-                intro: 'Toggle trail direction for unique visual effects. Experiment with different patterns!',
+                intro: 'Experiment with forward or reverse trails to create unique visual patterns!',
                 position: 'right'
             },
             {
                 element: '#backgroundControls',
                 title: 'Background Settings',
-                intro: 'Customize your canvas background with colors or images. Match your particle effects perfectly!',
+                intro: 'Make your particle effects stand out! Choose a background color or upload an image to create the perfect backdrop for your particles.',
                 position: 'right',
                 onbeforechange: function() {
                     return new Promise(resolve => {
