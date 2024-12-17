@@ -206,13 +206,10 @@ class Particle {
                     anchor: "center",
                 });
             } else {
-                // Draw shapes using Kaboom's drawing functions
-                const [r, g, b] = hexToRgb(config.color);
                 k.drawCircle({
                     pos: k.vec2(point.x, point.y),
-                    radius: trailSize / 2,
-                    color: k.rgb(r, g, b, opacity),
-                    angle: point.angle,
+                    radius: trailSize,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
                 });
             }
         }
@@ -226,17 +223,15 @@ class Particle {
                 angle: this.angle,
                 color: k.rgb(...hexToRgb(config.color), this.life),
                 anchor: "center",
-                z: 1,
+                z: 1, // Set z-index to 1 to ensure particles are above background
             });
         } else {
-            // Draw current particle using Kaboom's drawing functions
-            const [r, g, b] = hexToRgb(config.color);
             k.drawCircle({
                 pos: k.vec2(this.x, this.y),
-                radius: this.size / 2,
-                color: k.rgb(r, g, b, this.life),
-                angle: this.angle,
+                radius: this.size,
+                color: k.rgb(...hexToRgb(config.color), this.life),
             });
+        }
     }
 }
 
@@ -617,23 +612,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener("touchmove", drag, false);
     document.addEventListener("mousemove", drag, false);
 });
-// Shape control event listeners
-document.getElementById('shapeType').addEventListener('change', (e) => {
-    config.shapeType = e.target.value;
-});
-
-document.getElementById('shapeSides').addEventListener('input', (e) => {
-    config.shapeSides = parseInt(e.target.value);
-});
-
-document.getElementById('shapeRoundness').addEventListener('input', (e) => {
-    config.shapeRoundness = parseFloat(e.target.value);
-});
-
-document.getElementById('shapeRotation').addEventListener('input', (e) => {
-    config.shapeRotation = parseInt(e.target.value);
-});
-
 
 // Keyboard Navigation
 document.addEventListener('keydown', (e) => {
@@ -802,118 +780,6 @@ k.onUpdate(() => {
     // Update metrics display
     updateMetrics();
 });
-
-// Shape generation functions
-function generateShape(ctx, type, size, roundness, sides, rotation) {
-    ctx.save();
-    ctx.beginPath();
-    
-    switch(type) {
-        case 'circle':
-            ctx.arc(0, 0, size/2, 0, Math.PI * 2);
-            break;
-        case 'square':
-            const cornerRadius = (size/2) * roundness;
-            if (roundness > 0) {
-                drawRoundedRect(ctx, -size/2, -size/2, size, size, cornerRadius);
-            } else {
-                ctx.rect(-size/2, -size/2, size, size);
-            }
-            break;
-        case 'triangle':
-            drawPolygon(ctx, size/2, 3, rotation, roundness);
-            break;
-        case 'star':
-            drawStar(ctx, size/2, 5, rotation);
-            break;
-        case 'custom':
-            drawPolygon(ctx, size/2, sides, rotation, roundness);
-            break;
-    }
-    
-    ctx.closePath();
-    ctx.restore();
-}
-
-// Helper function to calculate distance between points
-function getDistance(point1, point2) {
-    const dx = point2.x - point1.x;
-    const dy = point2.y - point1.y;
-    return Math.sqrt(dx * dx + dy * dy);
-}
-
-function drawPolygon(ctx, radius, sides, rotation, roundness) {
-    const angle = (Math.PI * 2) / sides;
-    const points = [];
-    
-    // Calculate points
-    for (let i = 0; i < sides; i++) {
-        const currentAngle = angle * i + (rotation * Math.PI / 180);
-        points.push({
-            x: radius * Math.cos(currentAngle),
-            y: radius * Math.sin(currentAngle)
-        });
-    }
-    
-    // Draw rounded polygon
-    ctx.beginPath();
-    points.forEach((point, index) => {
-        const nextPoint = points[(index + 1) % points.length];
-        
-        if (roundness > 0) {
-            const dist = getDistance(point, nextPoint);
-            const radius = dist * roundness * 0.5;
-            // Add rounded corners
-            const angle = Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x);
-            ctx.quadraticCurveTo(
-                point.x + Math.cos(angle) * radius,
-                point.y + Math.sin(angle) * radius,
-                nextPoint.x,
-                nextPoint.y
-            );
-        } else {
-            if (index === 0) {
-                ctx.moveTo(point.x, point.y);
-            } else {
-                ctx.lineTo(point.x, point.y);
-            }
-        }
-    });
-}
-
-function drawStar(ctx, radius, points, rotation) {
-    const outerRadius = radius;
-    const innerRadius = radius * 0.4;
-    const angleStep = Math.PI / points;
-    
-    ctx.beginPath();
-    for (let i = 0; i < points * 2; i++) {
-        const currentAngle = i * angleStep + (rotation * Math.PI / 180);
-        const currentRadius = i % 2 === 0 ? outerRadius : innerRadius;
-        const x = currentRadius * Math.cos(currentAngle);
-        const y = currentRadius * Math.sin(currentAngle);
-        
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
-    }
-}
-
-function drawRoundedRect(ctx, x, y, width, height, radius) {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-}
 
 // Helper function to convert hex to RGB
 function hexToRgb(hex) {
