@@ -75,6 +75,30 @@
 
         <div class="row">
             <div class="col-md-9">
+                <!-- Metrics Overlay -->
+                <div id="metricsOverlay" class="metrics-overlay">
+                    <h4>Particle System Metrics</h4>
+                    <div class="metric">
+                        <label>FPS:</label>
+                        <span id="fpsMetric">0</span>
+                    </div>
+                    <div class="metric">
+                        <label>Active Particles:</label>
+                        <span id="particleCountMetric">0</span>
+                    </div>
+                    <div class="metric">
+                        <label>Average Speed:</label>
+                        <span id="avgSpeedMetric">0</span>
+                    </div>
+                    <div class="metric">
+                        <label>Memory Usage:</label>
+                        <span id="memoryMetric">0 MB</span>
+                    </div>
+                    <div class="metric">
+                        <label>Emitter Position:</label>
+                        <span id="emitterPosMetric">x: 0, y: 0</span>
+                    </div>
+                </div>
                 <canvas id="gameCanvas"></canvas>
             </div>
             <div class="col-md-3">

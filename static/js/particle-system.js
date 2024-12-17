@@ -413,6 +413,39 @@ document.getElementById('backgroundColor').addEventListener('input', (e) => {
     k.setBackground(k.rgb(...hexToRgb(backgroundColor)));
 });
 
+// Metrics tracking variables
+let lastTime = performance.now();
+let frames = 0;
+let fps = 0;
+
+// Function to update metrics display
+function updateMetrics() {
+    // Calculate FPS
+    const currentTime = performance.now();
+    frames++;
+    if (currentTime >= lastTime + 1000) {
+        fps = Math.round((frames * 1000) / (currentTime - lastTime));
+        frames = 0;
+        lastTime = currentTime;
+    }
+
+    // Calculate average particle speed
+    const avgSpeed = particles.reduce((sum, p) => {
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        return sum + speed;
+    }, 0) / particles.length;
+
+    // Update metrics display
+    document.getElementById('fpsMetric').textContent = fps;
+    document.getElementById('particleCountMetric').textContent = particles.length;
+    document.getElementById('avgSpeedMetric').textContent = avgSpeed.toFixed(2);
+    document.getElementById('emitterPosMetric').textContent = 
+        `x: ${Math.round(emitter.x)}, y: ${Math.round(emitter.y)}`;
+    
+    // Estimate memory usage (rough approximation)
+    const memoryUsage = (particles.length * 200) / (1024 * 1024); // Rough estimate in MB
+    document.getElementById('memoryMetric').textContent = `${memoryUsage.toFixed(2)} MB`;
+}
 // Main game loop
 k.onUpdate(() => {
     // Set the background color
@@ -454,7 +487,8 @@ k.onUpdate(() => {
         particle.draw();
     });
 
-    // Emitter visualization removed while maintaining functionality
+    // Update metrics display
+    updateMetrics();
 });
 
 // Helper function to convert hex to RGB
