@@ -189,11 +189,19 @@ class Particle {
     }
 
     draw() {
+        const ctx = k.canvas.getContext('2d');
+        
         // Draw trail
         for (let i = this.trail.length - 1; i >= 0; i--) {
             const point = this.trail[i];
             const opacity = (1 - i / this.trail.length) * this.life * 0.5;
             const trailSize = this.size * (1 - i / this.trail.length);
+            
+            ctx.save();
+            ctx.translate(point.x, point.y);
+            ctx.rotate(point.angle);
+            ctx.globalAlpha = opacity;
+            ctx.fillStyle = config.color;
             
             if (this.sprite) {
                 const scale = (trailSize / (this.originalSize || 20)) * 2;
@@ -206,15 +214,27 @@ class Particle {
                     anchor: "center",
                 });
             } else {
-                k.drawCircle({
-                    pos: k.vec2(point.x, point.y),
-                    radius: trailSize,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                });
+                // Generate shape based on current configuration
+                generateShape(
+                    ctx,
+                    config.shapeType || 'circle',
+                    trailSize,
+                    config.shapeRoundness || 0,
+                    config.shapeSides || 3,
+                    config.shapeRotation || 0
+                );
+                ctx.fill();
             }
+            ctx.restore();
         }
 
         // Draw current particle
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = config.color;
+        
         if (this.sprite) {
             k.drawSprite({
                 sprite: this.sprite,
@@ -223,15 +243,21 @@ class Particle {
                 angle: this.angle,
                 color: k.rgb(...hexToRgb(config.color), this.life),
                 anchor: "center",
-                z: 1, // Set z-index to 1 to ensure particles are above background
+                z: 1,
             });
         } else {
-            k.drawCircle({
-                pos: k.vec2(this.x, this.y),
-                radius: this.size,
-                color: k.rgb(...hexToRgb(config.color), this.life),
-            });
+            // Generate shape based on current configuration
+            generateShape(
+                ctx,
+                config.shapeType || 'circle',
+                this.size,
+                config.shapeRoundness || 0,
+                config.shapeSides || 3,
+                config.shapeRotation || 0
+            );
+            ctx.fill();
         }
+        ctx.restore();
     }
 }
 
@@ -830,6 +856,13 @@ function generateShape(ctx, type, size, roundness, sides, rotation) {
     ctx.restore();
 }
 
+// Helper function to calculate distance between points
+function getDistance(point1, point2) {
+    const dx = point2.x - point1.x;
+    const dy = point2.y - point1.y;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
 function drawPolygon(ctx, radius, sides, rotation, roundness) {
     const angle = (Math.PI * 2) / sides;
     const points = [];
@@ -849,7 +882,8 @@ function drawPolygon(ctx, radius, sides, rotation, roundness) {
         const nextPoint = points[(index + 1) % points.length];
         
         if (roundness > 0) {
-            const radius = point.distance(nextPoint) * roundness * 0.5;
+            const dist = getDistance(point, nextPoint);
+            const radius = dist * roundness * 0.5;
             // Add rounded corners
             const angle = Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x);
             ctx.quadraticCurveTo(
