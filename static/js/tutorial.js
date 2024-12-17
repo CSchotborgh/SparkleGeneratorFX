@@ -1,65 +1,28 @@
-// Tutorial pointer element
-let tutorialPointer = null;
-
-// Create and animate tutorial pointer
-function createTutorialPointer() {
-    if (tutorialPointer) {
-        tutorialPointer.remove();
-    }
-    tutorialPointer = document.createElement('div');
-    tutorialPointer.className = 'tutorial-pointer';
-    document.body.appendChild(tutorialPointer);
-}
-
-// Animate pointer to target element
-function animatePointerToElement(element) {
-    if (!element || !tutorialPointer) return;
-    
-    const rect = element.getBoundingClientRect();
-    const targetX = rect.left + rect.width / 2;
-    const targetY = rect.top + rect.height / 2;
-    
-    tutorialPointer.style.left = `${targetX}px`;
-    tutorialPointer.style.top = `${targetY}px`;
-}
-
 // Initialize tutorial
 function startTutorial() {
-    createTutorialPointer();
     const intro = introJs();
-    
-    // Remove previous highlight classes
-    document.querySelectorAll('.tutorial-highlight').forEach(el => {
-        el.classList.remove('tutorial-highlight');
-    });
     
     intro.setOptions({
         steps: [
             {
                 title: 'Welcome to SparkleGeneratorFX!',
-                intro: 'Let\'s take a quick tour of this interactive particle physics engine. Explore amazing features and create stunning visual effects!'
-            },
-            {
-                element: '#toggleMetricsButton',
-                title: 'Performance Metrics',
-                intro: 'Toggle performance metrics panels to monitor FPS, particle count, and system resources.',
-                position: 'bottom'
+                intro: 'Let\'s take a quick tour of this interactive particle physics engine.'
             },
             {
                 element: '#gameCanvas',
-                title: 'Interactive Canvas',
-                intro: 'Your creative space! Click and drag to move particles, right-click for burst effects. Watch particles interact with physics in real-time!'
+                title: 'Particle Canvas',
+                intro: 'This is your creative space! Click and drag to move particles, right-click for burst effects.'
             },
             {
                 element: '#basicControls',
                 title: 'Basic Controls',
-                intro: 'Adjust fundamental particle properties like count, size, and speed. These controls form the foundation of your effects.',
+                intro: 'Adjust fundamental particle properties like count, size, and speed.',
                 position: 'right'
             },
             {
-                element: '#turbulence',
-                title: 'Physics Parameters',
-                intro: 'Experiment with turbulence, air resistance, and vortex effects to create dynamic movement patterns.',
+                element: '#physicsControls',
+                title: 'Physics Settings Overview',
+                intro: 'Let\'s explore the physics parameters that control particle behavior.',
                 position: 'right',
                 onbeforechange: function() {
                     return new Promise(resolve => {
@@ -79,33 +42,75 @@ function startTutorial() {
                 }
             },
             {
-                element: '#physicsControls',
-                title: 'Advanced Physics',
-                intro: 'Welcome to the physics control center! Here you can fine-tune gravity, wind, bounce, friction, and more to create unique particle behaviors.',
+                element: '#gravity',
+                title: 'Gravity Control',
+                intro: 'Adjust the gravitational force affecting particles. Higher values make particles fall faster.',
+                position: 'right'
+            },
+            {
+                element: '#wind',
+                title: 'Wind Control',
+                intro: 'Control horizontal force affecting particles. Positive values push right, negative values push left.',
+                position: 'right'
+            },
+            {
+                element: '#bounce',
+                title: 'Bounce Control',
+                intro: 'Set how much particles bounce off surfaces. Higher values create more energetic bounces.',
+                position: 'right'
+            },
+            {
+                element: '#friction',
+                title: 'Friction Control',
+                intro: 'Adjust how quickly particles slow down. Lower values create more drag.',
+                position: 'right'
+            },
+            {
+                element: '#airResistance',
+                title: 'Air Resistance',
+                intro: 'Control how much air affects particle movement. Higher values create more air resistance.',
+                position: 'right'
+            },
+            {
+                element: '#turbulence',
+                title: 'Turbulence Control',
+                intro: 'Add random movement to particles. Higher values create more chaotic motion.',
+                position: 'right'
+            },
+            {
+                element: '#vortexStrength',
+                title: 'Vortex Strength',
+                intro: 'Create spinning effects. Positive values spin clockwise, negative values spin counter-clockwise.',
+                position: 'right'
+            },
+            {
+                element: '#particleMass',
+                title: 'Particle Mass',
+                intro: 'Adjust how heavy particles are. Heavier particles are less affected by forces.',
                 position: 'right'
             },
             {
                 element: '#particleLife',
-                title: 'Particle Lifespan',
-                intro: 'Define how long particles exist before respawning. Short lifespans create quick bursts, while longer ones create persistent effects.',
+                title: 'Particle Life',
+                intro: 'Control how long particles exist before respawning.',
                 position: 'right'
             },
             {
                 element: '#particleAcceleration',
-                title: 'Particle Acceleration',
-                intro: 'Control how quickly particles respond to forces. Higher values create more energetic and responsive movement.',
+                title: 'Acceleration',
+                intro: 'Adjust how quickly particles respond to forces.',
                 position: 'right'
             },
             {
                 element: '#collisionEnabled',
-                title: 'Collision Detection',
-                intro: 'Enable particle collisions for more realistic interactions between particles.',
+                title: 'Collision Toggle',
+                intro: 'Enable or disable particle collisions with each other.',
                 position: 'right'
             },
             {
-                element: '#particleColor',
-                title: 'Color Selection',
-                intro: 'Choose the perfect color for your particles to match your creative vision.',
+                element: '#visualEffects',
+                title: 'Visual Effects',
+                intro: 'Customize particle appearance with colors and trail effects.',
                 position: 'right',
                 onbeforechange: function() {
                     return new Promise(resolve => {
@@ -125,71 +130,9 @@ function startTutorial() {
                 }
             },
             {
-                element: '#visualEffects',
-                title: 'Visual Effects',
-                intro: 'Enter the visual customization zone! Here you can transform the appearance of your particles.',
-                position: 'right'
-            },
-            {
-                element: '#trailLength',
-                title: 'Trail Effects',
-                intro: 'Adjust the length of particle trails to create stunning motion effects.',
-                position: 'right'
-            },
-            {
-                element: '#reverseTrail',
-                title: 'Trail Direction',
-                intro: 'Experiment with forward or reverse trails to create unique visual patterns!',
-                position: 'right'
-            },
-            {
-                element: '#backgroundControls',
-                title: 'Background Settings',
-                intro: 'Make your particle effects stand out! Choose a background color or upload an image to create the perfect backdrop for your particles.',
-                position: 'right',
-                onbeforechange: function() {
-                    return new Promise(resolve => {
-                        const bgButton = document.querySelector('button[data-bs-target="#backgroundControls"]');
-                        const bgCollapse = document.querySelector('#backgroundControls');
-                        
-                        if (!bgCollapse.classList.contains('show')) {
-                            bgButton.click();
-                            setTimeout(() => {
-                                bgCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                setTimeout(resolve, 600);
-                            }, 400);
-                        } else {
-                            resolve();
-                        }
-                    });
-                }
-            },
-            {
-                element: '#videoRecording',
-                title: 'Video Recording',
-                intro: 'Record your particle animations and export them as video files or PNG sequences!',
-                position: 'right',
-                onbeforechange: function() {
-                    return new Promise(resolve => {
-                        const videoButton = document.querySelector('button[data-bs-target="#videoRecording"]');
-                        const videoCollapse = document.querySelector('#videoRecording');
-                        
-                        if (!videoCollapse.classList.contains('show')) {
-                            videoButton.click();
-                            setTimeout(() => {
-                                videoCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                setTimeout(resolve, 600);
-                            }, 400);
-                        } else {
-                            resolve();
-                        }
-                    });
-                }
-            },
-            {
                 element: '#presetControls',
                 title: 'Preset Effects',
-                intro: 'Try pre-configured effects like fire, snow, or galaxy patterns. Perfect starting points for your creations!',
+                intro: 'Try pre-configured effects like fire, snow, or galaxy patterns.',
                 position: 'right',
                 onbeforechange: function() {
                     return new Promise(resolve => {
@@ -209,31 +152,9 @@ function startTutorial() {
                 }
             },
             {
-                element: '#sharePreset',
-                title: 'Share Your Creations',
-                intro: 'Save and share your particle configurations with the community. Browse and try others\' creations!',
-                position: 'right',
-                onbeforechange: function() {
-                    return new Promise(resolve => {
-                        const shareButton = document.querySelector('button[data-bs-target="#sharePreset"]');
-                        const shareCollapse = document.querySelector('#sharePreset');
-                        
-                        if (!shareCollapse.classList.contains('show')) {
-                            shareButton.click();
-                            setTimeout(() => {
-                                shareCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                setTimeout(resolve, 600);
-                            }, 400);
-                        } else {
-                            resolve();
-                        }
-                    });
-                }
-            },
-            {
                 element: '#exportOptions',
                 title: 'Export Options',
-                intro: 'Save your creation in various formats including PNG, video, and more. Share your work easily!',
+                intro: 'Save your creation in various formats including PNG and video.',
                 position: 'right',
                 onbeforechange: function() {
                     return new Promise(resolve => {
@@ -253,8 +174,52 @@ function startTutorial() {
                 }
             },
             {
-                title: 'Ready to Create!',
-                intro: 'You\'re all set to create amazing particle effects! Remember to explore the metrics panels and try different combinations of settings. Have fun creating!'
+                element: '#importOptions',
+                title: 'Import Options',
+                intro: 'Use custom images for particles or add background images.',
+                position: 'right',
+                onbeforechange: function() {
+                    return new Promise(resolve => {
+                        const importButton = document.querySelector('button[data-bs-target="#importOptions"]');
+                        const importCollapse = document.querySelector('#importOptions');
+                        
+                        if (!importCollapse.classList.contains('show')) {
+                            importButton.click();
+                            setTimeout(() => {
+                                importCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                setTimeout(resolve, 600);
+                            }, 400);
+                        } else {
+                            resolve();
+                        }
+                    });
+                }
+            },
+            {
+                element: '#sharePreset',
+                title: 'Share Your Creations',
+                intro: 'Save and share your particle configurations with others.',
+                position: 'right',
+                onbeforechange: function() {
+                    return new Promise(resolve => {
+                        const shareButton = document.querySelector('button[data-bs-target="#sharePreset"]');
+                        const shareCollapse = document.querySelector('#sharePreset');
+                        
+                        if (!shareCollapse.classList.contains('show')) {
+                            shareButton.click();
+                            setTimeout(() => {
+                                shareCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                setTimeout(resolve, 600);
+                            }, 400);
+                        } else {
+                            resolve();
+                        }
+                    });
+                }
+            },
+            {
+                title: 'Start Creating!',
+                intro: 'You\'re ready to create amazing particle effects! Click and drag on the canvas to begin.'
             }
         ],
         showProgress: true,
@@ -263,43 +228,6 @@ function startTutorial() {
         overlayOpacity: 0.8,
         scrollToElement: true,
         scrollPadding: 50
-    });
-
-    // Add highlight effect to current element
-    intro.onbeforechange(function(targetElement) {
-        // Remove highlight from previous element
-        document.querySelectorAll('.tutorial-highlight').forEach(el => {
-            el.classList.remove('tutorial-highlight');
-        });
-        
-        if (targetElement) {
-            // Add highlight to current element
-            targetElement.classList.add('tutorial-highlight');
-            // Animate pointer to the element
-            animatePointerToElement(targetElement);
-        }
-    });
-
-    // Clean up on tutorial exit
-    intro.onexit(function() {
-        document.querySelectorAll('.tutorial-highlight').forEach(el => {
-            el.classList.remove('tutorial-highlight');
-        });
-        if (tutorialPointer) {
-            tutorialPointer.remove();
-            tutorialPointer = null;
-        }
-    });
-
-    // Handle tutorial completion
-    intro.oncomplete(function() {
-        document.querySelectorAll('.tutorial-highlight').forEach(el => {
-            el.classList.remove('tutorial-highlight');
-        });
-        if (tutorialPointer) {
-            tutorialPointer.remove();
-            tutorialPointer = null;
-        }
     });
 
     intro.start();
