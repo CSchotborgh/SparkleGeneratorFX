@@ -1,6 +1,37 @@
+// Tutorial pointer element
+let tutorialPointer = null;
+
+// Create and animate tutorial pointer
+function createTutorialPointer() {
+    if (tutorialPointer) {
+        tutorialPointer.remove();
+    }
+    tutorialPointer = document.createElement('div');
+    tutorialPointer.className = 'tutorial-pointer';
+    document.body.appendChild(tutorialPointer);
+}
+
+// Animate pointer to target element
+function animatePointerToElement(element) {
+    if (!element || !tutorialPointer) return;
+    
+    const rect = element.getBoundingClientRect();
+    const targetX = rect.left + rect.width / 2;
+    const targetY = rect.top + rect.height / 2;
+    
+    tutorialPointer.style.left = `${targetX}px`;
+    tutorialPointer.style.top = `${targetY}px`;
+}
+
 // Initialize tutorial
 function startTutorial() {
+    createTutorialPointer();
     const intro = introJs();
+    
+    // Remove previous highlight classes
+    document.querySelectorAll('.tutorial-highlight').forEach(el => {
+        el.classList.remove('tutorial-highlight');
+    });
     
     intro.setOptions({
         steps: [
@@ -208,6 +239,43 @@ function startTutorial() {
         overlayOpacity: 0.8,
         scrollToElement: true,
         scrollPadding: 50
+    });
+
+    // Add highlight effect to current element
+    intro.onbeforechange(function(targetElement) {
+        // Remove highlight from previous element
+        document.querySelectorAll('.tutorial-highlight').forEach(el => {
+            el.classList.remove('tutorial-highlight');
+        });
+        
+        if (targetElement) {
+            // Add highlight to current element
+            targetElement.classList.add('tutorial-highlight');
+            // Animate pointer to the element
+            animatePointerToElement(targetElement);
+        }
+    });
+
+    // Clean up on tutorial exit
+    intro.onexit(function() {
+        document.querySelectorAll('.tutorial-highlight').forEach(el => {
+            el.classList.remove('tutorial-highlight');
+        });
+        if (tutorialPointer) {
+            tutorialPointer.remove();
+            tutorialPointer = null;
+        }
+    });
+
+    // Handle tutorial completion
+    intro.oncomplete(function() {
+        document.querySelectorAll('.tutorial-highlight').forEach(el => {
+            el.classList.remove('tutorial-highlight');
+        });
+        if (tutorialPointer) {
+            tutorialPointer.remove();
+            tutorialPointer = null;
+        }
     });
 
     intro.start();
