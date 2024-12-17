@@ -407,27 +407,27 @@ h3, h4 {
 }
 
 #fpsPanel {
-    top: 20px;
+    top: 80px;
     left: 20px;
 }
 
 #particlePanel {
-    top: 20px;
+    top: 80px;
     left: calc(40px + clamp(250px, 20vw, 400px));
 }
 
 #speedPanel {
-    top: calc(40px + clamp(150px, 15vh, 200px));
+    top: calc(100px + clamp(150px, 15vh, 200px));
     left: 20px;
 }
 
 #memoryPanel {
-    top: calc(40px + clamp(150px, 15vh, 200px));
+    top: calc(100px + clamp(150px, 15vh, 200px));
     left: calc(40px + clamp(250px, 20vw, 400px));
 }
 
 #positionPanel {
-    top: calc(60px + 2 * clamp(150px, 15vh, 200px));
+    top: calc(120px + 2 * clamp(150px, 15vh, 200px));
     left: 20px;
 }
 
