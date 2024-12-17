@@ -513,14 +513,25 @@ document.addEventListener('DOMContentLoaded', initializeGraphs);
 // Metrics overlay functionality
 const metricsOverlay = document.getElementById("metricsOverlay");
 
-function toggleMetricsOverlay() {
-    const overlay = document.getElementById("metricsOverlay");
-    if (overlay.style.display === "none") {
-        overlay.style.display = "block";
+function togglePanel(panelId) {
+    const panel = document.getElementById(panelId);
+    if (panel.style.display === "none") {
+        panel.style.display = "block";
     } else {
-        overlay.style.display = "none";
+        panel.style.display = "none";
     }
 }
+
+// Initialize panel visibility
+document.addEventListener('DOMContentLoaded', () => {
+    const panels = ['fpsPanel', 'particlePanel', 'speedPanel', 'memoryPanel', 'positionPanel'];
+    panels.forEach(panelId => {
+        const panel = document.getElementById(panelId);
+        if (panel) {
+            panel.style.display = "block";
+        }
+    });
+});
 
 // Update metrics display
 function updateMetrics() {
