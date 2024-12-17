@@ -6,17 +6,22 @@ function startTutorial() {
         steps: [
             {
                 title: 'Welcome to SparkleGeneratorFX!',
-                intro: 'Let\'s take a quick tour of this interactive particle physics engine.'
+                intro: 'Let\'s take a quick tour of this interactive particle physics engine. This application is fully keyboard accessible!'
             },
             {
                 element: '#gameCanvas',
                 title: 'Particle Canvas',
-                intro: 'This is your creative space! Click and drag to move particles, right-click for burst effects.'
+                intro: 'This is your creative space! Click and drag to move particles, right-click for burst effects. The canvas automatically adjusts to your window size.'
+            },
+            {
+                element: '#toggleMetricsButton',
+                title: 'Metrics Panel Controls',
+                intro: 'Toggle metrics panels using this button or press Alt+M. Metrics panels show FPS, particle count, speed, and memory usage. Use Tab and Arrow keys to navigate between panels.'
             },
             {
                 element: '#basicControls',
                 title: 'Basic Controls',
-                intro: 'Adjust fundamental particle properties like count, size, and speed.',
+                intro: 'Adjust fundamental particle properties like count, size, and speed. All controls are keyboard accessible - use Tab to navigate and Space/Enter to activate.',
                 position: 'right'
             },
             {
@@ -218,8 +223,24 @@ function startTutorial() {
                 }
             },
             {
+                element: '#backgroundColor',
+                title: 'Background Controls',
+                intro: 'Customize the canvas background color to match your theme. The current theme uses our signature green color.',
+                position: 'right'
+            },
+            {
+                element: '.metrics-panel',
+                title: 'Interactive Metrics',
+                intro: 'Drag metrics panels to reposition them. Use Alt+M to show/hide all panels. Each panel can be maximized or closed individually.',
+                position: 'right'
+            },
+            {
+                title: 'Keyboard Navigation',
+                intro: 'Navigate with Tab key, use Space/Enter to activate controls. Press Alt+M to toggle metrics. Arrow keys move focused panels.'
+            },
+            {
                 title: 'Start Creating!',
-                intro: 'You\'re ready to create amazing particle effects! Click and drag on the canvas to begin.'
+                intro: 'You\'re ready to create amazing particle effects! Use mouse or keyboard to interact with the canvas and controls.'
             }
         ],
         showProgress: true,
