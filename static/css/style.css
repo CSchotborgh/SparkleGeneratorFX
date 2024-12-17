@@ -342,6 +342,38 @@ h3, h4 {
     padding: 2px;
 }
 
+/* Accessibility Styles */
+:focus {
+    outline: 2px solid #2ecc71 !important;
+    outline-offset: 2px !important;
+}
+
+.metrics-panel:focus {
+    outline: 3px solid #2ecc71 !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+}
+
+.btn:focus {
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.5) !important;
+}
+
+/* Skip to content link for keyboard users */
+.skip-to-content {
+    position: absolute;
+    left: -9999px;
+    z-index: 9999;
+    padding: 1em;
+    background-color: #2ecc71;
+    color: white;
+    text-decoration: none;
+}
+
+.skip-to-content:focus {
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+}
 
 /* Metrics Panel Styles */
 .metrics-panel {

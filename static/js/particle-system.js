@@ -613,6 +613,48 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener("mousemove", drag, false);
 });
 
+// Keyboard Navigation
+document.addEventListener('keydown', (e) => {
+    // Toggle metrics panels with Alt + M
+    if (e.altKey && e.key.toLowerCase() === 'm') {
+        document.getElementById('toggleMetricsButton').click();
+    }
+
+    // Handle panel navigation and control
+    const focusedPanel = document.activeElement.closest('.metrics-panel');
+    if (focusedPanel) {
+        const step = e.shiftKey ? 10 : 1; // Larger steps with Shift key
+
+        switch(e.key) {
+            case 'Escape':
+                focusedPanel.style.display = 'none';
+                break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                focusedPanel.style.left = `${parseInt(focusedPanel.style.left || 0) - step}px`;
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                focusedPanel.style.left = `${parseInt(focusedPanel.style.left || 0) + step}px`;
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                focusedPanel.style.top = `${parseInt(focusedPanel.style.top || 0) - step}px`;
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                focusedPanel.style.top = `${parseInt(focusedPanel.style.top || 0) + step}px`;
+                break;
+        }
+    }
+});
+
+// Make panels focusable
+document.querySelectorAll('.metrics-panel').forEach(panel => {
+    panel.setAttribute('tabindex', '0');
+    panel.setAttribute('role', 'region');
+    panel.setAttribute('aria-label', panel.querySelector('.metrics-header h4').textContent);
+});
 // Toggle all metrics panels
 document.getElementById('toggleMetricsButton').addEventListener('click', () => {
     const panels = document.querySelectorAll('.metrics-panel');
