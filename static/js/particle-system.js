@@ -1,4 +1,56 @@
+// Initialize Kaboom.js
+const k = kaboom({
+    global: false,
+    canvas: document.getElementById("gameCanvas"),
+    background: [46, 204, 113], // Initial green theme color
+    width: window.innerWidth * 0.75,
+    height: window.innerHeight,
+});
 
+// Initialize variables
+let particles = [];
+let fps = 0;
+let frames = 0;
+let lastTime = performance.now();
+let backgroundSprite = null;
+let backgroundImage = null;
+
+// Metrics history
+const metricsHistory = {
+    fps: Array(100).fill(0),
+    particleCount: Array(100).fill(0),
+    avgSpeed: Array(100).fill(0),
+    memory: Array(100).fill(0)
+};
+
+// Initialize graphs object
+const graphs = {};
+
+// Configuration object
+let config = {
+    count: 50,
+    size: 5,
+    speed: 5,
+    color: "#ffffff",
+    trailLength: 10,
+    reverseTrail: false
+};
+
+// Physics configuration
+const physics = {
+    gravity: 0.1,
+    wind: 0,
+    friction: 0.99,
+    bounce: 0.8,
+    airResistance: 0.02,
+    turbulence: 0.1,
+    vortexStrength: 0,
+    vortexCenter: { x: k.width() / 2, y: k.height() / 2 },
+    particleMass: 1.0,
+    particleLife: 1.0,
+    acceleration: 1.0,
+    collisionEnabled: false
+};
 
 // Keyboard Navigation
 document.addEventListener('keydown', (e) => {
@@ -42,6 +94,7 @@ document.querySelectorAll('.metrics-panel').forEach(panel => {
     panel.setAttribute('role', 'region');
     panel.setAttribute('aria-label', panel.querySelector('.metrics-header h4').textContent);
 });
+
 // Toggle all metrics panels
 document.getElementById('toggleMetricsButton').addEventListener('click', () => {
     const panels = document.querySelectorAll('.metrics-panel');
@@ -123,9 +176,11 @@ function updateMetrics() {
         console.warn('Error updating metrics graphs:', error);
     }
 }
+
 // Main game loop
 k.onUpdate(() => {
     // Get the current theme and set background accordingly
+    const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
     const themeColor = '#2ecc71'; // Set fixed green theme color
     const [r, g, b] = hexToRgb(themeColor);
     k.setBackground(k.rgb(r, g, b));
