@@ -255,6 +255,41 @@
                             </div>
                         </div>
 
+                        <!-- Shape Controls -->
+                        <div class="accordion-item bg-dark">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shapeControls">
+                                    Shape Controls
+                                </button>
+                            </h2>
+                            <div id="shapeControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
+                                <div class="accordion-body">
+                                    <div class="control-group">
+                                        <label for="shapeType">Shape Type</label>
+                                        <select class="form-select" id="shapeType">
+                                            <option value="circle">Circle</option>
+                                            <option value="square">Square</option>
+                                            <option value="triangle">Triangle</option>
+                                            <option value="star">Star</option>
+                                            <option value="custom">Custom</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-group">
+                                        <label for="shapeSides">Number of Sides</label>
+                                        <input type="range" class="form-range" id="shapeSides" min="3" max="12" value="3">
+                                    </div>
+                                    <div class="control-group">
+                                        <label for="shapeRoundness">Roundness</label>
+                                        <input type="range" class="form-range" id="shapeRoundness" min="0" max="1" step="0.1" value="0">
+                                    </div>
+                                    <div class="control-group">
+                                        <label for="shapeRotation">Rotation</label>
+                                        <input type="range" class="form-range" id="shapeRotation" min="0" max="360" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Visual Effects -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
