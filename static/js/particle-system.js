@@ -613,6 +613,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener("mousemove", drag, false);
 });
 
+// Toggle all metrics panels
+document.getElementById('toggleMetricsButton').addEventListener('click', () => {
+    const panels = document.querySelectorAll('.metrics-panel');
+    const anyVisible = Array.from(panels).some(panel => panel.style.display !== 'none');
+    
+    panels.forEach(panel => {
+        panel.style.display = anyVisible ? 'none' : 'block';
+    });
+});
+
 // Initialize panel visibility
 document.addEventListener('DOMContentLoaded', () => {
     const panels = ['fpsPanel', 'particlePanel', 'speedPanel', 'memoryPanel', 'positionPanel'];
