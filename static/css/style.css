@@ -6,7 +6,7 @@ body {
 #gameCanvas {
     width: 100%;
     height: 100vh;
-    background-color: #000;
+    background-color: var(--canvas-bg); /* Updated to use theme variable */
 }
 
 .control-panel {
@@ -349,13 +349,15 @@ h3, h4 {
     --light-accent: #2ecc71;
     --light-panel-bg: rgba(240, 240, 240, 0.9);
     --light-border: rgba(46, 204, 113, 0.3);
-    
+    --light-canvas-bg: #ffffff;
+
     /* Dark theme variables */
     --dark-bg: #1a1a1a;
     --dark-text: #ffffff;
     --dark-accent: #2ecc71;
     --dark-panel-bg: rgba(34, 34, 34, 0.9);
     --dark-border: rgba(46, 204, 113, 0.3);
+    --dark-canvas-bg: #1a1a1a;
     
     /* Default to dark theme */
     --bg-color: var(--dark-bg);
@@ -363,6 +365,8 @@ h3, h4 {
     --accent-color: var(--dark-accent);
     --panel-bg: var(--dark-panel-bg);
     --border-color: var(--dark-border);
+    --canvas-bg: var(--dark-canvas-bg); /* Added canvas background color variable */
+
 }
 
 /* Light theme class */
@@ -372,6 +376,7 @@ h3, h4 {
     --accent-color: var(--light-accent);
     --panel-bg: var(--light-panel-bg);
     --border-color: var(--light-border);
+    --canvas-bg: var(--light-canvas-bg); /* Added canvas background color variable */
 }
 
 /* Apply theme variables */

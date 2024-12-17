@@ -471,6 +471,14 @@
             const theme = isLight ? 'light' : 'dark';
             localStorage.setItem('theme', theme);
             updateThemeIcon(theme);
+            
+            // Update canvas background color based on theme
+            const backgroundColor = document.getElementById('backgroundColor');
+            if (backgroundColor) {
+                backgroundColor.value = '#2ecc71';
+                const event = new Event('input');
+                backgroundColor.dispatchEvent(event);
+            }
         }
 
         function updateThemeIcon(theme) {
