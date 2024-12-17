@@ -418,6 +418,92 @@ let lastTime = performance.now();
 let frames = 0;
 let fps = 0;
 
+// Initialize metrics history arrays
+const maxDataPoints = 50;
+const metricsHistory = {
+    fps: Array(maxDataPoints).fill(0),
+    particleCount: Array(maxDataPoints).fill(0),
+    avgSpeed: Array(maxDataPoints).fill(0),
+    memory: Array(maxDataPoints).fill(0)
+};
+
+// Initialize Chart.js graphs
+let graphs = {};
+
+function initializeGraphs() {
+    const commonConfig = {
+        type: 'line',
+        options: {
+            animation: false,
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(46, 204, 113, 0.1)'
+                    },
+                    ticks: {
+                        color: '#2ecc71'
+                    }
+                },
+                x: {
+                    display: false
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    };
+
+    const createDataset = (label, color) => ({
+        label,
+        data: [],
+        borderColor: color,
+        borderWidth: 1,
+        fill: false,
+        tension: 0.4
+    });
+
+    graphs.fps = new Chart(document.getElementById('fpsGraph'), {
+        ...commonConfig,
+        data: {
+            labels: Array(maxDataPoints).fill(''),
+            datasets: [createDataset('FPS', '#2ecc71')]
+        }
+    });
+
+    graphs.particleCount = new Chart(document.getElementById('particleCountGraph'), {
+        ...commonConfig,
+        data: {
+            labels: Array(maxDataPoints).fill(''),
+            datasets: [createDataset('Particles', '#2ecc71')]
+        }
+    });
+
+    graphs.speed = new Chart(document.getElementById('speedGraph'), {
+        ...commonConfig,
+        data: {
+            labels: Array(maxDataPoints).fill(''),
+            datasets: [createDataset('Speed', '#2ecc71')]
+        }
+    });
+
+    graphs.memory = new Chart(document.getElementById('memoryGraph'), {
+        ...commonConfig,
+        data: {
+            labels: Array(maxDataPoints).fill(''),
+            datasets: [createDataset('Memory', '#2ecc71')]
+        }
+    });
+}
+
+// Initialize graphs when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeGraphs);
+
 // Metrics overlay drag functionality
 let isDragging = false;
 let currentX;
@@ -491,16 +577,38 @@ function updateMetrics() {
         return sum + speed;
     }, 0) / particles.length;
 
-    // Update metrics display
+    // Estimate memory usage (rough approximation)
+    const memoryUsage = (particles.length * 200) / (1024 * 1024); // Rough estimate in MB
+
+    // Update text metrics
     document.getElementById('fpsMetric').textContent = fps;
     document.getElementById('particleCountMetric').textContent = particles.length;
     document.getElementById('avgSpeedMetric').textContent = avgSpeed.toFixed(2);
+    document.getElementById('memoryMetric').textContent = `${memoryUsage.toFixed(2)} MB`;
     document.getElementById('emitterPosMetric').textContent = 
         `x: ${Math.round(emitter.x)}, y: ${Math.round(emitter.y)}`;
-    
-    // Estimate memory usage (rough approximation)
-    const memoryUsage = (particles.length * 200) / (1024 * 1024); // Rough estimate in MB
-    document.getElementById('memoryMetric').textContent = `${memoryUsage.toFixed(2)} MB`;
+
+    // Update metrics history
+    metricsHistory.fps.push(fps);
+    metricsHistory.fps.shift();
+    metricsHistory.particleCount.push(particles.length);
+    metricsHistory.particleCount.shift();
+    metricsHistory.avgSpeed.push(avgSpeed);
+    metricsHistory.avgSpeed.shift();
+    metricsHistory.memory.push(memoryUsage);
+    metricsHistory.memory.shift();
+
+    // Update graphs
+    if (graphs.fps) {
+        graphs.fps.data.datasets[0].data = metricsHistory.fps;
+        graphs.fps.update();
+        graphs.particleCount.data.datasets[0].data = metricsHistory.particleCount;
+        graphs.particleCount.update();
+        graphs.speed.data.datasets[0].data = metricsHistory.avgSpeed;
+        graphs.speed.update();
+        graphs.memory.data.datasets[0].data = metricsHistory.memory;
+        graphs.memory.update();
+    }
 }
 // Main game loop
 k.onUpdate(() => {
