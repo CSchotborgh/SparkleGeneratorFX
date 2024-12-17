@@ -463,22 +463,18 @@
         function initializeTheme() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.body.classList.toggle('light-theme', savedTheme === 'light');
+            document.documentElement.style.setProperty('--canvas-bg', savedTheme === 'light' ? 'var(--light-canvas-bg)' : 'var(--dark-canvas-bg)');
             updateThemeIcon(savedTheme);
+            updateCanvasBackground(savedTheme);
         }
 
         function toggleTheme() {
             const isLight = document.body.classList.toggle('light-theme');
             const theme = isLight ? 'light' : 'dark';
             localStorage.setItem('theme', theme);
+            document.documentElement.style.setProperty('--canvas-bg', theme === 'light' ? 'var(--light-canvas-bg)' : 'var(--dark-canvas-bg)');
             updateThemeIcon(theme);
-            
-            // Update canvas background color based on theme
-            const backgroundColor = document.getElementById('backgroundColor');
-            if (backgroundColor) {
-                backgroundColor.value = '#2ecc71';
-                const event = new Event('input');
-                backgroundColor.dispatchEvent(event);
-            }
+            updateCanvasBackground(theme);
         }
 
         function updateThemeIcon(theme) {
@@ -486,6 +482,13 @@
             if (themeIcon) {
                 themeIcon.setAttribute('data-feather', theme === 'light' ? 'moon' : 'sun');
                 feather.replace();
+            }
+        }
+
+        function updateCanvasBackground(theme) {
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) {
+                canvas.style.backgroundColor = theme === 'light' ? 'var(--light-canvas-bg)' : 'var(--dark-canvas-bg)';
             }
         }
 

@@ -738,8 +738,10 @@ function updateMetrics() {
 }
 // Main game loop
 k.onUpdate(() => {
-    // Set the background color
-    const [r, g, b] = hexToRgb(backgroundColor);
+    // Get the current theme and set background accordingly
+    const isLightTheme = document.body.classList.contains('light-theme');
+    const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--canvas-bg').trim();
+    const [r, g, b] = hexToRgb(themeColor || backgroundColor);
     k.setBackground(k.rgb(r, g, b));
 
     // Draw background if available

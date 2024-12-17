@@ -365,8 +365,7 @@ h3, h4 {
     --accent-color: var(--dark-accent);
     --panel-bg: var(--dark-panel-bg);
     --border-color: var(--dark-border);
-    --canvas-bg: var(--dark-canvas-bg); /* Added canvas background color variable */
-
+    --canvas-bg: var(--dark-canvas-bg);
 }
 
 /* Light theme class */
