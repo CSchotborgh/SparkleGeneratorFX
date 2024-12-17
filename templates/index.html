@@ -77,7 +77,10 @@
             <div class="col-md-9">
                 <!-- Metrics Overlay -->
                 <div id="metricsOverlay" class="metrics-overlay">
-                    <h4>Particle System Metrics</h4>
+                    <div class="metrics-header">
+                        <h4>Particle System Metrics</h4>
+                        <button class="close-button" onclick="toggleMetricsOverlay()">×</button>
+                    </div>
                     <div class="metric">
                         <label>FPS:</label>
                         <span id="fpsMetric">0</span>

@@ -418,7 +418,63 @@ let lastTime = performance.now();
 let frames = 0;
 let fps = 0;
 
-// Function to update metrics display
+// Metrics overlay drag functionality
+let isDragging = false;
+let currentX;
+let currentY;
+let initialX;
+let initialY;
+let xOffset = 0;
+let yOffset = 0;
+
+const metricsOverlay = document.getElementById("metricsOverlay");
+
+metricsOverlay.addEventListener("mousedown", dragStart);
+document.addEventListener("mousemove", drag);
+document.addEventListener("mouseup", dragEnd);
+
+function dragStart(e) {
+    initialX = e.clientX - xOffset;
+    initialY = e.clientY - yOffset;
+
+    if (e.target === metricsOverlay || e.target.parentNode === metricsOverlay) {
+        isDragging = true;
+    }
+}
+
+function drag(e) {
+    if (isDragging) {
+        e.preventDefault();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        setTranslate(currentX, currentY, metricsOverlay);
+    }
+}
+
+function dragEnd(e) {
+    initialX = currentX;
+    initialY = currentY;
+    isDragging = false;
+}
+
+function setTranslate(xPos, yPos, el) {
+    el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+}
+
+function toggleMetricsOverlay() {
+    const overlay = document.getElementById("metricsOverlay");
+    if (overlay.style.display === "none") {
+        overlay.style.display = "block";
+    } else {
+        overlay.style.display = "none";
+    }
+}
+
+// Update metrics display
 function updateMetrics() {
     // Calculate FPS
     const currentTime = performance.now();
