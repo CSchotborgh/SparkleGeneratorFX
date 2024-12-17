@@ -428,8 +428,14 @@ const metricsHistory = {
 };
 
 // Initialize Chart.js graphs
-let graphs = {};
+let graphs = {
+    fps: null,
+    particleCount: null,
+    speed: null,
+    memory: null
+};
 
+// Function to initialize graphs
 function initializeGraphs() {
     const commonConfig = {
         type: 'line',
@@ -598,16 +604,26 @@ function updateMetrics() {
     metricsHistory.memory.push(memoryUsage);
     metricsHistory.memory.shift();
 
-    // Update graphs
-    if (graphs.fps) {
-        graphs.fps.data.datasets[0].data = metricsHistory.fps;
-        graphs.fps.update();
-        graphs.particleCount.data.datasets[0].data = metricsHistory.particleCount;
-        graphs.particleCount.update();
-        graphs.speed.data.datasets[0].data = metricsHistory.avgSpeed;
-        graphs.speed.update();
-        graphs.memory.data.datasets[0].data = metricsHistory.memory;
-        graphs.memory.update();
+    // Update graphs if they are initialized
+    try {
+        if (graphs.fps && graphs.fps.data) {
+            graphs.fps.data.datasets[0].data = metricsHistory.fps;
+            graphs.fps.update('none'); // Use 'none' mode for better performance
+        }
+        if (graphs.particleCount && graphs.particleCount.data) {
+            graphs.particleCount.data.datasets[0].data = metricsHistory.particleCount;
+            graphs.particleCount.update('none');
+        }
+        if (graphs.speed && graphs.speed.data) {
+            graphs.speed.data.datasets[0].data = metricsHistory.avgSpeed;
+            graphs.speed.update('none');
+        }
+        if (graphs.memory && graphs.memory.data) {
+            graphs.memory.data.datasets[0].data = metricsHistory.memory;
+            graphs.memory.update('none');
+        }
+    } catch (error) {
+        console.warn('Error updating metrics graphs:', error);
     }
 }
 // Main game loop

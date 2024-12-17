@@ -391,6 +391,14 @@
     <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.0/dist/feather.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Ensure Chart.js is loaded before initializing particle system
+        window.addEventListener('load', () => {
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js not loaded properly');
+            }
+        });
+    </script>
     <script src="{{ url_for('static', filename='js/particle-system.js') }}"></script>
     <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
     <script src="{{ url_for('static', filename='js/export.js') }}"></script>
