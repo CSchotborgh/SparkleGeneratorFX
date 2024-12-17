@@ -738,9 +738,9 @@ function updateMetrics() {
 }
 // Main game loop
 k.onUpdate(() => {
-    // Set the background color
-    const [r, g, b] = hexToRgb(backgroundColor);
-    k.setBackground(k.rgb(r, g, b));
+    // Set the background color with a slightly transparent version of our theme
+    const [r, g, b] = hexToRgb('#2ecc71');
+    k.setBackground(k.rgb(r, g, b, 0.3)); // Adding transparency for better particle visibility
 
     // Draw background if available
     if (backgroundSprite && backgroundImage) {
