@@ -349,7 +349,7 @@ h3, h4 {
     --light-accent: #2ecc71;
     --light-panel-bg: rgba(240, 240, 240, 0.9);
     --light-border: rgba(46, 204, 113, 0.3);
-    --light-canvas-bg: #ffffff;
+    --light-canvas-bg: #2ecc71;
 
     /* Dark theme variables */
     --dark-bg: #1a1a1a;
@@ -357,7 +357,7 @@ h3, h4 {
     --dark-accent: #2ecc71;
     --dark-panel-bg: rgba(34, 34, 34, 0.9);
     --dark-border: rgba(46, 204, 113, 0.3);
-    --dark-canvas-bg: #1a1a1a;
+    --dark-canvas-bg: #2ecc71;
     
     /* Default to dark theme */
     --bg-color: var(--dark-bg);
