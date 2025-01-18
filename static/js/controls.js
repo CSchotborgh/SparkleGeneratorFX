@@ -29,7 +29,14 @@ document.getElementById('particleCountValue').addEventListener('input', (e) => {
 document.getElementById('particleSize').addEventListener('input', (e) => {
     const value = parseInt(e.target.value);
     config.size = value;
-    document.getElementById('particleSizeValue').textContent = calculatePercentage(value, 1, 20);
+    document.getElementById('particleSizeValue').value = value;
+});
+
+document.getElementById('particleSizeValue').addEventListener('input', (e) => {
+    const value = Math.min(60, Math.max(1, parseInt(e.target.value) || 1));
+    config.size = value;
+    document.getElementById('particleSize').value = value;
+    e.target.value = value;
 });
 
 document.getElementById('particleSpeed').addEventListener('input', (e) => {
