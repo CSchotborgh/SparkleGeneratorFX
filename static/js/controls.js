@@ -6,7 +6,7 @@ function calculatePercentage(value, min, max) {
 document.getElementById('particleCount').addEventListener('input', (e) => {
     const value = parseInt(e.target.value);
     config.count = value;
-    document.getElementById('particleCountValue').textContent = value;
+    document.getElementById('particleCountValue').textContent = calculatePercentage(value, 1, 100);
     particles = Array(config.count).fill().map(() => new Particle());
 });
 
