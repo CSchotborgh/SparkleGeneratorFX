@@ -357,7 +357,7 @@ h3, h4 {
 
 .accordion-button {
     color: #fff !important;
-    background-color: rgba(46, 204, 113, 0.8) !important;
+    background-color: rgba(46, 204, 113, 0.15) !important;
     box-shadow: none !important;
     padding: 1rem;
     border: none;
@@ -365,7 +365,7 @@ h3, h4 {
 }
 
 .accordion-button:not(.collapsed) {
-    background-color: rgba(39, 174, 96, 0.8) !important;
+    background-color: rgba(39, 174, 96, 0.15) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
