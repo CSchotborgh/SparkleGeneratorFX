@@ -1,5 +1,5 @@
 // Initialize dimensions
-const initialWidth = window.innerWidth * 0.75;
+const initialWidth = window.innerWidth;
 const initialHeight = window.innerHeight;
 
 // Background configuration

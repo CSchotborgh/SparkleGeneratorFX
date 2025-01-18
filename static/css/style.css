@@ -1,12 +1,19 @@
 body {
+    margin: 0;
+    padding: 0;
     overflow: hidden;
     background-color: #1a1a1a;
+    width: 100vw;
+    height: 100vh;
 }
 
 #gameCanvas {
-    width: 100%;
+    width: 100vw;
     height: 100vh;
     background-color: #000;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 
 .control-panel-overlay {
