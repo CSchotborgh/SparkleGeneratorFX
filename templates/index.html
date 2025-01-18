@@ -173,7 +173,6 @@
                 </div>
                 <canvas id="gameCanvas"></canvas>
             </div>
-            </div>
         </div>
         <div class="control-panel-overlay">
             <button id="toggleControlPanel" class="control-panel-toggle">
@@ -390,6 +389,14 @@
                                         <button class="btn btn-outline-light mb-2" onclick="exportToCSS()">Export CSS</button>
                                         <button class="btn btn-outline-light mb-2" onclick="exportToPNG()">Export PNG</button>
                                     </div>
+                                    <div class="control-group">
+                                        <label>Image and Sequences</label>
+                                        <input type="file" class="form-control" id="imageImport" accept="image/png" multiple>
+                                        <div class="mt-2">
+                                            <button class="btn btn-outline-light" onclick="startAnimation()">Play</button>
+                                            <button class="btn btn-outline-light" onclick="stopAnimation()">Stop</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -419,30 +426,6 @@
                             </div>
                         </div>
 
-                        <!-- Import Options -->
-                        <div class="accordion-item bg-dark">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#importOptions">
-                                    Import Options
-                                </button>
-                            </h2>
-                            <div id="importOptions" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
-                                <div class="accordion-body">
-                                    <div class="control-group">
-                                        <label>Image and Sequences</label>
-                                        <input type="file" class="form-control" id="imageImport" accept="image/png" multiple>
-                                        <div class="mt-2">
-                                            <button class="btn btn-outline-light" onclick="startAnimation()">Play</button>
-                                            <button class="btn btn-outline-light" onclick="stopAnimation()">Stop</button>
-                                        </div>
-                                    </div>
-                                    <div class="control-group">
-                                        <label for="backgroundImage">Background Image</label>
-                                        <input type="file" class="form-control" id="backgroundImage" accept=".jpg,.jpeg,.png,.gif">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Background Controls -->
                         <div class="accordion-item bg-dark">
@@ -456,6 +439,10 @@
                                     <div class="control-group">
                                         <label for="backgroundColor">Background Color</label>
                                         <input type="color" class="form-control" id="backgroundColor" value="#2ecc71">
+                                    </div>
+                                    <div class="control-group">
+                                        <label for="backgroundImage">Background Image</label>
+                                        <input type="file" class="form-control" id="backgroundImage" accept=".jpg,.jpeg,.png,.gif">
                                     </div>
                                 </div>
                             </div>
@@ -498,6 +485,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <script src="https://unpkg.com/kaboom@3000.0.1/dist/kaboom.js"></script>
