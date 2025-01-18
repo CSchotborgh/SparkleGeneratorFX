@@ -1,15 +1,25 @@
 // Control panel event listeners
+function calculatePercentage(value, min, max) {
+    return Math.round(((value - min) / (max - min)) * 100);
+}
+
 document.getElementById('particleCount').addEventListener('input', (e) => {
-    config.count = parseInt(e.target.value);
+    const value = parseInt(e.target.value);
+    config.count = value;
+    document.getElementById('particleCountValue').textContent = calculatePercentage(value, 1, 100);
     particles = Array(config.count).fill().map(() => new Particle());
 });
 
 document.getElementById('particleSize').addEventListener('input', (e) => {
-    config.size = parseInt(e.target.value);
+    const value = parseInt(e.target.value);
+    config.size = value;
+    document.getElementById('particleSizeValue').textContent = calculatePercentage(value, 1, 20);
 });
 
 document.getElementById('particleSpeed').addEventListener('input', (e) => {
-    config.speed = parseInt(e.target.value);
+    const value = parseInt(e.target.value);
+    config.speed = value;
+    document.getElementById('particleSpeedValue').textContent = calculatePercentage(value, 1, 10);
 });
 
 document.getElementById('gravity').addEventListener('input', (e) => {
