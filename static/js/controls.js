@@ -144,6 +144,37 @@ document.getElementById('particleBlur').addEventListener('input', (e) => {
 
 document.getElementById('particleShape').addEventListener('change', (e) => {
     config.shape = e.target.value;
+    const imageGroup = document.getElementById('imageEmitterGroup');
+    imageGroup.style.display = e.target.value === 'image' ? 'block' : 'none';
+});
+
+document.getElementById('emitterImage').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        const img = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
+
+        // Load the sprite for particles
+        const spriteName = 'particle_emitter';
+        await k.loadSprite(spriteName, dataUrl);
+        config.particleSprite = spriteName;
+        config.originalSize = Math.max(img.width, img.height);
+    } catch (error) {
+        console.error('Error loading emitter image:', error);
+    }
 });
 
 document.getElementById('particleRotation').addEventListener('change', (e) => {
