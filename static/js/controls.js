@@ -42,15 +42,14 @@ document.getElementById('particleSizeValue').addEventListener('input', (e) => {
 document.getElementById('particleSpeed').addEventListener('input', (e) => {
     const value = parseInt(e.target.value);
     config.speed = value;
-    document.getElementById('particleSpeedValue').value = calculatePercentage(value, 1, 10);
+    document.getElementById('particleSpeedValue').value = value;
 });
 
 document.getElementById('particleSpeedValue').addEventListener('input', (e) => {
-    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-    const value = Math.round((percentage / 100) * (10 - 1) + 1);
+    const value = Math.min(120, Math.max(10, parseInt(e.target.value) || 60));
     config.speed = value;
     document.getElementById('particleSpeed').value = value;
-    e.target.value = percentage;
+    e.target.value = value;
 });
 
 document.getElementById('gravity').addEventListener('input', (e) => {
