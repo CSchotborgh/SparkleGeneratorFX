@@ -22,23 +22,6 @@ document.getElementById('particleSpeed').addEventListener('input', (e) => {
     document.getElementById('particleSpeedValue').textContent = calculatePercentage(value, 1, 10);
 });
 
-// Advanced particle controls
-document.getElementById('particleOpacity').addEventListener('input', (e) => {
-    config.opacity = parseFloat(e.target.value);
-});
-
-document.getElementById('particleBlur').addEventListener('input', (e) => {
-    config.blur = parseInt(e.target.value);
-});
-
-document.getElementById('particleShape').addEventListener('change', (e) => {
-    config.shape = e.target.value;
-});
-
-document.getElementById('particleRotation').addEventListener('change', (e) => {
-    config.enableRotation = e.target.checked;
-});
-
 document.getElementById('gravity').addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     physics.gravity = value;
