@@ -23,36 +23,52 @@ document.getElementById('particleSpeed').addEventListener('input', (e) => {
 });
 
 document.getElementById('gravity').addEventListener('input', (e) => {
-    physics.gravity = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    physics.gravity = value;
+    document.getElementById('gravityValue').textContent = calculatePercentage(value, 0, 0.5);
 });
 
 document.getElementById('wind').addEventListener('input', (e) => {
-    physics.wind = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    physics.wind = value;
+    document.getElementById('windValue').textContent = calculatePercentage(value, -0.2, 0.2);
 });
 
 document.getElementById('bounce').addEventListener('input', (e) => {
-    physics.bounce = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    physics.bounce = value;
+    document.getElementById('bounceValue').textContent = calculatePercentage(value, 0, 1);
 });
 
 document.getElementById('friction').addEventListener('input', (e) => {
-    physics.friction = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    physics.friction = value;
+    document.getElementById('frictionValue').textContent = calculatePercentage(value, 0.9, 1);
 });
 
 document.getElementById('airResistance').addEventListener('input', (e) => {
-    physics.airResistance = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    physics.airResistance = value;
+    document.getElementById('airResistanceValue').textContent = calculatePercentage(value, 0, 0.1);
 });
 
 document.getElementById('turbulence').addEventListener('input', (e) => {
-    physics.turbulence = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    physics.turbulence = value;
+    document.getElementById('turbulenceValue').textContent = calculatePercentage(value, 0, 0.5);
 });
 
 document.getElementById('vortexStrength').addEventListener('input', (e) => {
-    physics.vortexStrength = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    physics.vortexStrength = value;
+    document.getElementById('vortexStrengthValue').textContent = calculatePercentage(value, -1, 1);
     physics.vortexCenter = { x: k.width() / 2, y: k.height() / 2 };
 });
 
 document.getElementById('particleMass').addEventListener('input', (e) => {
-    physics.particleMass = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    physics.particleMass = value;
+    document.getElementById('particleMassValue').textContent = calculatePercentage(value, 0.1, 5);
 });
 
 document.getElementById('particleLife').addEventListener('input', (e) => {
