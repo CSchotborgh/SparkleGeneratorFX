@@ -22,8 +22,8 @@
             <button class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" onclick="startTutorial()" tabindex="0" aria-label="Start Quick Tour" style="min-width: 100px;">
                 <i data-feather="help-circle" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">QuickTour</span>
             </button>
-            <button id="toggleMetricsButton" class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" tabindex="0" aria-label="Toggle Metrics Panels" style="min-width: 100px;">
-                <i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Metrics</span>
+            <button id="toggleMetricsButton" class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center active" tabindex="0" aria-label="Toggle Metrics Panels" style="min-width: 100px;">
+                <i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Metrics On</span>
             </button>
             </div>
 
@@ -475,8 +475,9 @@
                 panel.style.display = metricsVisible ? 'block' : 'none';
             });
             toggleMetricsButton.innerHTML = metricsVisible ? 
-                '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Metrics</span>' : 
-                '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Metrics</span>';
+                '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Metrics On</span>' : 
+                '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Metrics Off</span>';
+        toggleMetricsButton.classList.toggle('active', metricsVisible);
             feather.replace(); // Re-render Feather icons after changing innerHTML
         });
     </script>

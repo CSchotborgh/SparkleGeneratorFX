@@ -536,3 +536,13 @@ h3, h4 {
     font-family: monospace;
     text-align: right;
 }
+.btn.active {
+    background-color: #2ecc71;
+    color: #000;
+    border-color: #2ecc71;
+}
+
+.btn.active:hover {
+    background-color: #27ae60;
+    border-color: #27ae60;
+}
