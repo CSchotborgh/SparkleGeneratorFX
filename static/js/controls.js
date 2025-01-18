@@ -6,8 +6,17 @@ function calculatePercentage(value, min, max) {
 document.getElementById('particleCount').addEventListener('input', (e) => {
     const value = parseInt(e.target.value);
     config.count = value;
-    document.getElementById('particleCountValue').textContent = calculatePercentage(value, 1, 100);
+    document.getElementById('particleCountValue').value = calculatePercentage(value, 1, 100);
     particles = Array(config.count).fill().map(() => new Particle());
+});
+
+document.getElementById('particleCountValue').addEventListener('input', (e) => {
+    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+    const value = Math.round((percentage / 100) * (100 - 1) + 1);
+    config.count = value;
+    document.getElementById('particleCount').value = value;
+    particles = Array(config.count).fill().map(() => new Particle());
+    e.target.value = percentage;
 });
 
 document.getElementById('particleSize').addEventListener('input', (e) => {
