@@ -92,6 +92,23 @@ document.getElementById('collisionEnabled').addEventListener('change', (e) => {
 document.getElementById('particleColor').addEventListener('input', (e) => {
     config.color = e.target.value;
 });
+
+// Advanced particle options
+document.getElementById('particleOpacity').addEventListener('input', (e) => {
+    config.opacity = parseFloat(e.target.value);
+});
+
+document.getElementById('particleBlur').addEventListener('input', (e) => {
+    config.blur = parseInt(e.target.value);
+});
+
+document.getElementById('particleShape').addEventListener('change', (e) => {
+    config.shape = e.target.value;
+});
+
+document.getElementById('particleRotation').addEventListener('change', (e) => {
+    config.enableRotation = e.target.checked;
+});
 document.getElementById('trailLength').addEventListener('input', (e) => {
     config.trailLength = parseInt(e.target.value);
     particles.forEach(particle => {

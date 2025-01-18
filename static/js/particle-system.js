@@ -215,22 +215,67 @@ class Particle {
         }
 
         // Draw current particle
+        const opacity = (config.opacity || 1.0) * this.life;
+        const blur = config.blur || 0;
+        const shouldRotate = config.enableRotation;
+        const shape = config.shape || 'circle';
+
         if (this.sprite) {
             k.drawSprite({
                 sprite: this.sprite,
                 pos: k.vec2(this.x, this.y),
                 scale: k.vec2(this.size / 20),
-                angle: this.angle,
-                color: k.rgb(...hexToRgb(config.color), this.life),
+                angle: shouldRotate ? this.angle : 0,
+                color: k.rgb(...hexToRgb(config.color), opacity),
                 anchor: "center",
-                z: 1, // Set z-index to 1 to ensure particles are above background
+                z: 1
             });
         } else {
-            k.drawCircle({
-                pos: k.vec2(this.x, this.y),
-                radius: this.size,
-                color: k.rgb(...hexToRgb(config.color), this.life),
-            });
+            switch (shape) {
+                case 'square':
+                    k.drawRect({
+                        pos: k.vec2(this.x - this.size/2, this.y - this.size/2),
+                        width: this.size,
+                        height: this.size,
+                        angle: shouldRotate ? this.angle : 0,
+                        color: k.rgb(...hexToRgb(config.color), opacity),
+                    });
+                    break;
+                case 'triangle':
+                    const points = [];
+                    for (let i = 0; i < 3; i++) {
+                        const angle = (i * 2 * Math.PI / 3) + (shouldRotate ? this.angle : 0);
+                        points.push(k.vec2(
+                            this.x + Math.cos(angle) * this.size,
+                            this.y + Math.sin(angle) * this.size
+                        ));
+                    }
+                    k.drawPolygon({
+                        pts: points,
+                        color: k.rgb(...hexToRgb(config.color), opacity),
+                    });
+                    break;
+                case 'star':
+                    const starPoints = [];
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i * 4 * Math.PI / 5) + (shouldRotate ? this.angle : 0);
+                        starPoints.push(k.vec2(
+                            this.x + Math.cos(angle) * this.size,
+                            this.y + Math.sin(angle) * this.size * 0.5
+                        ));
+                    }
+                    k.drawPolygon({
+                        pts: starPoints,
+                        color: k.rgb(...hexToRgb(config.color), opacity),
+                    });
+                    break;
+                default:
+                    k.drawCircle({
+                        pos: k.vec2(this.x, this.y),
+                        radius: this.size,
+                        color: k.rgb(...hexToRgb(config.color), opacity),
+                    });
+            }
         }
     }
 }
