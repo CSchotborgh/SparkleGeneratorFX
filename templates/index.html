@@ -16,13 +16,13 @@
             <button class="btn btn-outline-light me-2 d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#aboutModal" tabindex="0" aria-label="About SparkleGeneratorFX">
                 <i data-feather="info" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span>About</span>
             </button>
-            <button class="btn btn-outline-light d-flex align-items-center" onclick="startTutorial()" tabindex="0" aria-label="Start Quick Tour">
+            <button class="btn btn-outline-light me-2 d-flex align-items-center" onclick="startTutorial()" tabindex="0" aria-label="Start Quick Tour">
                 <i data-feather="help-circle" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span>QuickTour</span>
             </button>
-            <button id="toggleMetricsButton" class="btn btn-outline-light d-flex align-items-center nowrap" tabindex="0" aria-label="Toggle Metrics Panels">
-                <i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Toggle Metrics</span>
+            <button id="toggleMetricsButton" class="btn btn-outline-light me-2 d-flex align-items-center" tabindex="0" aria-label="Toggle Metrics Panels">
+                <i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span>Toggle Metrics</span>
             </button>
-            <button id="resetButton" class="btn btn-outline-danger d-flex align-items-center ms-2" onclick="resetSystem()" tabindex="0" aria-label="Reset All Settings">
+            <button id="resetButton" class="btn btn-outline-danger d-flex align-items-center" onclick="resetSystem()" tabindex="0" aria-label="Reset All Settings">
                 <i data-feather="refresh-cw" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span>Reset</span>
             </button>
         </div>
@@ -474,7 +474,7 @@
             metricsPanels.forEach(panel => {
                 panel.style.display = metricsVisible ? 'block' : 'none';
             });
-            toggleMetricsButton.innerHTML = metricsVisible ? '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Toggle Metrics</span>' : '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Show Metrics</span>';
+            toggleMetricsButton.innerHTML = metricsVisible ? '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span>Toggle Metrics</span>' : '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span>Show Metrics</span>';
             feather.replace(); // Re-render Feather icons after changing innerHTML
         });
     </script>
