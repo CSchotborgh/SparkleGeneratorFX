@@ -1,3 +1,10 @@
+
+// Control panel toggle
+document.getElementById('toggleControlPanel').addEventListener('click', () => {
+    document.querySelector('.control-panel-overlay').classList.toggle('active');
+});
+
+
 // Control panel event listeners
 function calculatePercentage(value, min, max) {
     return Math.round(((value - min) / (max - min)) * 100);

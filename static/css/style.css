@@ -9,13 +9,50 @@ body {
     background-color: #000;
 }
 
+.control-panel-overlay {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100vh;
+    background-color: rgba(33, 33, 33, 0.95);
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.control-panel-overlay.active {
+    right: 0;
+}
+
 .control-panel {
-    background-color: rgba(33, 33, 33, 0.9);
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
     height: 100vh;
     overflow-y: auto;
+}
+
+.control-panel-toggle {
+    position: absolute;
+    left: -48px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #2ecc71;
+    border: none;
+    padding: 12px;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+
+.control-panel-toggle:hover {
+    background: #27ae60;
+}
+
+.control-panel-toggle i {
+    color: white;
+    width: 24px;
+    height: 24px;
 }
 
 .control-group {
