@@ -352,6 +352,8 @@ class Emitter {
         // Add emitter velocity to particle initial velocity for smoother motion
         particle.vx = (Math.random() - 0.5) * config.speed + this.vx * 0.5;
         particle.vy = (Math.random() - 0.5) * config.speed + this.vy * 0.5;
+        // Apply current shape configuration
+        particle.shape = config.shape || 'circle';
         return particle;
     }
 }
