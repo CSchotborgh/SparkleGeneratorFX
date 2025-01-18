@@ -11,8 +11,8 @@ const k = kaboom({
     background: [46, 204, 113]
 });
 
-// Preset configurations
-const presets = {
+// Make presets globally available
+window.particlePresets = {
     sparkle: {
         count: 50,
         size: 5,
@@ -28,6 +28,24 @@ const presets = {
             vortexStrength: 0,
             particleMass: 1.0,
             acceleration: 1.0,
+            collisionEnabled: false
+        }
+    },
+    fire: {
+        count: 70,
+        size: 8,
+        speed: 7,
+        color: "#ff4400",
+        physics: {
+            gravity: -0.1,
+            wind: 0,
+            friction: 0.96,
+            bounce: 0.3,
+            airResistance: 0.01,
+            turbulence: 0.2,
+            vortexStrength: 0.2,
+            particleMass: 0.5,
+            acceleration: 1.5,
             collisionEnabled: false
         }
     },
@@ -123,8 +141,8 @@ const presets = {
     }
 };
 
-// Physics configuration
-const physics = {
+// Initialize global configurations
+window.physics = {
     gravity: 0.1,
     wind: 0,
     friction: 0.99,
@@ -139,8 +157,7 @@ const physics = {
     collisionEnabled: false
 };
 
-// Initial configuration
-let config = {
+window.config = {
     count: 50,
     size: 5,
     speed: 5,
@@ -150,21 +167,31 @@ let config = {
     reverseTrail: false
 };
 
+// Helper function to convert hex to RGB
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+    ] : [255, 255, 255];
+}
+
 // Particle class definition
 class Particle {
     constructor() {
         this.trail = [];
-        this.trailLength = config.trailLength || 10;
+        this.trailLength = window.config.trailLength || 10;
         this.reset();
     }
 
     reset() {
         this.x = k.width() / 2;
         this.y = k.height() / 2;
-        this.vx = (Math.random() - 0.5) * config.speed;
-        this.vy = (Math.random() - 0.5) * config.speed;
-        this.life = physics.particleLife;
-        this.decay = (0.01 + Math.random() * 0.02) / physics.particleLife;
+        this.vx = (Math.random() - 0.5) * window.config.speed;
+        this.vy = (Math.random() - 0.5) * window.config.speed;
+        this.life = window.physics.particleLife;
+        this.decay = (0.01 + Math.random() * 0.02) / window.physics.particleLife;
         this.trail = Array(this.trailLength).fill().map(() => ({
             x: this.x,
             y: this.y
@@ -173,19 +200,19 @@ class Particle {
 
     update() {
         // Apply physics
-        this.vx += physics.wind;
-        this.vy += physics.gravity;
+        this.vx += window.physics.wind;
+        this.vy += window.physics.gravity;
 
         // Update position
         this.x += this.vx;
         this.y += this.vy;
 
         // Apply friction
-        this.vx *= physics.friction;
-        this.vy *= physics.friction;
+        this.vx *= window.physics.friction;
+        this.vy *= window.physics.friction;
 
         // Update trail
-        if (config.reverseTrail) {
+        if (window.config.reverseTrail) {
             this.trail.shift();
             this.trail.push({ x: this.x, y: this.y });
         } else {
@@ -195,11 +222,11 @@ class Particle {
 
         // Handle boundaries
         if (this.x < 0 || this.x > k.width()) {
-            this.vx *= -physics.bounce;
+            this.vx *= -window.physics.bounce;
             this.x = this.x < 0 ? 0 : k.width();
         }
         if (this.y < 0 || this.y > k.height()) {
-            this.vy *= -physics.bounce;
+            this.vy *= -window.physics.bounce;
             this.y = this.y < 0 ? 0 : k.height();
         }
 
@@ -214,37 +241,27 @@ class Particle {
             const opacity = (1 - i / this.trail.length) * this.life * 0.5;
             k.drawCircle({
                 pos: k.vec2(point.x, point.y),
-                radius: config.size * (1 - i / this.trail.length),
-                color: k.rgb(...hexToRgb(config.color), opacity)
+                radius: window.config.size * (1 - i / this.trail.length),
+                color: k.rgb(...hexToRgb(window.config.color), opacity)
             });
         });
 
         // Draw particle
         k.drawCircle({
             pos: k.vec2(this.x, this.y),
-            radius: config.size,
-            color: k.rgb(...hexToRgb(config.color), this.life)
+            radius: window.config.size,
+            color: k.rgb(...hexToRgb(window.config.color), this.life)
         });
     }
 }
 
 // Create particle pool
-let particles = Array(config.count).fill().map(() => new Particle());
-
-// Helper function to convert hex to RGB
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16)
-    ] : [255, 255, 255];
-}
+let particles = Array(window.config.count).fill().map(() => new Particle());
 
 // Reset system function - make it globally available
 window.resetSystem = function() {
     // Reset physics parameters to default values
-    Object.assign(physics, {
+    Object.assign(window.physics, {
         gravity: 0.1,
         wind: 0,
         friction: 0.99,
@@ -260,7 +277,7 @@ window.resetSystem = function() {
     });
 
     // Reset configuration to default
-    Object.assign(config, {
+    Object.assign(window.config, {
         count: 50,
         size: 5,
         speed: 5,
@@ -270,64 +287,69 @@ window.resetSystem = function() {
         reverseTrail: false
     });
 
-    // Reset UI controls to match default values
-    document.getElementById('particleCount').value = config.count;
-    document.getElementById('particleSize').value = config.size;
-    document.getElementById('particleSpeed').value = config.speed;
-    document.getElementById('particleColor').value = config.color;
-    document.getElementById('gravity').value = physics.gravity;
-    document.getElementById('wind').value = physics.wind;
-    document.getElementById('bounce').value = physics.bounce;
-    document.getElementById('friction').value = physics.friction;
-    document.getElementById('airResistance').value = physics.airResistance;
-    document.getElementById('turbulence').value = physics.turbulence;
-    document.getElementById('vortexStrength').value = physics.vortexStrength;
-    document.getElementById('particleMass').value = physics.particleMass;
-    document.getElementById('particleLife').value = physics.particleLife;
-    document.getElementById('particleAcceleration').value = physics.acceleration;
-    document.getElementById('collisionEnabled').checked = physics.collisionEnabled;
-    document.getElementById('trailLength').value = config.trailLength;
-    document.getElementById('reverseTrail').checked = config.reverseTrail;
-    document.getElementById('presets').value = config.preset;
+    // Reset UI controls
+    document.getElementById('particleCount').value = window.config.count;
+    document.getElementById('particleSize').value = window.config.size;
+    document.getElementById('particleSpeed').value = window.config.speed;
+    document.getElementById('particleColor').value = window.config.color;
+    document.getElementById('gravity').value = window.physics.gravity;
+    document.getElementById('wind').value = window.physics.wind;
+    document.getElementById('bounce').value = window.physics.bounce;
+    document.getElementById('friction').value = window.physics.friction;
+    document.getElementById('airResistance').value = window.physics.airResistance;
+    document.getElementById('turbulence').value = window.physics.turbulence;
+    document.getElementById('vortexStrength').value = window.physics.vortexStrength;
+    document.getElementById('particleMass').value = window.physics.particleMass;
+    document.getElementById('particleLife').value = window.physics.particleLife;
+    document.getElementById('particleAcceleration').value = window.physics.acceleration;
+    document.getElementById('collisionEnabled').checked = window.physics.collisionEnabled;
+    document.getElementById('trailLength').value = window.config.trailLength;
+    document.getElementById('reverseTrail').checked = window.config.reverseTrail;
+    document.getElementById('presets').value = window.config.preset;
 
-    // Reset particles with new configuration
-    particles = Array(config.count).fill().map(() => new Particle());
+    // Reset particles
+    particles = Array(window.config.count).fill().map(() => new Particle());
 };
 
 // Event listener for preset selection
-document.getElementById('presets').addEventListener('change', function(e) {
-    const selectedPreset = presets[e.target.value];
-    if (selectedPreset) {
-        // Update configuration
-        Object.assign(config, {
-            count: selectedPreset.count,
-            size: selectedPreset.size,
-            speed: selectedPreset.speed,
-            color: selectedPreset.color
+window.addEventListener('DOMContentLoaded', () => {
+    const presetsSelect = document.getElementById('presets');
+    if (presetsSelect) {
+        presetsSelect.addEventListener('change', function(e) {
+            const selectedPreset = window.particlePresets[e.target.value];
+            if (selectedPreset) {
+                // Update configuration
+                Object.assign(window.config, {
+                    count: selectedPreset.count,
+                    size: selectedPreset.size,
+                    speed: selectedPreset.speed,
+                    color: selectedPreset.color
+                });
+
+                // Update physics
+                Object.assign(window.physics, selectedPreset.physics);
+
+                // Update UI controls
+                document.getElementById('particleCount').value = window.config.count;
+                document.getElementById('particleSize').value = window.config.size;
+                document.getElementById('particleSpeed').value = window.config.speed;
+                document.getElementById('particleColor').value = window.config.color;
+                document.getElementById('gravity').value = window.physics.gravity;
+                document.getElementById('wind').value = window.physics.wind;
+                document.getElementById('bounce').value = window.physics.bounce;
+                document.getElementById('friction').value = window.physics.friction;
+                document.getElementById('airResistance').value = window.physics.airResistance;
+                document.getElementById('turbulence').value = window.physics.turbulence;
+                document.getElementById('vortexStrength').value = window.physics.vortexStrength;
+                document.getElementById('particleMass').value = window.physics.particleMass;
+                document.getElementById('particleLife').value = window.physics.particleLife;
+                document.getElementById('particleAcceleration').value = window.physics.acceleration;
+                document.getElementById('collisionEnabled').checked = window.physics.collisionEnabled;
+
+                // Reset particles with new configuration
+                particles = Array(window.config.count).fill().map(() => new Particle());
+            }
         });
-
-        // Update physics
-        Object.assign(physics, selectedPreset.physics);
-
-        // Update UI controls
-        document.getElementById('particleCount').value = config.count;
-        document.getElementById('particleSize').value = config.size;
-        document.getElementById('particleSpeed').value = config.speed;
-        document.getElementById('particleColor').value = config.color;
-        document.getElementById('gravity').value = physics.gravity;
-        document.getElementById('wind').value = physics.wind;
-        document.getElementById('bounce').value = physics.bounce;
-        document.getElementById('friction').value = physics.friction;
-        document.getElementById('airResistance').value = physics.airResistance;
-        document.getElementById('turbulence').value = physics.turbulence;
-        document.getElementById('vortexStrength').value = physics.vortexStrength;
-        document.getElementById('particleMass').value = physics.particleMass;
-        document.getElementById('particleLife').value = physics.particleLife;
-        document.getElementById('particleAcceleration').value = physics.acceleration;
-        document.getElementById('collisionEnabled').checked = physics.collisionEnabled;
-
-        // Reset particles with new configuration
-        particles = Array(config.count).fill().map(() => new Particle());
     }
 });
 
