@@ -15,7 +15,7 @@ const physics = {
     turbulence: 0.1,
     vortexStrength: 0,
     vortexCenter: { x: initialWidth / 2, y: initialHeight / 2 },
-    particleMass: 0.01, // Updated default particle mass
+    particleMass: 1.0,
     particleLife: 1.0,
     acceleration: 1.0,
     collisionEnabled: false
@@ -482,7 +482,7 @@ const presets = {
             airResistance: 0.02,
             turbulence: 0.1,
             vortexStrength: 0,
-            particleMass: 0.01, //Updated particle mass for sparkle preset
+            particleMass: 1.0,
             acceleration: 1.0,
             collisionEnabled: false
         }
@@ -930,7 +930,7 @@ function resetSystem() {
         turbulence: 0.1,
         vortexStrength: 0,
         vortexCenter: { x: k.width() / 2, y: k.height() / 2 },
-        particleMass: 0.01, // Updated default particle mass to 1%
+        particleMass: 1.0,
         particleLife: 1.0,
         acceleration: 1.0,
         collisionEnabled: false
