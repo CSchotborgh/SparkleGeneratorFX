@@ -563,6 +563,30 @@ document.addEventListener('DOMContentLoaded', initializeGraphs);
 const metricsOverlay = document.getElementById("metricsOverlay");
 
 
+// Add the togglePanel function after the keyboard navigation section
+function togglePanel(panelId) {
+    const panel = document.getElementById(panelId);
+    if (panel) {
+        // Toggle the visible class which controls the slide animation
+        panel.classList.toggle('visible');
+
+        // If panel is not visible, reset its position
+        if (!panel.classList.contains('visible')) {
+            // Store current position before hiding
+            panel.dataset.lastLeft = panel.style.left;
+            panel.dataset.lastTop = panel.style.top;
+            panel.style.transform = 'translateX(-100%)';
+        } else {
+            // Restore last position if available
+            if (panel.dataset.lastLeft) {
+                panel.style.left = panel.dataset.lastLeft;
+                panel.style.top = panel.dataset.lastTop;
+            }
+            panel.style.transform = 'translateX(0)';
+        }
+    }
+}
+
 // Toggle all metrics panels
 document.getElementById('toggleMetricsButton').addEventListener('click', () => {
     const panels = document.querySelectorAll('.metrics-panel');
@@ -571,8 +595,10 @@ document.getElementById('toggleMetricsButton').addEventListener('click', () => {
     panels.forEach(panel => {
         if (anyVisible) {
             panel.classList.remove('visible');
+            panel.style.transform = 'translateX(-100%)';
         } else {
             panel.classList.add('visible');
+            panel.style.transform = 'translateX(0)';
         }
     });
 });
