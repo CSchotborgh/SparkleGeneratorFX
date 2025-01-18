@@ -28,19 +28,43 @@ document.getElementById('particleSize').addEventListener('input', (e) => {
 document.getElementById('particleSpeed').addEventListener('input', (e) => {
     const value = parseInt(e.target.value);
     config.speed = value;
-    document.getElementById('particleSpeedValue').textContent = calculatePercentage(value, 1, 10);
+    document.getElementById('particleSpeedValue').value = calculatePercentage(value, 1, 10);
+});
+
+document.getElementById('particleSpeedValue').addEventListener('input', (e) => {
+    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+    const value = Math.round((percentage / 100) * (10 - 1) + 1);
+    config.speed = value;
+    document.getElementById('particleSpeed').value = value;
+    e.target.value = percentage;
 });
 
 document.getElementById('gravity').addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     physics.gravity = value;
-    document.getElementById('gravityValue').textContent = calculatePercentage(value, 0, 0.5);
+    document.getElementById('gravityValue').value = calculatePercentage(value, 0, 0.5);
+});
+
+document.getElementById('gravityValue').addEventListener('input', (e) => {
+    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+    const value = (percentage / 100) * 0.5;
+    physics.gravity = value;
+    document.getElementById('gravity').value = value;
+    e.target.value = percentage;
 });
 
 document.getElementById('wind').addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     physics.wind = value;
-    document.getElementById('windValue').textContent = calculatePercentage(value, -0.2, 0.2);
+    document.getElementById('windValue').value = calculatePercentage(value, -0.2, 0.2);
+});
+
+document.getElementById('windValue').addEventListener('input', (e) => {
+    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+    const value = ((percentage / 100) * 0.4) - 0.2;
+    physics.wind = value;
+    document.getElementById('wind').value = value;
+    e.target.value = percentage;
 });
 
 document.getElementById('bounce').addEventListener('input', (e) => {

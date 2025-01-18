@@ -204,8 +204,12 @@
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleSpeed">Speed (<span id="particleSpeedValue">50</span>%)</label>
-                                        <input type="range" class="form-range" id="particleSpeed" min="1" max="10" value="5">
+                                        <label for="particleSpeed">Speed</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="particleSpeed" min="1" max="10" value="5">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="particleSpeedValue" value="50" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -221,12 +225,20 @@
                             <div id="physicsControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="gravity">Gravity (<span id="gravityValue">20</span>%)</label>
-                                        <input type="range" class="form-range" id="gravity" min="0" max="0.5" step="0.01" value="0.1">
+                                        <label for="gravity">Gravity</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="gravity" min="0" max="0.5" step="0.01" value="0.1">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="gravityValue" value="20" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="wind">Wind (<span id="windValue">50</span>%)</label>
-                                        <input type="range" class="form-range" id="wind" min="-0.2" max="0.2" step="0.01" value="0">
+                                        <label for="wind">Wind</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="wind" min="-0.2" max="0.2" step="0.01" value="0">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="windValue" value="50" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="bounce">Bounce (<span id="bounceValue">80</span>%)</label>
