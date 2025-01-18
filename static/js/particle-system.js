@@ -35,14 +35,15 @@ const k = kaboom({
 });
 
 // Particle system configuration
-let config = {
+const config = {
     count: 50,
     size: 5,
     speed: 5,
     color: "#ffffff",
     preset: "sparkle",
     trailLength: 10,  // Added trail length configuration
-    reverseTrail: false // Trail direction control
+    reverseTrail: false, // Trail direction control
+    shape: 'circle' // Default shape
 };
 
 // Particle class
@@ -234,7 +235,7 @@ class Particle {
             switch (shape) {
                 case 'square':
                     k.drawRect({
-                        pos: k.vec2(this.x - this.size/2, this.y - this.size/2),
+                        pos: k.vec2(this.x - this.size / 2, this.y - this.size / 2),
                         width: this.size,
                         height: this.size,
                         angle: shouldRotate ? this.angle : 0,
@@ -353,7 +354,7 @@ class Emitter {
         particle.vx = (Math.random() - 0.5) * config.speed + this.vx * 0.5;
         particle.vy = (Math.random() - 0.5) * config.speed + this.vy * 0.5;
         // Apply current shape configuration
-        particle.shape = config.shape || 'circle';
+        particle.shape = config.shape;
         return particle;
     }
 }
@@ -455,13 +456,18 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
 });
 
 // Add event listener for background color changes
-document.getElementById('backgroundColor').addEventListener('input', function(e) {
+document.getElementById('backgroundColor').addEventListener('input', function (e) {
     const selectedColor = e.target.value;
     // Update the background color in real-time when color picker changes
     const [r, g, b] = hexToRgb(selectedColor);
     k.setBackground(k.rgb(r, g, b, 0.3)); // Keeping the same transparency for consistency
 });
 
+
+// Add event listener for shape changes
+document.getElementById('particleShape').addEventListener('change', function (e) {
+    config.shape = e.target.value;
+});
 
 // Main game loop
 k.onUpdate(() => {
@@ -853,7 +859,7 @@ document.addEventListener('keydown', (e) => {
     if (focusedPanel) {
         const step = e.shiftKey ? 10 : 1; // Larger steps with Shift key
 
-        switch(e.key) {
+        switch (e.key) {
             case 'Escape':
                 focusedPanel.style.display = 'none';
                 break;
@@ -990,7 +996,9 @@ function resetSystem() {
         speed: 5,
         color: "#ffffff",
         preset: "sparkle",
-        trailLength: 10,        reverseTrail: false
+        trailLength: 10,
+        reverseTrail: false,
+        shape: 'circle' // Default shape
     });
 
     // Reset background
