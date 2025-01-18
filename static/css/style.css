@@ -266,6 +266,7 @@ h3, h4 {
     filter: invert(1) grayscale(100%) brightness(200%);
 }
 
+
 /* Accordion Styles */
 .accordion-item {
     border: none;
@@ -387,20 +388,22 @@ h3, h4 {
     width: clamp(250px, 20vw, 400px);
     height: clamp(150px, 15vh, 200px);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: transform 0.3s ease;
     overflow: hidden;
     cursor: move;
-    transform: translateX(-100%); /* Start offscreen */
-    opacity: 0;
 }
 
-.metrics-panel.visible {
-    transform: translateX(0);
-    opacity: 1;
+.metrics-panel.fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 9999;
+    border-radius: 0;
 }
 
-.metrics-panel.dragging {
-    transition: none; /* Disable transition while dragging */
+.metrics-panel.fullscreen .metric-graph {
+    height: calc(100vh - 100px);
 }
 
 #fpsPanel {

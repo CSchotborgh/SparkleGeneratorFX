@@ -79,19 +79,19 @@ class Particle {
         // Apply physics to particle
         this.ax = physics.wind;
         this.ay = physics.gravity;
-
+        
         // Apply air resistance (proportional to velocity squared)
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
         if (speed > 0) {
             this.ax -= (this.vx / speed) * physics.airResistance * speed * speed;
             this.ay -= (this.vy / speed) * physics.airResistance * speed * speed;
         }
-
+        
         // Apply turbulence using Perlin noise
         const time = Date.now() * 0.001;
         this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
         this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
-
+        
         // Apply attraction to emitter position
         const dx = emitter.x - this.x;
         const dy = emitter.y - this.y;
@@ -102,7 +102,7 @@ class Particle {
             this.ax += dx * attractionForce;
             this.ay += dy * attractionForce;
         }
-
+        
         // Apply vortex effect
         if (physics.vortexStrength !== 0) {
             const vx = this.x - physics.vortexCenter.x;
@@ -114,17 +114,17 @@ class Particle {
                 this.ay += vx * vortexForce;
             }
         }
-
+        
         // Update velocity and position with acceleration
         this.vx += (this.ax / physics.particleMass) * physics.acceleration;
         this.vy += (this.ay / physics.particleMass) * physics.acceleration;
-
+        
         this.vx *= physics.friction;
         this.vy *= physics.friction;
-
+        
         this.x += this.vx;
         this.y += this.vy;
-
+        
         // Bounce off screen edges
         if (this.x < 0 || this.x > k.width()) {
             this.vx *= -physics.bounce;
@@ -134,7 +134,7 @@ class Particle {
             this.vy *= -physics.bounce;
             this.y = this.y < 0 ? 0 : k.height();
         }
-
+        
         // Particle collisions if enabled
         if (physics.collisionEnabled) {
             for (const other of particles) {
@@ -143,15 +143,15 @@ class Particle {
                     const dy = other.y - this.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const minDist = (this.size + other.size) * 0.5;
-
+                    
                     if (distance < minDist) {
                         const angle = Math.atan2(dy, dx);
                         const targetX = this.x + Math.cos(angle) * minDist;
                         const targetY = this.y + Math.sin(angle) * minDist;
-
+                        
                         const ax = (targetX - other.x) * 0.05;
                         const ay = (targetY - other.y) * 0.05;
-
+                        
                         this.vx -= ax;
                         this.vy -= ay;
                         other.vx += ax;
@@ -160,10 +160,10 @@ class Particle {
                 }
             }
         }
-
+        
         // Update rotation
         this.angle += this.spin;
-
+        
         // Update trail based on direction
         if (config.reverseTrail) {
             this.trail.shift();
@@ -180,7 +180,7 @@ class Particle {
                 angle: this.angle
             });
         }
-
+        
         this.life -= this.decay;
 
         if (this.life <= 0) {
@@ -194,7 +194,7 @@ class Particle {
             const point = this.trail[i];
             const opacity = (1 - i / this.trail.length) * this.life * 0.5;
             const trailSize = this.size * (1 - i / this.trail.length);
-
+            
             if (this.sprite) {
                 const scale = (trailSize / (this.originalSize || 20)) * 2;
                 k.drawSprite({
@@ -244,27 +244,27 @@ function createParticleBurst(x, y, count = 20) {
         const particle = new Particle();
         particle.x = x;
         particle.y = y;
-
+        
         // Create radial burst effect
         const angle = Math.random() * Math.PI * 2;
         const speed = config.speed * (1 + Math.random());
         particle.vx = Math.cos(angle) * speed;
         particle.vy = Math.sin(angle) * speed;
-
+        
         // Shorter life for burst particles
         particle.decay = 0.02 + Math.random() * 0.03;
-
+        
         // Set sprite if using image-based particles
         if (animationFrames.length > 0) {
             particle.sprite = animationFrames[currentFrame].sprite;
             particle.originalSize = animationFrames[currentFrame].originalSize;
         }
-
+        
         return particle;
     });
-
+    
     particles.push(...burstParticles);
-
+    
     // Trim excess particles
     while (particles.length > config.count * 2) {
         particles.shift();
@@ -314,117 +314,68 @@ class Emitter {
 // Create emitter instance
 const emitter = new Emitter();
 
-// Panel drag functionality
-let isDragging = false;
-let currentPanel = null;
-let startX = 0;
-let startY = 0;
-let initialLeft = 0;
-let initialTop = 0;
-
-// Make panels focusable and initialize visibility
-document.querySelectorAll('.metrics-panel').forEach(panel => {
-    panel.setAttribute('tabindex', '0');
-    panel.setAttribute('role', 'region');
-    panel.setAttribute('aria-label', panel.querySelector('.metrics-header h4').textContent);
-
-    // Add touch events
-    panel.addEventListener('touchstart', handleDragStart);
-    panel.addEventListener('touchmove', handleDragMove);
-    panel.addEventListener('touchend', handleDragEnd);
-
-    // Add mouse events
-    panel.addEventListener('mousedown', handleDragStart);
-
-    // Show panel with animation
-    setTimeout(() => {
-        panel.classList.add('visible');
-    }, 100);
+// Event listeners for drag and burst effects
+k.canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 0) { // Left click
+        emitter.isDragging = true;
+        const rect = k.canvas.getBoundingClientRect();
+        emitter.x = e.clientX - rect.left;
+        emitter.y = e.clientY - rect.top;
+    }
 });
 
-document.addEventListener('mousemove', handleDragMove);
-document.addEventListener('mouseup', handleDragEnd);
-
-function handleDragStart(e) {
-    if (e.target.closest('.panel-controls')) return; // Don't drag when clicking controls
-
-    currentPanel = e.target.closest('.metrics-panel');
-    if (!currentPanel) return;
-
-    isDragging = true;
-    currentPanel.classList.add('dragging');
-
-    // Get initial positions
-    const touch = e.touches ? e.touches[0] : e;
-    startX = touch.clientX;
-    startY = touch.clientY;
-
-    // Get current panel position
-    const style = window.getComputedStyle(currentPanel);
-    initialLeft = parseInt(style.left);
-    initialTop = parseInt(style.top);
-
-    e.preventDefault();
-}
-
-function handleDragMove(e) {
-    if (!isDragging || !currentPanel) return;
-
-    const touch = e.touches ? e.touches[0] : e;
-    const deltaX = touch.clientX - startX;
-    const deltaY = touch.clientY - startY;
-
-    // Calculate new position
-    let newLeft = initialLeft + deltaX;
-    let newTop = initialTop + deltaY;
-
-    // Check if panel is being dragged off screen
-    const threshold = -currentPanel.offsetWidth * 0.8; // 80% off screen triggers hide
-
-    if (newLeft < threshold) {
-        // Hide panel
-        currentPanel.classList.remove('visible');
-    } else {
-        currentPanel.classList.add('visible');
+k.canvas.addEventListener('mousemove', (e) => {
+    if (emitter.isDragging) {
+        const rect = k.canvas.getBoundingClientRect();
+        emitter.x = e.clientX - rect.left;
+        emitter.y = e.clientY - rect.top;
     }
+});
 
-    // Update position
-    currentPanel.style.left = `${newLeft}px`;
-    currentPanel.style.top = `${newTop}px`;
-
-    e.preventDefault();
-}
-
-function handleDragEnd(e) {
-    if (!currentPanel) return;
-
-    const style = window.getComputedStyle(currentPanel);
-    const currentLeft = parseInt(style.left);
-
-    // If panel is more than 50% off screen, hide it completely
-    if (currentLeft < -currentPanel.offsetWidth * 0.5) {
-        currentPanel.classList.remove('visible');
-    } else {
-        // Snap back to visible position
-        currentPanel.classList.add('visible');
-        currentPanel.style.left = `${initialLeft}px`;
+k.canvas.addEventListener('mouseup', (e) => {
+    if (e.button === 0) { // Left click release
+        emitter.isDragging = false;
     }
+});
 
-    currentPanel.classList.remove('dragging');
-    isDragging = false;
-    currentPanel = null;
-}
+k.canvas.addEventListener('mouseleave', () => {
+    if (emitter.isDragging) {
+        emitter.isDragging = false;
+    }
+});
 
+// Right click for burst
+k.canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const rect = k.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    createParticleBurst(x, y);
+});
 
-// Event listeners for drag and burst effects (Removed original listeners)
-//k.canvas.addEventListener('mousedown', (e) => { ... });
-//k.canvas.addEventListener('mousemove', (e) => { ... });
-//k.canvas.addEventListener('mouseup', (e) => { ... });
-//k.canvas.addEventListener('mouseleave', () => { ... });
-//k.canvas.addEventListener('contextmenu', (e) => { ... });
-//k.canvas.addEventListener('touchstart', (e) => { ... });
-//k.canvas.addEventListener('touchmove', (e) => { ... });
-//k.canvas.addEventListener('touchend', () => { ... });
+// Touch events
+k.canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    emitter.isDragging = true;
+    const rect = k.canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    emitter.x = touch.clientX - rect.left;
+    emitter.y = touch.clientY - rect.top;
+}, { passive: false });
+
+k.canvas.addEventListener('touchmove', (e) => {
+    if (emitter.isDragging) {
+        e.preventDefault();
+        const rect = k.canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        emitter.x = touch.clientX - rect.left;
+        emitter.y = touch.clientY - rect.top;
+    }
+}, { passive: false });
+
+k.canvas.addEventListener('touchend', () => {
+    emitter.isDragging = false;
+});
 
 // Background image handler
 document.getElementById('backgroundImage').addEventListener('change', async (e) => {
@@ -562,45 +513,104 @@ document.addEventListener('DOMContentLoaded', initializeGraphs);
 // Metrics overlay functionality
 const metricsOverlay = document.getElementById("metricsOverlay");
 
+// Dragging functionality
+let isDragging = false;
+let currentPanel = null;
+let currentX;
+let currentY;
+let initialX;
+let initialY;
+let xOffset = 0;
+let yOffset = 0;
 
-// Add the togglePanel function after the keyboard navigation section
-function togglePanel(panelId) {
-    const panel = document.getElementById(panelId);
-    if (panel) {
-        // Toggle the visible class which controls the slide animation
-        panel.classList.toggle('visible');
+function dragStart(e, panel) {
+    if (e.target.tagName === 'BUTTON') return;
+    
+    if (e.type === "touchstart") {
+        initialX = e.touches[0].clientX - xOffset;
+        initialY = e.touches[0].clientY - yOffset;
+    } else {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+    }
 
-        // If panel is not visible, reset its position
-        if (!panel.classList.contains('visible')) {
-            // Store current position before hiding
-            panel.dataset.lastLeft = panel.style.left;
-            panel.dataset.lastTop = panel.style.top;
-            panel.style.transform = 'translateX(-100%)';
-        } else {
-            // Restore last position if available
-            if (panel.dataset.lastLeft) {
-                panel.style.left = panel.dataset.lastLeft;
-                panel.style.top = panel.dataset.lastTop;
-            }
-            panel.style.transform = 'translateX(0)';
-        }
+    if (e.target.closest('.metrics-panel')) {
+        currentPanel = panel;
+        isDragging = true;
     }
 }
 
-// Toggle all metrics panels
-document.getElementById('toggleMetricsButton').addEventListener('click', () => {
-    const panels = document.querySelectorAll('.metrics-panel');
-    const anyVisible = Array.from(panels).some(panel => panel.classList.contains('visible'));
+function dragEnd() {
+    initialX = currentX;
+    initialY = currentY;
+    isDragging = false;
+    currentPanel = null;
+}
 
-    panels.forEach(panel => {
-        if (anyVisible) {
-            panel.classList.remove('visible');
-            panel.style.transform = 'translateX(-100%)';
+function drag(e) {
+    if (isDragging && currentPanel && !currentPanel.classList.contains('fullscreen')) {
+        e.preventDefault();
+
+        if (e.type === "touchmove") {
+            currentX = e.touches[0].clientX - initialX;
+            currentY = e.touches[0].clientY - initialY;
         } else {
-            panel.classList.add('visible');
-            panel.style.transform = 'translateX(0)';
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+        }
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        const maxX = window.innerWidth - currentPanel.offsetWidth;
+        const maxY = window.innerHeight - currentPanel.offsetHeight;
+        
+        currentX = Math.min(Math.max(currentX, 0), maxX);
+        currentY = Math.min(Math.max(currentY, 0), maxY);
+
+        currentPanel.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+    }
+}
+
+function togglePanel(panelId) {
+    const panel = document.getElementById(panelId);
+    if (panel.style.display === "none") {
+        panel.style.display = "block";
+    } else {
+        panel.style.display = "none";
+    }
+}
+
+function toggleFullscreen(panelId) {
+    const panel = document.getElementById(panelId);
+    panel.classList.toggle('fullscreen');
+    
+    if (panel.classList.contains('fullscreen')) {
+        panel.style.transform = 'none';
+        xOffset = 0;
+        yOffset = 0;
+    }
+    
+    // Update graph sizes
+    Object.values(graphs).forEach(graph => {
+        if (graph && graph.resize) {
+            graph.resize();
         }
     });
+}
+
+// Initialize panel dragging
+document.addEventListener('DOMContentLoaded', () => {
+    const panels = document.querySelectorAll('.metrics-panel');
+    panels.forEach(panel => {
+        panel.addEventListener("touchstart", e => dragStart(e, panel), false);
+        panel.addEventListener("mousedown", e => dragStart(e, panel), false);
+        panel.addEventListener("touchend", dragEnd, false);
+        panel.addEventListener("mouseup", dragEnd, false);
+    });
+    
+    document.addEventListener("touchmove", drag, false);
+    document.addEventListener("mousemove", drag, false);
 });
 
 // Keyboard Navigation
@@ -615,7 +625,7 @@ document.addEventListener('keydown', (e) => {
     if (focusedPanel) {
         const step = e.shiftKey ? 10 : 1; // Larger steps with Shift key
 
-        switch (e.key) {
+        switch(e.key) {
             case 'Escape':
                 focusedPanel.style.display = 'none';
                 break;
@@ -645,7 +655,15 @@ document.querySelectorAll('.metrics-panel').forEach(panel => {
     panel.setAttribute('role', 'region');
     panel.setAttribute('aria-label', panel.querySelector('.metrics-header h4').textContent);
 });
-
+// Toggle all metrics panels
+document.getElementById('toggleMetricsButton').addEventListener('click', () => {
+    const panels = document.querySelectorAll('.metrics-panel');
+    const anyVisible = Array.from(panels).some(panel => panel.style.display !== 'none');
+    
+    panels.forEach(panel => {
+        panel.style.display = anyVisible ? 'none' : 'block';
+    });
+});
 
 // Initialize panel visibility
 document.addEventListener('DOMContentLoaded', () => {
@@ -683,7 +701,7 @@ function updateMetrics() {
     document.getElementById('particleCountMetric').textContent = particles.length;
     document.getElementById('avgSpeedMetric').textContent = avgSpeed.toFixed(2);
     document.getElementById('memoryMetric').textContent = `${memoryUsage.toFixed(2)} MB`;
-    document.getElementById('emitterPosMetric').textContent =
+    document.getElementById('emitterPosMetric').textContent = 
         `x: ${Math.round(emitter.x)}, y: ${Math.round(emitter.y)}`;
 
     // Update metrics history
@@ -872,25 +890,25 @@ window.addEventListener('resize', () => {
     const canvas = document.getElementById("gameCanvas");
     const newWidth = window.innerWidth * 0.75;
     const newHeight = window.innerHeight;
-
+    
     // Update canvas size
     canvas.style.width = `${newWidth}px`;
     canvas.style.height = `${newHeight}px`;
     canvas.width = newWidth;
     canvas.height = newHeight;
-
+    
     // Update Kaboom instance dimensions
     k.canvas.width = newWidth;
     k.canvas.height = newHeight;
-
+    
     // Update vortex center
     physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
-
+    
     // Ensure particles are within bounds
     particles.forEach(particle => {
         if (particle.x > newWidth) particle.x = newWidth;
         if (particle.y > newHeight) particle.y = newHeight;
-
+        
         // Update trail positions if needed
         particle.trail = particle.trail.map(point => ({
             x: Math.min(point.x, newWidth),
