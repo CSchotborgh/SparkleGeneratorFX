@@ -33,7 +33,7 @@ document.getElementById('particleSize').addEventListener('input', (e) => {
 });
 
 document.getElementById('particleSizeValue').addEventListener('input', (e) => {
-    const value = Math.min(60, Math.max(1, parseInt(e.target.value) || 1));
+    const value = Math.min(1000, Math.max(1, parseInt(e.target.value) || 1));
     config.size = value;
     document.getElementById('particleSize').value = value;
     e.target.value = value;
