@@ -164,7 +164,19 @@ h3, h4 {
     color: white;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     font-size: 0.875rem;
+}
+
+.top-nav-container .btn.btn-outline-danger {
+    background-color: transparent;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+
+.top-nav-container .btn.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
 }
 
 .top-nav-container .btn:hover {
