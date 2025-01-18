@@ -46,7 +46,7 @@ document.getElementById('particleSpeed').addEventListener('input', (e) => {
 });
 
 document.getElementById('particleSpeedValue').addEventListener('input', (e) => {
-    const value = Math.min(120, Math.max(10, parseInt(e.target.value) || 60));
+    const value = Math.min(160, Math.max(0, parseInt(e.target.value) || 60));
     config.speed = value;
     document.getElementById('particleSpeed').value = value;
     e.target.value = value;
