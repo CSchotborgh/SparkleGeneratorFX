@@ -146,20 +146,25 @@ h3, h4 {
 /* About Button and Modal Styles */
 .top-nav-container {
     position: absolute;
-    top: 1rem;
+    top: 0.5rem;
     left: 1rem;
     z-index: 1000;
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .top-nav-container .btn {
-    padding: 0.25rem 0.75rem;
+    padding: 0.25rem 0.5rem;
+    height: 30px;
     font-weight: 400;
     transition: all 0.3s ease;
     background-color: #2ecc71;
     border: none;
     color: white;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
 }
 
 .top-nav-container .btn:hover {
