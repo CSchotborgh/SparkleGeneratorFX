@@ -51,6 +51,7 @@ class Particle {
     constructor() {
         this.trail = [];
         this.trailLength = config.trailLength || 10;
+        this.shape = config.shape; // Store the shape configuration
         this.reset();
     }
 
@@ -68,6 +69,7 @@ class Particle {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.2;
         this.size = config.size * (0.5 + Math.random() * 0.5);
+        this.shape = config.shape; // Update shape when resetting
         // Initialize trail from the center position
         this.trail = Array(this.trailLength).fill().map(() => ({
             x: this.x,
@@ -196,87 +198,60 @@ class Particle {
             const opacity = (1 - i / this.trail.length) * this.life * 0.5;
             const trailSize = this.size * (1 - i / this.trail.length);
 
-            if (this.sprite) {
-                const scale = (trailSize / (this.originalSize || 20)) * 2;
-                k.drawSprite({
-                    sprite: this.sprite,
-                    pos: k.vec2(point.x, point.y),
-                    scale: k.vec2(scale, scale),
-                    angle: point.angle,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                    anchor: "center",
-                });
-            } else {
-                k.drawCircle({
-                    pos: k.vec2(point.x, point.y),
-                    radius: trailSize,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                });
-            }
+            this.drawShape(point.x, point.y, trailSize, opacity, point.angle);
         }
 
         // Draw current particle
-        const opacity = (config.opacity || 1.0) * this.life;
-        const blur = config.blur || 0;
+        const opacity = this.life;
         const shouldRotate = config.enableRotation;
-        const shape = config.shape || 'circle';
+        this.drawShape(this.x, this.y, this.size, opacity, shouldRotate ? this.angle : 0);
+    }
 
-        if (this.sprite) {
-            k.drawSprite({
-                sprite: this.sprite,
-                pos: k.vec2(this.x, this.y),
-                scale: k.vec2(this.size / 20),
-                angle: shouldRotate ? this.angle : 0,
-                color: k.rgb(...hexToRgb(config.color), opacity),
-                anchor: "center",
-                z: 1
-            });
-        } else {
-            switch (shape) {
-                case 'square':
-                    k.drawRect({
-                        pos: k.vec2(this.x - this.size / 2, this.y - this.size / 2),
-                        width: this.size,
-                        height: this.size,
-                        angle: shouldRotate ? this.angle : 0,
-                        color: k.rgb(...hexToRgb(config.color), opacity),
-                    });
-                    break;
-                case 'triangle':
-                    const points = [];
-                    for (let i = 0; i < 3; i++) {
-                        const angle = (i * 2 * Math.PI / 3) + (shouldRotate ? this.angle : 0);
-                        points.push(k.vec2(
-                            this.x + Math.cos(angle) * this.size,
-                            this.y + Math.sin(angle) * this.size
-                        ));
-                    }
-                    k.drawPolygon({
-                        pts: points,
-                        color: k.rgb(...hexToRgb(config.color), opacity),
-                    });
-                    break;
-                case 'star':
-                    const starPoints = [];
-                    for (let i = 0; i < 5; i++) {
-                        const angle = (i * 4 * Math.PI / 5) + (shouldRotate ? this.angle : 0);
-                        starPoints.push(k.vec2(
-                            this.x + Math.cos(angle) * this.size,
-                            this.y + Math.sin(angle) * this.size * 0.5
-                        ));
-                    }
-                    k.drawPolygon({
-                        pts: starPoints,
-                        color: k.rgb(...hexToRgb(config.color), opacity),
-                    });
-                    break;
-                default:
-                    k.drawCircle({
-                        pos: k.vec2(this.x, this.y),
-                        radius: this.size,
-                        color: k.rgb(...hexToRgb(config.color), opacity),
-                    });
-            }
+    drawShape(x, y, size, opacity, angle) {
+        switch (this.shape) {
+            case 'square':
+                k.drawRect({
+                    pos: k.vec2(x - size / 2, y - size / 2),
+                    width: size,
+                    height: size,
+                    angle: angle,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
+                });
+                break;
+            case 'triangle':
+                const points = [];
+                for (let i = 0; i < 3; i++) {
+                    const pointAngle = (i * 2 * Math.PI / 3) + angle;
+                    points.push(k.vec2(
+                        x + Math.cos(pointAngle) * size,
+                        y + Math.sin(pointAngle) * size
+                    ));
+                }
+                k.drawPolygon({
+                    pts: points,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
+                });
+                break;
+            case 'star':
+                const starPoints = [];
+                for (let i = 0; i < 5; i++) {
+                    const starAngle = (i * 4 * Math.PI / 5) + angle;
+                    starPoints.push(k.vec2(
+                        x + Math.cos(starAngle) * size,
+                        y + Math.sin(starAngle) * size * 0.5
+                    ));
+                }
+                k.drawPolygon({
+                    pts: starPoints,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
+                });
+                break;
+            default: // circle
+                k.drawCircle({
+                    pos: k.vec2(x, y),
+                    radius: size / 2,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
+                });
         }
     }
 }
