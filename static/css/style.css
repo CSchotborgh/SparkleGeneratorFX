@@ -467,6 +467,10 @@ h3, h4 {
     border-radius: 8px;
     padding: 12px;
     color: #fff;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     font-size: 14px;
     z-index: 1000;
     width: clamp(250px, 20vw, 400px);
