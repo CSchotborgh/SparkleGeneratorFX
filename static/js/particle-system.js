@@ -15,7 +15,7 @@ const physics = {
     turbulence: 0.1,
     vortexStrength: 0,
     vortexCenter: { x: initialWidth / 2, y: initialHeight / 2 },
-    particleMass: 1.0,
+    particleMass: 0.59, // Approximately 10% on the 0.1-5 scale
     particleLife: 1.0,
     acceleration: 1.0,
     collisionEnabled: false
@@ -970,7 +970,7 @@ function resetSystem() {
         turbulence: 0.1,
         vortexStrength: 0,
         vortexCenter: { x: k.width() / 2, y: k.height() / 2 },
-        particleMass: 1.0,
+        particleMass: 0.59, // Approximately 10% on the 0.1-5 scale
         particleLife: 1.0,
         acceleration: 1.0,
         collisionEnabled: false
