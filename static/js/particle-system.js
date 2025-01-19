@@ -509,6 +509,25 @@ function hexToRgb(hex) {
 
 // Preset configurations
 const presets = {
+    geometricWeb: {
+        count: 30,
+        size: 15,
+        speed: 2,
+        color: "#00ffaa",
+        shape: ["circle", "square", "triangle"].at(Math.floor(Math.random() * 3)),
+        physics: {
+            gravity: 0,
+            wind: 0,
+            friction: 0.98,
+            bounce: 1.0,
+            airResistance: 0.01,
+            turbulence: 0.05,
+            vortexStrength: 0.1,
+            particleMass: 1.2,
+            acceleration: 0.8,
+            collisionEnabled: true
+        }
+    },
     sparkle: {
         count: 50,
         size: 5,
