@@ -744,53 +744,24 @@ let initialY;
 let xOffset = 0;
 let yOffset = 0;
 
-function dragStart(e, panel) {
-    if (e.target.tagName === 'BUTTON') return;
+function resetPanelPositions() {
+    const panels = {
+        'fpsPanel': { top: '120px', left: '20px' },
+        'particlePanel': { top: '120px', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
+        'speedPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: '20px' },
+        'memoryPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
+        'positionPanel': { top: 'calc(160px + 2 * clamp(150px, 15vh, 200px))', left: '20px' }
+    };
 
-    if (e.type === "touchstart") {
-        initialX = e.touches[0].clientX - xOffset;
-        initialY = e.touches[0].clientY - yOffset;
-    } else {
-        initialX = e.clientX - xOffset;
-        initialY = e.clientY - yOffset;
-    }
-
-    if (e.target.closest('.metrics-panel')) {
-        currentPanel = panel;
-        isDragging = true;
-    }
-}
-
-function dragEnd() {
-    initialX = currentX;
-    initialY = currentY;
-    isDragging = false;
-    currentPanel = null;
-}
-
-function drag(e) {
-    if (isDragging && currentPanel && !currentPanel.classList.contains('fullscreen')) {
-        e.preventDefault();
-
-        if (e.type === "touchmove") {
-            currentX = e.touches[0].clientX - initialX;
-            currentY = e.touches[0].clientY - initialY;
-        } else {
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
+    Object.entries(panels).forEach(([id, position]) => {
+        const panel = document.getElementById(id);
+        if (panel) {
+            panel.style.transform = 'none';
+            panel.style.top = position.top;
+            panel.style.left = position.left;
+            panel.classList.remove('fullscreen');
         }
-
-        xOffset = currentX;
-        yOffset = currentY;
-
-        const maxX = window.innerWidth - currentPanel.offsetWidth;
-        const maxY = window.innerHeight - currentPanel.offsetHeight;
-
-        currentX = Math.min(Math.max(currentX, 0), maxX);
-        currentY = Math.min(Math.max(currentY, 0), maxY);
-
-        currentPanel.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-    }
+    });
 }
 
 function togglePanel(panelId) {
@@ -884,6 +855,10 @@ document.getElementById('toggleMetricsButton').addEventListener('click', () => {
     panels.forEach(panel => {
         panel.style.display = anyVisible ? 'none' : 'block';
     });
+    
+    if (!anyVisible) {
+        resetPanelPositions();
+    }
 });
 
 // Initialize panel visibility
