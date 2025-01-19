@@ -1,7 +1,25 @@
+// Helper function to open accordion section
+function openAccordionSection(sectionId) {
+    return new Promise(resolve => {
+        const accordionButton = document.querySelector(`button[data-bs-target="#${sectionId}"]`);
+        const accordionSection = document.querySelector(`#${sectionId}`);
+
+        if (accordionButton && !accordionSection.classList.contains('show')) {
+            accordionButton.click();
+            setTimeout(() => {
+                accordionSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(resolve, 600);
+            }, 400);
+        } else {
+            resolve();
+        }
+    });
+}
+
 // Initialize tutorial
 function startTutorial() {
     const intro = introJs();
-    
+
     intro.setOptions({
         steps: [
             {
@@ -24,22 +42,7 @@ function startTutorial() {
                 title: 'Physics Settings Overview',
                 intro: 'Let\'s explore the physics parameters that control particle behavior.',
                 position: 'right',
-                onbeforechange: function() {
-                    return new Promise(resolve => {
-                        const physicsButton = document.querySelector('button[data-bs-target="#physicsControls"]');
-                        const physicsCollapse = document.querySelector('#physicsControls');
-                        
-                        if (!physicsCollapse.classList.contains('show')) {
-                            physicsButton.click();
-                            setTimeout(() => {
-                                physicsCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                setTimeout(resolve, 600);
-                            }, 400);
-                        } else {
-                            resolve();
-                        }
-                    });
-                }
+                onbeforechange: () => openAccordionSection('physicsControls')
             },
             {
                 element: '#gravity',
@@ -112,110 +115,35 @@ function startTutorial() {
                 title: 'Visual Effects',
                 intro: 'Customize particle appearance with colors and trail effects.',
                 position: 'right',
-                onbeforechange: function() {
-                    return new Promise(resolve => {
-                        const visualButton = document.querySelector('button[data-bs-target="#visualEffects"]');
-                        const visualCollapse = document.querySelector('#visualEffects');
-                        
-                        if (!visualCollapse.classList.contains('show')) {
-                            visualButton.click();
-                            setTimeout(() => {
-                                visualCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                setTimeout(resolve, 600);
-                            }, 400);
-                        } else {
-                            resolve();
-                        }
-                    });
-                }
+                onbeforechange: () => openAccordionSection('visualEffects')
             },
             {
                 element: '#presetControls',
                 title: 'Preset Effects',
                 intro: 'Try pre-configured effects like fire, snow, or galaxy patterns.',
                 position: 'right',
-                onbeforechange: function() {
-                    return new Promise(resolve => {
-                        const presetButton = document.querySelector('button[data-bs-target="#presetControls"]');
-                        const presetCollapse = document.querySelector('#presetControls');
-                        
-                        if (!presetCollapse.classList.contains('show')) {
-                            presetButton.click();
-                            setTimeout(() => {
-                                presetCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                setTimeout(resolve, 600);
-                            }, 400);
-                        } else {
-                            resolve();
-                        }
-                    });
-                }
+                onbeforechange: () => openAccordionSection('presetControls')
             },
             {
                 element: '#exportOptions',
                 title: 'Export Options',
                 intro: 'Save your creation in various formats including PNG and video.',
                 position: 'right',
-                onbeforechange: function() {
-                    return new Promise(resolve => {
-                        const exportButton = document.querySelector('button[data-bs-target="#exportOptions"]');
-                        const exportCollapse = document.querySelector('#exportOptions');
-                        
-                        if (!exportCollapse.classList.contains('show')) {
-                            exportButton.click();
-                            setTimeout(() => {
-                                exportCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                setTimeout(resolve, 600);
-                            }, 400);
-                        } else {
-                            resolve();
-                        }
-                    });
-                }
+                onbeforechange: () => openAccordionSection('exportOptions')
             },
             {
                 element: '#importOptions',
                 title: 'Import Options',
                 intro: 'Use custom images for particles or add background images.',
                 position: 'right',
-                onbeforechange: function() {
-                    return new Promise(resolve => {
-                        const importButton = document.querySelector('button[data-bs-target="#importOptions"]');
-                        const importCollapse = document.querySelector('#importOptions');
-                        
-                        if (!importCollapse.classList.contains('show')) {
-                            importButton.click();
-                            setTimeout(() => {
-                                importCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                setTimeout(resolve, 600);
-                            }, 400);
-                        } else {
-                            resolve();
-                        }
-                    });
-                }
+                onbeforechange: () => openAccordionSection('importOptions')
             },
             {
                 element: '#sharePreset',
                 title: 'Share Your Creations',
                 intro: 'Save and share your particle configurations with others.',
                 position: 'right',
-                onbeforechange: function() {
-                    return new Promise(resolve => {
-                        const shareButton = document.querySelector('button[data-bs-target="#sharePreset"]');
-                        const shareCollapse = document.querySelector('#sharePreset');
-                        
-                        if (!shareCollapse.classList.contains('show')) {
-                            shareButton.click();
-                            setTimeout(() => {
-                                shareCollapse.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                setTimeout(resolve, 600);
-                            }, 400);
-                        } else {
-                            resolve();
-                        }
-                    });
-                }
+                onbeforechange: () => openAccordionSection('sharePreset')
             },
             {
                 title: 'Start Creating!',
