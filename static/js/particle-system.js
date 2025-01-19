@@ -509,6 +509,64 @@ function hexToRgb(hex) {
 
 // Preset configurations
 const presets = {
+    polygonWeb: {
+        count: 40,
+        size: 15,
+        speed: 2,
+        color: '#4f46e5',
+        shape: "polygon",
+        physics: {
+            gravity: 0,
+            wind: 0,
+            friction: 0.98,
+            bounce: 1.0,
+            airResistance: 0.02,
+            turbulence: 0.1,
+            vortexStrength: 0.05,
+            particleMass: 1.0,
+            acceleration: 1.2,
+            collisionEnabled: true
+        },
+        polygon: {
+            sides: 6,
+            rotate: true
+        },
+        opacity: {
+            value: 0.6,
+            random: true
+        },
+        size: {
+            value: 12,
+            random: true,
+            anim: {
+                enable: true,
+                speed: 2,
+                size_min: 6,
+                sync: false
+            }
+        },
+        line_linked: {
+            enable: true,
+            distance: 150,
+            color: '#d946ef',
+            opacity: 0.3,
+            width: 1
+        },
+        move: {
+            enable: true,
+            speed: 2.5,
+            direction: "none",
+            random: true,
+            straight: false,
+            out_mode: "bounce",
+            bounce: true,
+            attract: {
+                enable: true,
+                rotateX: 600,
+                rotateY: 1200
+            }
+        }
+    },
     heroWeb: {
         count: 40,
         size: 15,
