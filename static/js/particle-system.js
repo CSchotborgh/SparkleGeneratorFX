@@ -772,31 +772,24 @@ function drag(e) {
     if (isDragging && currentPanel && !currentPanel.classList.contains('fullscreen')) {
         e.preventDefault();
 
-        let mouseX, mouseY;
         if (e.type === "touchmove") {
-            mouseX = e.touches[0].clientX;
-            mouseY = e.touches[0].clientY;
+            currentX = e.touches[0].clientX - initialX;
+            currentY = e.touches[0].clientY - initialY;
         } else {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
         }
 
-        // Calculate panel center offset
-        const panelWidth = currentPanel.offsetWidth;
-        const panelHeight = currentPanel.offsetHeight;
-        
-        // Position panel with center at cursor
-        currentX = mouseX - (panelWidth / 2);
-        currentY = mouseY - (panelHeight / 2);
-
-        // Keep panel within viewport bounds
-        currentX = Math.min(Math.max(currentX, 0), window.innerWidth - panelWidth);
-        currentY = Math.min(Math.max(currentY, 0), window.innerHeight - panelHeight);
-
-        currentPanel.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-        
         xOffset = currentX;
         yOffset = currentY;
+
+        const maxX = window.innerWidth - currentPanel.offsetWidth;
+        const maxY = window.innerHeight - currentPanel.offsetHeight;
+
+        currentX = Math.min(Math.max(currentX, 0), maxX);
+        currentY = Math.min(Math.max(currentY, 0), maxY);
+
+        currentPanel.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
     }
 }
 
