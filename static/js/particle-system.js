@@ -960,6 +960,25 @@ function updateMetrics() {
 
 // Add reset functionality
 function resetSystem() {
+    // Reset metrics panels positions
+    const panels = {
+        'fpsPanel': { top: '120px', left: '20px' },
+        'particlePanel': { top: '120px', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
+        'speedPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: '20px' },
+        'memoryPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
+        'positionPanel': { top: 'calc(160px + 2 * clamp(150px, 15vh, 200px))', left: '20px' }
+    };
+
+    Object.entries(panels).forEach(([id, position]) => {
+        const panel = document.getElementById(id);
+        if (panel) {
+            panel.style.transform = 'none';
+            panel.style.top = position.top;
+            panel.style.left = position.left;
+            panel.classList.remove('fullscreen');
+        }
+    });
+
     // Reset physics parameters to default values
     Object.assign(physics, {
         gravity: 0.1,
