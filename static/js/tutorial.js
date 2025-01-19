@@ -18,6 +18,12 @@ function openAccordionSection(sectionId) {
 
 // Initialize tutorial
 function startTutorial() {
+    // Ensure control panel is open before starting tutorial
+    const controlPanel = document.querySelector('.control-panel-overlay');
+    if (!controlPanel.classList.contains('active')) {
+        document.getElementById('toggleControlPanel').click();
+    }
+    
     const intro = introJs();
 
     intro.setOptions({
@@ -104,7 +110,14 @@ function startTutorial() {
         exitOnOverlayClick: false,
         overlayOpacity: 0.8,
         scrollToElement: true,
-        scrollPadding: 50
+        scrollPadding: 50,
+        onstart: function() {
+            // Ensure particle controls accordion is open
+            const particleControls = document.querySelector('#basicControls');
+            if (!particleControls.classList.contains('show')) {
+                document.querySelector('button[data-bs-target="#basicControls"]').click();
+            }
+        }
     });
 
     intro.start();
