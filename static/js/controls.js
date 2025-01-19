@@ -1,4 +1,14 @@
 
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+
+
 // Control panel toggle
 document.getElementById('toggleControlPanel').addEventListener('click', () => {
     document.querySelector('.control-panel-overlay').classList.toggle('active');

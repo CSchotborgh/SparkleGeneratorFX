@@ -13,16 +13,16 @@
     <div class="container-fluid">
         <!-- Top Navigation Buttons -->
         <div class="top-nav-container">
-            <button id="resetButton" class="btn btn-outline-danger me-2 d-flex align-items-center justify-content-center" onclick="resetSystem()" tabindex="0" aria-label="Reset All Settings" style="min-width: 100px;">
+            <button id="resetButton" class="btn btn-outline-danger me-2 d-flex align-items-center justify-content-center" onclick="resetSystem()" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Reset all particle settings to their default values" style="min-width: 100px;">
                 <i data-feather="refresh-cw" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Reset All</span>
             </button>
-            <button class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#aboutModal" tabindex="0" aria-label="About SparkleGeneratorFX" style="min-width: 100px;">
+            <button class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#aboutModal" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Learn more about SparkleGeneratorFX and its features" style="min-width: 100px;">
                 <i data-feather="info" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">About</span>
             </button>
-            <button class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" onclick="startTutorial()" tabindex="0" aria-label="Start Quick Tour" style="min-width: 100px;">
+            <button class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" onclick="startTutorial()" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Take a guided tour of all features and controls" style="min-width: 100px;">
                 <i data-feather="help-circle" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">QuickTour</span>
             </button>
-            <button id="toggleMetricsButton" class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center active" tabindex="0" aria-label="Toggle Metrics Panels" style="min-width: 100px;">
+            <button id="toggleMetricsButton" class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center active" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Toggle visibility of performance metrics panels" style="min-width: 100px;">
                 <i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Metrics On</span>
             </button>
             </div>
@@ -185,14 +185,14 @@
                         <!-- Basic Particle Controls -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#basicControls">
+                                <button class="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#basicControls" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust fundamental particle properties like count, size, and speed">
                                     Basic Particle Controls
                                 </button>
                             </h2>
                             <div id="basicControls" class="accordion-collapse collapse show" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="particleCount">Particle Count</label>
+                                        <label for="particleCount" data-bs-toggle="tooltip" data-bs-placement="right" title="Control the number of particles in the system">Particle Count</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <input type="range" class="form-range" id="particleCount" min="1" max="100" value="50">
                                             <input type="number" class="form-control form-control-sm percentage-input" id="particleCountValue" value="50" min="0" max="100">
