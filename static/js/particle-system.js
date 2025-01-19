@@ -762,8 +762,14 @@ function dragStart(e, panel) {
 }
 
 function dragEnd() {
-    initialX = currentX;
-    initialY = currentY;
+    if (currentPanel) {
+        const transform = currentPanel.style.transform;
+        const matches = transform.match(/translate3d\(([^,]+), ([^,]+)/);
+        if (matches) {
+            xOffset = parseFloat(matches[1]);
+            yOffset = parseFloat(matches[2]);
+        }
+    }
     isDragging = false;
     currentPanel = null;
 }
