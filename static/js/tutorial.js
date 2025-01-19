@@ -35,80 +35,22 @@ function startTutorial() {
                 element: '#basicControls',
                 title: 'Basic Controls',
                 intro: 'Adjust fundamental particle properties like count, size, and speed.',
-                position: 'right'
+                position: 'right',
+                onbeforechange: () => openAccordionSection('basicControls')
             },
             {
                 element: '#physicsControls',
-                title: 'Physics Settings Overview',
+                title: 'Physics Settings',
                 intro: 'Let\'s explore the physics parameters that control particle behavior.',
                 position: 'right',
                 onbeforechange: () => openAccordionSection('physicsControls')
             },
             {
-                element: '#gravity',
-                title: 'Gravity Control',
-                intro: 'Adjust the gravitational force affecting particles. Higher values make particles fall faster.',
-                position: 'right'
-            },
-            {
-                element: '#wind',
-                title: 'Wind Control',
-                intro: 'Control horizontal force affecting particles. Positive values push right, negative values push left.',
-                position: 'right'
-            },
-            {
-                element: '#bounce',
-                title: 'Bounce Control',
-                intro: 'Set how much particles bounce off surfaces. Higher values create more energetic bounces.',
-                position: 'right'
-            },
-            {
-                element: '#friction',
-                title: 'Friction Control',
-                intro: 'Adjust how quickly particles slow down. Lower values create more drag.',
-                position: 'right'
-            },
-            {
-                element: '#airResistance',
-                title: 'Air Resistance',
-                intro: 'Control how much air affects particle movement. Higher values create more air resistance.',
-                position: 'right'
-            },
-            {
-                element: '#turbulence',
-                title: 'Turbulence Control',
-                intro: 'Add random movement to particles. Higher values create more chaotic motion.',
-                position: 'right'
-            },
-            {
-                element: '#vortexStrength',
-                title: 'Vortex Strength',
-                intro: 'Create spinning effects. Positive values spin clockwise, negative values spin counter-clockwise.',
-                position: 'right'
-            },
-            {
-                element: '#particleMass',
-                title: 'Particle Mass',
-                intro: 'Adjust how heavy particles are. Heavier particles are less affected by forces.',
-                position: 'right'
-            },
-            {
-                element: '#particleLife',
-                title: 'Particle Life',
-                intro: 'Control how long particles exist before respawning.',
-                position: 'right'
-            },
-            {
-                element: '#particleAcceleration',
-                title: 'Acceleration',
-                intro: 'Adjust how quickly particles respond to forces.',
-                position: 'right'
-            },
-            {
-                element: '#collisionEnabled',
-                title: 'Collision Toggle',
-                intro: 'Enable or disable particle collisions with each other.',
-                position: 'right'
+                element: '#advancedControls',
+                title: 'Advanced Options',
+                intro: 'Fine-tune particle behavior with advanced settings.',
+                position: 'right',
+                onbeforechange: () => openAccordionSection('advancedControls')
             },
             {
                 element: '#visualEffects',
@@ -120,7 +62,7 @@ function startTutorial() {
             {
                 element: '#presetControls',
                 title: 'Preset Effects',
-                intro: 'Try pre-configured effects like fire, snow, or galaxy patterns.',
+                intro: 'Try pre-configured effects like fire, snow, or geometric patterns.',
                 position: 'right',
                 onbeforechange: () => openAccordionSection('presetControls')
             },
@@ -137,6 +79,13 @@ function startTutorial() {
                 intro: 'Use custom images for particles or add background images.',
                 position: 'right',
                 onbeforechange: () => openAccordionSection('importOptions')
+            },
+            {
+                element: '#videoRecording',
+                title: 'Video Recording',
+                intro: 'Record and save your particle animations as videos.',
+                position: 'right',
+                onbeforechange: () => openAccordionSection('videoRecording')
             },
             {
                 element: '#sharePreset',
