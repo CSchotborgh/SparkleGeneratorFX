@@ -208,7 +208,7 @@ document.getElementById('reverseTrail').addEventListener('change', (e) => {
 
 document.getElementById('presets').addEventListener('change', (e) => {
     const preset = presets[e.target.value];
-    config = { ...config, ...preset };
+    Object.assign(config, preset);
     
     // Update physics parameters
     if (preset.physics) {
