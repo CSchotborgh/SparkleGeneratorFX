@@ -41,11 +41,11 @@ body {
 .control-panel-toggle {
     position: absolute;
     left: -48px;
-    top: 50%;
+    top: 33.33%;
     transform: translateY(-50%);
     background: rgba(0, 255, 0, 0.15);
     border: none;
-    padding: 12px;
+    padding: 24px 12px;
     border-radius: 8px 0 0 8px;
     cursor: pointer;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
