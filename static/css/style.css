@@ -514,6 +514,33 @@ h3, h4 {
     left: calc(40px + clamp(250px, 20vw, 400px));
 }
 
+/* Tooltip Styles */
+.tooltip .tooltip-inner {
+    background-color: #4a90e2;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+}
+
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #4a90e2;
+}
+
+.tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+    border-bottom-color: #4a90e2;
+}
+
+.tooltip.bs-tooltip-start .tooltip-arrow::before {
+    border-left-color: #4a90e2;
+}
+
+.tooltip.bs-tooltip-end .tooltip-arrow::before {
+    border-right-color: #4a90e2;
+}
+
+
 #positionPanel {
     top: calc(160px + 2 * clamp(150px, 15vh, 200px));
     left: 20px;
