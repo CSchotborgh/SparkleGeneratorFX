@@ -296,15 +296,15 @@
                             <div id="advancedControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="particleOpacity">Opacity</label>
+                                        <label for="particleOpacity" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust the transparency of particles from invisible to fully visible">Opacity</label>
                                         <input type="range" class="form-range" id="particleOpacity" min="0" max="1" step="0.1" value="1.0">
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleBlur">Blur Effect</label>
+                                        <label for="particleBlur" data-bs-toggle="tooltip" data-bs-placement="right" title="Add a blur effect to particles for a softer appearance">Blur Effect</label>
                                         <input type="range" class="form-range" id="particleBlur" min="0" max="10" value="0">
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleShape">Particle Shape</label>
+                                        <label for="particleShape" data-bs-toggle="tooltip" data-bs-placement="right" title="Choose the geometric shape of particles or use a custom image">Particle Shape</label>
                                         <select class="form-select bg-dark text-light" id="particleShape">
                                             <option value="circle">Circle</option>
                                             <option value="square">Square</option>
@@ -314,11 +314,11 @@
                                         </select>
                                     </div>
                                     <div class="control-group" id="imageEmitterGroup" style="display: none;">
-                                        <label for="emitterImage">Emitter Image (PNG)</label>
+                                        <label for="emitterImage" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a custom PNG image to use as particle shape">Emitter Image (PNG)</label>
                                         <input type="file" class="form-control bg-dark text-light" id="emitterImage" accept=".png">
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleRotation">Enable Rotation</label>
+                                        <label for="particleRotation" data-bs-toggle="tooltip" data-bs-placement="right" title="Toggle particle rotation animation on or off">Enable Rotation</label>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="particleRotation">
                                         </div>
@@ -337,15 +337,15 @@
                             <div id="visualEffects" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="particleColor">Color</label>
+                                        <label for="particleColor" data-bs-toggle="tooltip" data-bs-placement="right" title="Set the color of particles using a color picker">Color</label>
                                         <input type="color" class="form-control" id="particleColor" value="#ffffff">
                                     </div>
                                     <div class="control-group">
-                                        <label for="trailLength">Trail Length</label>
+                                        <label for="trailLength" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust how long the particle trail appears behind moving particles">Trail Length</label>
                                         <input type="range" class="form-range" id="trailLength" min="0" max="30" value="10">
                                     </div>
                                     <div class="control-group">
-                                        <label for="reverseTrail">Reverse Trail</label>
+                                        <label for="reverseTrail" data-bs-toggle="tooltip" data-bs-placement="right" title="Reverse the direction of particle trails">Reverse Trail</label>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="reverseTrail">
                                         </div>
@@ -364,7 +364,7 @@
                             <div id="presetControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="presets">Select Preset</label>
+                                        <label for="presets" data-bs-toggle="tooltip" data-bs-placement="right" title="Choose from predefined particle effect configurations">Select Preset</label>
                                         <select class="form-select" id="presets">
                                             <option value="polygonWeb">Polygon Web</option>
                                             <option value="heroWeb">Hero Web</option>
@@ -398,7 +398,7 @@
                                         <button class="btn btn-outline-light mb-2" onclick="exportToPNG()">Export PNG</button>
                                     </div>
                                     <div class="control-group">
-                                        <label>Image and Sequences</label>
+                                        <label data-bs-toggle="tooltip" data-bs-placement="right" title="Import multiple PNG images to create animated particle sequences">Image and Sequences</label>
                                         <input type="file" class="form-control" id="imageImport" accept="image/png" multiple>
                                         <div class="mt-2">
                                             <button class="btn btn-outline-light" onclick="startAnimation()">Play</button>
@@ -445,7 +445,7 @@
                             <div id="backgroundControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="backgroundColor">Background Color</label>
+                                        <label for="backgroundColor" data-bs-toggle="tooltip" data-bs-placement="right" title="Change the background color of the particle system">Background Color</label>
                                         <input type="color" class="form-control" id="backgroundColor" value="#2ecc71">
                                     </div>
                                     <div class="control-group">
