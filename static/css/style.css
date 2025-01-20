@@ -43,7 +43,7 @@ body {
     left: -48px;
     top: calc(33.33% - 150px); /* Moved up by 25px from original 125px */
     transform: translateY(-50%);
-    background: rgba(255, 165, 0, 1);
+    background: rgba(255, 255, 255, 1);
     border: none;
     padding: 24px 12px;
     border-radius: 8px 0 0 8px;
@@ -53,11 +53,11 @@ body {
 }
 
 .control-panel-toggle:hover {
-    background: rgba(255, 165, 0, 0.5);
+    background: rgba(255, 255, 255, 0.8);
 }
 
 .control-panel-toggle i {
-    color: white;
+    color: #000;
     width: 24px;
     height: 24px;
 }
