@@ -1,3 +1,69 @@
+/* Base Grid System */
+.grid-container {
+    width: 960px;
+    margin: 0 auto;
+    padding: 0 10px;
+}
+
+/* Responsive Grid */
+@media screen and (max-width: 960px) {
+    .grid-container {
+        width: 100%;
+        padding: 0 15px;
+    }
+}
+
+/* Device-specific adjustments */
+@media screen and (max-width: 768px) {
+    .control-panel-overlay {
+        width: 100%;
+        right: -100%;
+    }
+    
+    .metrics-panel {
+        width: calc(100% - 20px);
+        left: 10px !important;
+    }
+    
+    .top-nav-container {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .top-nav-container .btn {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+}
+
+/* Mobile-specific */
+@media screen and (max-width: 480px) {
+    .metrics-panel {
+        height: auto;
+        min-height: 120px;
+    }
+    
+    .control-panel {
+        padding: 10px;
+    }
+    
+    .accordion-button {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+/* iOS Safari specific */
+@supports (-webkit-touch-callout: none) {
+    .control-panel-overlay {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .metrics-panel {
+        -webkit-transform: translateZ(0);
+    }
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -5,6 +71,8 @@ body {
     background-color: #1a1a1a;
     width: 100vw;
     height: 100vh;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
 }
 
 #gameCanvas {
