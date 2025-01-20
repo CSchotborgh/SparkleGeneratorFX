@@ -141,11 +141,25 @@ document.getElementById('vortexStrengthValue').addEventListener('input', (e) => 
 document.getElementById('particleMass').addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     physics.particleMass = value;
-    document.getElementById('particleMassValue').textContent = calculatePercentage(value, 0.1, 5);
+    const massInGrams = (value * 49.9) + 0.1; // Convert to 0.1-50g range
+    document.getElementById('particleMassValue').value = Math.round(massInGrams);
+    document.getElementById('particleMassValue').nextElementSibling.textContent = 'g';
+});
+
+document.getElementById('particleMassValue').addEventListener('input', (e) => {
+    const grams = Math.min(50, Math.max(0.1, parseFloat(e.target.value) || 0.1));
+    const value = (grams - 0.1) / 49.9;
+    physics.particleMass = value;
+    document.getElementById('particleMass').value = value;
+    e.target.value = Math.round(grams);
 });
 
 document.getElementById('particleLife').addEventListener('input', (e) => {
-    physics.particleLife = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    physics.particleLife = value;
+    const durationMs = (value * 4900) + 100; // Convert to 100-5000ms range
+    document.getElementById('particleLifeValue').value = Math.round(durationMs);
+    document.getElementById('particleLifeValue').nextElementSibling.textContent = 'ms';
     // Update existing particles' life value
     particles.forEach(particle => {
         if (particle.life > physics.particleLife) {
@@ -154,8 +168,28 @@ document.getElementById('particleLife').addEventListener('input', (e) => {
     });
 });
 
+document.getElementById('particleLifeValue').addEventListener('input', (e) => {
+    const ms = Math.min(5000, Math.max(100, parseFloat(e.target.value) || 100));
+    const value = (ms - 100) / 4900;
+    physics.particleLife = value;
+    document.getElementById('particleLife').value = value;
+    e.target.value = Math.round(ms);
+});
+
 document.getElementById('particleAcceleration').addEventListener('input', (e) => {
-    physics.acceleration = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    physics.acceleration = value;
+    const pixelsPerFrame = (value * 19) + 1; // Convert to 1-20px/frame range
+    document.getElementById('particleAccelerationValue').value = Math.round(pixelsPerFrame);
+    document.getElementById('particleAccelerationValue').nextElementSibling.textContent = 'px/f';
+});
+
+document.getElementById('particleAccelerationValue').addEventListener('input', (e) => {
+    const pxf = Math.min(20, Math.max(1, parseFloat(e.target.value) || 1));
+    const value = (pxf - 1) / 19;
+    physics.acceleration = value;
+    document.getElementById('particleAcceleration').value = value;
+    e.target.value = Math.round(pxf);
 });
 
 document.getElementById('collisionEnabled').addEventListener('change', (e) => {
