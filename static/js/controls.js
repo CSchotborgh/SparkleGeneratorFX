@@ -93,7 +93,15 @@ document.getElementById('windValue').addEventListener('input', (e) => {
 document.getElementById('bounce').addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     physics.bounce = value;
-    document.getElementById('bounceValue').textContent = calculatePercentage(value, 0, 1);
+    document.getElementById('bounceValue').value = calculatePercentage(value, 0, 1);
+});
+
+document.getElementById('bounceValue').addEventListener('input', (e) => {
+    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+    const value = percentage / 100;
+    physics.bounce = value;
+    document.getElementById('bounce').value = value;
+    e.target.value = percentage;
 });
 
 document.getElementById('friction').addEventListener('input', (e) => {

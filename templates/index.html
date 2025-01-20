@@ -246,8 +246,12 @@
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="bounce" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how much particles bounce when hitting boundaries">Bounce (<span id="bounceValue">80</span>%)</label>
-                                        <input type="range" class="form-range" id="bounce" min="0" max="1" step="0.1" value="0.8">
+                                        <label for="bounce" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how much particles bounce when hitting boundaries">Bounce</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="bounce" min="0" max="1" step="0.1" value="0.8">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="bounceValue" value="80" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="friction" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how quickly particles slow down when moving">Friction (<span id="frictionValue">90</span>%)</label>
@@ -522,7 +526,7 @@
             feather.replace();
         });
 
-        // Add Toggle Metrics functionality
+                // Add Toggle Metrics functionality
         const toggleMetricsButton = document.getElementById('toggleMetricsButton');
         const metricsPanels = document.querySelectorAll('.metrics-panel');
         let metricsVisible = true;
