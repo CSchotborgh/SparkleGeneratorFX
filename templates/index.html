@@ -13,6 +13,7 @@
     <div class="container-fluid">
         <!-- Top Navigation Buttons -->
         <div class="top-nav-container">
+            <img src="{{ url_for('static', filename='images/sumochuck_logo.png') }}" alt="Sumochuck Logo" class="nav-logo me-2" style="height: 30px; width: auto;">
             <button id="resetButton" class="btn btn-outline-danger me-2 d-flex align-items-center justify-content-center" onclick="resetSystem()" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Reset all particle settings to their default values" style="min-width: 100px;">
                 <i data-feather="refresh-cw" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Reset All</span>
             </button>
