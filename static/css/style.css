@@ -516,28 +516,28 @@ h3, h4 {
 
 /* Tooltip Styles */
 .tooltip .tooltip-inner {
-    background-color: #4a90e2;
+    background-color: rgb(17, 69, 128);
     color: white;
     padding: 8px 12px;
     border-radius: 4px;
     font-size: 0.875rem;
-    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+    box-shadow: 0 2px 8px rgba(17, 69, 128, 0.2);
 }
 
 .tooltip.bs-tooltip-top .tooltip-arrow::before {
-    border-top-color: #4a90e2;
+    border-top-color: rgb(17, 69, 128);
 }
 
 .tooltip.bs-tooltip-bottom .tooltip-arrow::before {
-    border-bottom-color: #4a90e2;
+    border-bottom-color: rgb(17, 69, 128);
 }
 
 .tooltip.bs-tooltip-start .tooltip-arrow::before {
-    border-left-color: #4a90e2;
+    border-left-color: rgb(17, 69, 128);
 }
 
 .tooltip.bs-tooltip-end .tooltip-arrow::before {
-    border-right-color: #4a90e2;
+    border-right-color: rgb(17, 69, 128);
 }
 
 
