@@ -208,6 +208,7 @@ class Particle {
     }
 
     drawShape(x, y, size, opacity, angle) {
+        const finalOpacity = opacity * config.opacity;
         if (this.shape === 'image' && config.particleSprite) {
             const scale = size / config.originalSize;
             k.drawSprite({
@@ -215,7 +216,7 @@ class Particle {
                 pos: k.vec2(x - size/2, y - size/2),
                 scale: k.vec2(scale, scale),
                 angle: angle,
-                opacity: opacity,
+                opacity: finalOpacity,
             });
             return;
         }

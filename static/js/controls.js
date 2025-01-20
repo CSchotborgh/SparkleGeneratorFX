@@ -202,7 +202,17 @@ document.getElementById('particleColor').addEventListener('input', (e) => {
 
 // Advanced particle options
 document.getElementById('particleOpacity').addEventListener('input', (e) => {
-    config.opacity = parseFloat(e.target.value);
+    const value = parseFloat(e.target.value);
+    config.opacity = value;
+    document.getElementById('particleOpacityValue').value = Math.round(value * 100);
+});
+
+document.getElementById('particleOpacityValue').addEventListener('input', (e) => {
+    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+    const value = percentage / 100;
+    config.opacity = value;
+    document.getElementById('particleOpacity').value = value;
+    e.target.value = percentage;
 });
 
 document.getElementById('particleBlur').addEventListener('input', (e) => {
