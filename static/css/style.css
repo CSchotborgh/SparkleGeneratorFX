@@ -41,7 +41,7 @@ body {
 .control-panel-toggle {
     position: absolute;
     left: -48px;
-    top: calc(33.33% - 125px);
+    top: calc(33.33% - 150px); /* Moved up by 25px from original 125px */
     transform: translateY(-50%);
     background: rgba(255, 165, 0, 1);
     border: none;
@@ -539,7 +539,6 @@ h3, h4 {
 .tooltip.bs-tooltip-end .tooltip-arrow::before {
     border-right-color: rgb(17, 69, 128);
 }
-
 
 #positionPanel {
     top: calc(160px + 2 * clamp(150px, 15vh, 200px));
