@@ -125,8 +125,17 @@ document.getElementById('turbulence').addEventListener('input', (e) => {
 document.getElementById('vortexStrength').addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     physics.vortexStrength = value;
-    document.getElementById('vortexStrengthValue').textContent = calculatePercentage(value, -1, 1);
+    document.getElementById('vortexStrengthValue').value = calculatePercentage(value, -1, 1);
     physics.vortexCenter = { x: k.width() / 2, y: k.height() / 2 };
+});
+
+document.getElementById('vortexStrengthValue').addEventListener('input', (e) => {
+    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+    const value = ((percentage / 100) * 2) - 1;
+    physics.vortexStrength = value;
+    document.getElementById('vortexStrength').value = value;
+    physics.vortexCenter = { x: k.width() / 2, y: k.height() / 2 };
+    e.target.value = percentage;
 });
 
 document.getElementById('particleMass').addEventListener('input', (e) => {

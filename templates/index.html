@@ -278,8 +278,12 @@
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="vortexStrength" data-bs-toggle="tooltip" data-bs-placement="right" title="Creates a spinning effect that pulls particles toward the center">Vortex Strength (<span id="vortexStrengthValue">50</span>%)</label>
-                                        <input type="range" class="form-range" id="vortexStrength" min="-1" max="1" step="0.1" value="0">
+                                        <label for="vortexStrength" data-bs-toggle="tooltip" data-bs-placement="right" title="Creates a spinning effect that pulls particles toward the center">Vortex Strength</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="vortexStrength" min="-1" max="1" step="0.1" value="0">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="vortexStrengthValue" value="50" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="particleMass" data-bs-toggle="tooltip" data-bs-placement="right" title="Affects how particles respond to forces like gravity and wind">Particle Mass</label>
