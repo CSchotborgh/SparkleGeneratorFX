@@ -5,35 +5,44 @@ const initialHeight = window.innerHeight;
 // Background configuration
 let backgroundColor = "#2ecc71"; // Default green background matching UI theme
 
-// Default physics parameters
+// Default physics parameters - optimized for cross-device consistency
 const defaultPhysics = {
     gravity: 0.1,
     wind: 0,
-    friction: 0.99,
+    friction: 0.98,
     bounce: 0.8,
     airResistance: 0.02,
     turbulence: 0.1,
     vortexStrength: 0,
     vortexCenter: { x: initialWidth / 2, y: initialHeight / 2 },
-    particleMass: 0.59,
-    particleLife: 1.0,
-    acceleration: 1.0,
-    collisionEnabled: false
+    particleMass: 0.5,
+    particleLife: 0.8,
+    acceleration: 0.8,
+    collisionEnabled: true
 };
 
-// Default particle system configuration
+// Default particle system configuration - optimized for performance across devices
 const defaultConfig = {
-    count: 50,
-    size: 5,
-    speed: 5,
+    count: 40,
+    size: 4,
+    speed: 4,
     color: "#ffffff",
     preset: "sparkle",
-    trailLength: 10,
+    trailLength: 8,
     reverseTrail: false,
     shape: 'circle',
-    opacity: 1.0,
-    blur: 0
+    opacity: 0.8,
+    blur: 0,
+    enableRotation: true
 };
+
+// Store initial settings in localStorage
+if (!localStorage.getItem('particleSystemDefaults')) {
+    localStorage.setItem('particleSystemDefaults', JSON.stringify({
+        physics: defaultPhysics,
+        config: defaultConfig
+    }));
+}
 
 // Active physics and config objects
 const physics = { ...defaultPhysics };
@@ -1074,6 +1083,40 @@ function updateMetrics() {
     metricsHistory.memory.push(memoryUsage);
     metricsHistory.memory.shift();
 
+
+function updateAllSliders() {
+    // Update physics sliders
+    document.getElementById('gravity').value = physics.gravity;
+    document.getElementById('gravityValue').value = calculatePercentage(physics.gravity, 0, 0.5);
+    document.getElementById('wind').value = physics.wind;
+    document.getElementById('windValue').value = calculatePercentage(physics.wind + 0.2, 0, 0.4);
+    document.getElementById('friction').value = physics.friction;
+    document.getElementById('frictionValue').textContent = calculatePercentage(physics.friction, 0.9, 1);
+    document.getElementById('bounce').value = physics.bounce;
+    document.getElementById('bounceValue').value = calculatePercentage(physics.bounce, 0, 1);
+    document.getElementById('airResistance').value = physics.airResistance;
+    document.getElementById('airResistanceValue').textContent = calculatePercentage(physics.airResistance, 0, 0.1);
+    document.getElementById('turbulence').value = physics.turbulence;
+    document.getElementById('turbulenceValue').textContent = calculatePercentage(physics.turbulence, 0, 0.5);
+    document.getElementById('vortexStrength').value = physics.vortexStrength;
+    document.getElementById('vortexStrengthValue').value = calculatePercentage(physics.vortexStrength + 1, 0, 2);
+    document.getElementById('particleMass').value = physics.particleMass;
+    document.getElementById('particleLife').value = physics.particleLife;
+    document.getElementById('particleAcceleration').value = physics.acceleration;
+
+    // Update visual control sliders
+    document.getElementById('particleCount').value = config.count;
+    document.getElementById('particleSize').value = config.size;
+    document.getElementById('particleSpeed').value = config.speed;
+    document.getElementById('particleColor').value = config.color;
+    document.getElementById('particleOpacity').value = config.opacity;
+    document.getElementById('particleOpacityValue').value = Math.round(config.opacity * 100);
+    document.getElementById('trailLength').value = config.trailLength;
+    document.getElementById('particleBlur').value = config.blur;
+    document.getElementById('particleRotation').checked = config.enableRotation;
+    document.getElementById('reverseTrail').checked = config.reverseTrail;
+}
+
     // Update graphs if they are initialized
     try {
         if (graphs.fps && graphs.fps.data) {
@@ -1099,6 +1142,12 @@ function updateMetrics() {
 
 // Add reset functionality
 function resetSystem() {
+    // Load stored defaults or use initial defaults
+    const storedDefaults = JSON.parse(localStorage.getItem('particleSystemDefaults')) || {
+        physics: defaultPhysics,
+        config: defaultConfig
+    };
+
     // Reset metrics panels positions
     const panels = {
         'fpsPanel': { top: '120px', left: '20px' },
@@ -1118,11 +1167,14 @@ function resetSystem() {
         }
     });
 
-    // Reset physics parameters to default values
-    Object.assign(physics, defaultPhysics);
+    // Reset physics parameters to stored defaults
+    Object.assign(physics, storedDefaults.physics);
 
-    // Reset configuration to default
-    Object.assign(config, defaultConfig);
+    // Reset configuration to stored defaults
+    Object.assign(config, storedDefaults.config);
+
+    // Update all UI sliders to match defaults
+    updateAllSliders();
 
     // Reset background
     const [r, g, b] = hexToRgb('#2ecc71');
