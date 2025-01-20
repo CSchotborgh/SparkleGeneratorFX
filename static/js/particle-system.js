@@ -5,8 +5,8 @@ const initialHeight = window.innerHeight;
 // Background configuration
 let backgroundColor = "#2ecc71"; // Default green background matching UI theme
 
-// Physics parameters
-const physics = {
+// Default physics parameters
+const defaultPhysics = {
     gravity: 0.1,
     wind: 0,
     friction: 0.99,
@@ -15,11 +15,30 @@ const physics = {
     turbulence: 0.1,
     vortexStrength: 0,
     vortexCenter: { x: initialWidth / 2, y: initialHeight / 2 },
-    particleMass: 0.59, // Approximately 10% on the 0.1-5 scale
+    particleMass: 0.59,
     particleLife: 1.0,
     acceleration: 1.0,
     collisionEnabled: false
 };
+
+// Default particle system configuration
+const defaultConfig = {
+    count: 50,
+    size: 5,
+    speed: 5,
+    color: "#ffffff",
+    preset: "sparkle",
+    trailLength: 10,
+    reverseTrail: false,
+    shape: 'circle',
+    opacity: 1.0,
+    blur: 0
+};
+
+// Active physics and config objects
+const physics = { ...defaultPhysics };
+const config = { ...defaultConfig };
+
 
 // Initialize variables for background
 let backgroundImage = null;
@@ -33,18 +52,6 @@ const k = kaboom({
     height: initialHeight,
     background: hexToRgb(backgroundColor),
 });
-
-// Particle system configuration
-const config = {
-    count: 50,
-    size: 5,
-    speed: 5,
-    color: "#ffffff",
-    preset: "sparkle",
-    trailLength: 10,  // Added trail length configuration
-    reverseTrail: false, // Trail direction control
-    shape: 'circle' // Default shape
-};
 
 // Particle class
 class Particle {
@@ -220,7 +227,7 @@ class Particle {
             });
             return;
         }
-        
+
         switch (this.shape) {
             case 'square':
                 k.drawRect({
@@ -1112,32 +1119,10 @@ function resetSystem() {
     });
 
     // Reset physics parameters to default values
-    Object.assign(physics, {
-        gravity: 0.1,
-        wind: 0,
-        friction: 0.99,
-        bounce: 0.8,
-        airResistance: 0.02,
-        turbulence: 0.1,
-        vortexStrength: 0,
-        vortexCenter: { x: k.width() / 2, y: k.height() / 2 },
-        particleMass: 0.59, // Approximately 10% on the 0.1-5 scale
-        particleLife: 1.0,
-        acceleration: 1.0,
-        collisionEnabled: false
-    });
+    Object.assign(physics, defaultPhysics);
 
     // Reset configuration to default
-    Object.assign(config, {
-        count: 50,
-        size: 5,
-        speed: 5,
-        color: "#ffffff",
-        preset: "sparkle",
-        trailLength: 10,
-        reverseTrail: false,
-        shape: 'circle' // Default shape
-    });
+    Object.assign(config, defaultConfig);
 
     // Reset background
     const [r, g, b] = hexToRgb('#2ecc71');
