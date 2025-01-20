@@ -43,7 +43,7 @@ body {
     left: -48px;
     top: calc(33.33% - 150px); /* Moved up by 25px from original 125px */
     transform: translateY(-50%);
-    background: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.5); /* Changed opacity to 0.5 */
     border: none;
     padding: 24px 12px;
     border-radius: 8px 0 0 8px;
