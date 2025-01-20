@@ -254,32 +254,56 @@
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="friction" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how quickly particles slow down when moving">Friction (<span id="frictionValue">90</span>%)</label>
-                                        <input type="range" class="form-range" id="friction" min="0.9" max="1" step="0.01" value="0.99">
+                                        <label for="friction" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how quickly particles slow down when moving">Friction</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="friction" min="0.9" max="1" step="0.01" value="0.99">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="frictionValue" value="90" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="airResistance" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how quickly particles slow down in the air">Air Resistance (<span id="airResistanceValue">20</span>%)</label>
-                                        <input type="range" class="form-range" id="airResistance" min="0" max="0.1" step="0.001" value="0.02">
+                                        <label for="airResistance" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how quickly particles slow down in the air">Air Resistance</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="airResistance" min="0" max="0.1" step="0.001" value="0.02">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="airResistanceValue" value="20" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="turbulence" data-bs-toggle="tooltip" data-bs-placement="right" title="Adds random movement to particles creating chaotic patterns">Turbulence (<span id="turbulenceValue">20</span>%)</label>
-                                        <input type="range" class="form-range" id="turbulence" min="0" max="0.5" step="0.01" value="0.1">
+                                        <label for="turbulence" data-bs-toggle="tooltip" data-bs-placement="right" title="Adds random movement to particles creating chaotic patterns">Turbulence</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="turbulence" min="0" max="0.5" step="0.01" value="0.1">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="turbulenceValue" value="20" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="vortexStrength" data-bs-toggle="tooltip" data-bs-placement="right" title="Creates a spinning effect that pulls particles toward the center">Vortex Strength (<span id="vortexStrengthValue">50</span>%)</label>
                                         <input type="range" class="form-range" id="vortexStrength" min="-1" max="1" step="0.1" value="0">
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleMass" data-bs-toggle="tooltip" data-bs-placement="right" title="Affects how particles respond to forces like gravity and wind">Particle Mass (<span id="particleMassValue">18</span>%)</label>
-                                        <input type="range" class="form-range" id="particleMass" min="0.1" max="5" step="0.1" value="1.0">
+                                        <label for="particleMass" data-bs-toggle="tooltip" data-bs-placement="right" title="Affects how particles respond to forces like gravity and wind">Particle Mass</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="particleMass" min="0.1" max="5" step="0.1" value="1.0">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="particleMassValue" value="18" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="particleLife" data-bs-toggle="tooltip" data-bs-placement="right" title="Sets how long particles exist before disappearing">Particle Life</label>
-                                        <input type="range" class="form-range" id="particleLife" min="0.1" max="5" step="0.1" value="1.0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="particleLife" min="0.1" max="5" step="0.1" value="1.0">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="particleLifeValue" value="20" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="particleAcceleration" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how quickly particles speed up or slow down">Acceleration</label>
-                                        <input type="range" class="form-range" id="particleAcceleration" min="0" max="2" step="0.1" value="1.0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="particleAcceleration" min="0" max="2" step="0.1" value="1.0">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="particleAccelerationValue" value="50" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="collisionEnabled" data-bs-toggle="tooltip" data-bs-placement="right" title="Toggles particle collision detection on/off">Enable Collisions</label>
@@ -335,11 +359,19 @@
                                 <div class="accordion-body">
                                     <div class="control-group">
                                         <label for="particleOpacity" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust the transparency of particles">Opacity</label>
-                                        <input type="range" class="form-range" id="particleOpacity" min="0" max="1" step="0.1" value="1">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="particleOpacity" min="0" max="1" step="0.1" value="1">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="particleOpacityValue" value="100" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="particleBlur" data-bs-toggle="tooltip" data-bs-placement="right" title="Add blur effect to particles">Blur Effect</label>
-                                        <input type="range" class="form-range" id="particleBlur" min="0" max="10" step="1" value="0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="particleBlur" min="0" max="10" step="1" value="0">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="particleBlurValue" value="0" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="particleColor" data-bs-toggle="tooltip" data-bs-placement="right" title="Set the color of particles using a color picker">Color</label>
@@ -347,7 +379,11 @@
                                     </div>
                                     <div class="control-group">
                                         <label for="trailLength" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust how long the particle trail appears behind moving particles">Trail Length</label>
-                                        <input type="range" class="form-range" id="trailLength" min="0" max="30" value="10">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="trailLength" min="0" max="30" value="10">
+                                            <input type="number" class="form-control form-control-sm percentage-input" id="trailLengthValue" value="33" min="0" max="100">
+                                            <span class="percentage-symbol">%</span>
+                                        </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="reverseTrail" data-bs-toggle="tooltip" data-bs-placement="right" title="Reverse the direction of particle trails">Reverse Trail</label>
