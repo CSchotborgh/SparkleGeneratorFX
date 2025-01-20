@@ -41,7 +41,7 @@ body {
 .control-panel-toggle {
     position: absolute;
     left: -48px;
-    top: calc(33.33% - 150px);
+    top: calc(33.33% - 125px);
     transform: translateY(-50%);
     background: rgba(255, 165, 0, 0.3);
     border: none;
