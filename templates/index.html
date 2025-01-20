@@ -229,7 +229,7 @@
                             <div id="physicsControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="gravity">Gravity</label>
+                                        <label for="gravity" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls the downward force applied to particles (0-100%)">Gravity</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <input type="range" class="form-range" id="gravity" min="0" max="0.5" step="0.01" value="0.1">
                                             <input type="number" class="form-control form-control-sm percentage-input" id="gravityValue" value="20" min="0" max="100">
@@ -237,7 +237,7 @@
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="wind">Wind</label>
+                                        <label for="wind" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls horizontal force affecting particle movement (-100% to 100%)">Wind</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <input type="range" class="form-range" id="wind" min="-0.2" max="0.2" step="0.01" value="0">
                                             <input type="number" class="form-control form-control-sm percentage-input" id="windValue" value="50" min="0" max="100">
@@ -245,11 +245,11 @@
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="bounce">Bounce (<span id="bounceValue">80</span>%)</label>
+                                        <label for="bounce" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how much particles bounce when hitting boundaries">Bounce (<span id="bounceValue">80</span>%)</label>
                                         <input type="range" class="form-range" id="bounce" min="0" max="1" step="0.1" value="0.8">
                                     </div>
                                     <div class="control-group">
-                                        <label for="friction">Friction (<span id="frictionValue">90</span>%)</label>
+                                        <label for="friction" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how quickly particles slow down when moving">Friction (<span id="frictionValue">90</span>%)</label>
                                         <input type="range" class="form-range" id="friction" min="0.9" max="1" step="0.01" value="0.99">
                                     </div>
                                     <div class="control-group">
