@@ -1149,6 +1149,25 @@ function resetSystem() {
             config: defaultConfig
         };
 
+        // Reset metrics panels positions
+        const panels = {
+            'fpsPanel': { top: '120px', left: '20px' },
+            'particlePanel': { top: '120px', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
+            'speedPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: '20px' },
+            'memoryPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
+            'positionPanel': { top: 'calc(160px + 2 * clamp(150px, 15vh, 200px))', left: '20px' }
+        };
+
+        Object.entries(panels).forEach(([id, position]) => {
+            const panel = document.getElementById(id);
+            if (panel) {
+                panel.style.transform = 'none';
+                panel.style.top = position.top;
+                panel.style.left = position.left;
+                panel.classList.remove('fullscreen');
+            }
+        });
+
         // Reset physics parameters to stored defaults
         Object.assign(physics, storedDefaults.physics);
 
@@ -1169,37 +1188,8 @@ function resetSystem() {
         backgroundImage = null;
         backgroundSprite = null;
 
-        // Update UI controls safely
-        const updateElement = (id, value) => {
-            const element = document.getElementById(id);
-            if (element) {
-                if (element.type === 'checkbox') {
-                    element.checked = value;
-                } else {
-                    element.value = value;
-                }
-            }
-        };
-
-        // Update all controls
-        updateElement('particleCount', config.count);
-        updateElement('particleSize', config.size);
-        updateElement('particleSpeed', config.speed);
-        updateElement('particleColor', config.color);
-        updateElement('gravity', physics.gravity);
-        updateElement('wind', physics.wind);
-        updateElement('bounce', physics.bounce);
-        updateElement('friction', physics.friction);
-        updateElement('airResistance', physics.airResistance);
-        updateElement('turbulence', physics.turbulence);
-        updateElement('vortexStrength', physics.vortexStrength);
-        updateElement('particleMass', physics.particleMass);
-        updateElement('particleLife', physics.particleLife);
-        updateElement('particleAcceleration', physics.acceleration);
-        updateElement('collisionEnabled', physics.collisionEnabled);
-        updateElement('trailLength', config.trailLength);
-        updateElement('reverseTrail', config.reverseTrail);
-        updateElement('presets', config.preset);
+        // Update all UI controls
+        updateAllSliders();
 
         // Clear any file inputs
         const fileInputs = document.querySelectorAll('input[type="file"]');
@@ -1210,7 +1200,6 @@ function resetSystem() {
         console.error('Reset error:', error);
     }
 }
-        'particlePanel': { top: '120px', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
         'speedPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: '20px' },
         'memoryPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
         'positionPanel': { top: 'calc(160px + 2 * clamp(150px, 15vh, 200px))', left: '20px' }
