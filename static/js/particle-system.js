@@ -1084,39 +1084,6 @@ function updateMetrics() {
     metricsHistory.memory.shift();
 
 
-function updateAllSliders() {
-    // Update physics sliders
-    document.getElementById('gravity').value = physics.gravity;
-    document.getElementById('gravityValue').value = calculatePercentage(physics.gravity, 0, 0.5);
-    document.getElementById('wind').value = physics.wind;
-    document.getElementById('windValue').value = calculatePercentage(physics.wind + 0.2, 0, 0.4);
-    document.getElementById('friction').value = physics.friction;
-    document.getElementById('frictionValue').textContent = calculatePercentage(physics.friction, 0.9, 1);
-    document.getElementById('bounce').value = physics.bounce;
-    document.getElementById('bounceValue').value = calculatePercentage(physics.bounce, 0, 1);
-    document.getElementById('airResistance').value = physics.airResistance;
-    document.getElementById('airResistanceValue').textContent = calculatePercentage(physics.airResistance, 0, 0.1);
-    document.getElementById('turbulence').value = physics.turbulence;
-    document.getElementById('turbulenceValue').textContent = calculatePercentage(physics.turbulence, 0, 0.5);
-    document.getElementById('vortexStrength').value = physics.vortexStrength;
-    document.getElementById('vortexStrengthValue').value = calculatePercentage(physics.vortexStrength + 1, 0, 2);
-    document.getElementById('particleMass').value = physics.particleMass;
-    document.getElementById('particleLife').value = physics.particleLife;
-    document.getElementById('particleAcceleration').value = physics.acceleration;
-
-    // Update visual control sliders
-    document.getElementById('particleCount').value = config.count;
-    document.getElementById('particleSize').value = config.size;
-    document.getElementById('particleSpeed').value = config.speed;
-    document.getElementById('particleColor').value = config.color;
-    document.getElementById('particleOpacity').value = config.opacity;
-    document.getElementById('particleOpacityValue').value = Math.round(config.opacity * 100);
-    document.getElementById('trailLength').value = config.trailLength;
-    document.getElementById('particleBlur').value = config.blur;
-    document.getElementById('particleRotation').checked = config.enableRotation;
-    document.getElementById('reverseTrail').checked = config.reverseTrail;
-}
-
     // Update graphs if they are initialized
     try {
         if (graphs.fps && graphs.fps.data) {
@@ -1148,25 +1115,6 @@ function resetSystem() {
             physics: defaultPhysics,
             config: defaultConfig
         };
-
-        // Reset metrics panels positions
-        const panels = {
-            'fpsPanel': { top: '120px', left: '20px' },
-            'particlePanel': { top: '120px', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
-            'speedPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: '20px' },
-            'memoryPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
-            'positionPanel': { top: 'calc(160px + 2 * clamp(150px, 15vh, 200px))', left: '20px' }
-        };
-
-        Object.entries(panels).forEach(([id, position]) => {
-            const panel = document.getElementById(id);
-            if (panel) {
-                panel.style.transform = 'none';
-                panel.style.top = position.top;
-                panel.style.left = position.left;
-                panel.classList.remove('fullscreen');
-            }
-        });
 
         // Reset physics parameters to stored defaults
         Object.assign(physics, storedDefaults.physics);
@@ -1200,68 +1148,40 @@ function resetSystem() {
         console.error('Reset error:', error);
     }
 }
-        'speedPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: '20px' },
-        'memoryPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
-        'positionPanel': { top: 'calc(160px + 2 * clamp(150px, 15vh, 200px))', left: '20px' }
-    };
 
-    Object.entries(panels).forEach(([id, position]) => {
-        const panel = document.getElementById(id);
-        if (panel) {
-            panel.style.transform = 'none';
-            panel.style.top = position.top;
-            panel.style.left = position.left;
-            panel.classList.remove('fullscreen');
-        }
-    });
+function updateAllSliders() {
+    // Update physics sliders
+    document.getElementById('gravity').value = physics.gravity;
+    document.getElementById('gravityValue').value = calculatePercentage(physics.gravity, 0, 0.5);
+    document.getElementById('wind').value = physics.wind;
+    document.getElementById('windValue').value = calculatePercentage(physics.wind + 0.2, 0, 0.4);
+    document.getElementById('friction').value = physics.friction;
+    document.getElementById('frictionValue').textContent = calculatePercentage(physics.friction, 0.9, 1);
+    document.getElementById('bounce').value = physics.bounce;
+    document.getElementById('bounceValue').value = calculatePercentage(physics.bounce, 0, 1);
+    document.getElementById('airResistance').value = physics.airResistance;
+    document.getElementById('airResistanceValue').textContent = calculatePercentage(physics.airResistance, 0, 0.1);
+    document.getElementById('turbulence').value = physics.turbulence;
+    document.getElementById('turbulenceValue').textContent = calculatePercentage(physics.turbulence, 0, 0.5);
+    document.getElementById('vortexStrength').value = physics.vortexStrength;
+    document.getElementById('vortexStrengthValue').value = calculatePercentage(physics.vortexStrength + 1, 0, 2);
+    document.getElementById('particleMass').value = physics.particleMass;
+    document.getElementById('particleLife').value = physics.particleLife;
+    document.getElementById('particleAcceleration').value = physics.acceleration;
 
-    // Reset physics parameters to stored defaults
-    Object.assign(physics, storedDefaults.physics);
-
-    // Reset configuration to stored defaults
-    Object.assign(config, storedDefaults.config);
-
-    // Update all UI sliders to match defaults
-    updateAllSliders();
-
-    // Reset background
-    const [r, g, b] = hexToRgb('#2ecc71');
-    k.setBackground(k.rgb(r, g, b, 0.3));
-    document.getElementById('backgroundColor').value = '#2ecc71';
-
-    // Clear background image if any
-    backgroundImage = null;
-    backgroundSprite = null;
-
-    // Reset emitter position
-    emitter.reset();
-
-    // Clear all particles and create new ones
-    particles = Array(config.count).fill().map(() => new Particle());
-
-    // Reset all UI controls to match default values
+    // Update visual control sliders
     document.getElementById('particleCount').value = config.count;
     document.getElementById('particleSize').value = config.size;
     document.getElementById('particleSpeed').value = config.speed;
     document.getElementById('particleColor').value = config.color;
-    document.getElementById('gravity').value = physics.gravity;
-    document.getElementById('wind').value = physics.wind;
-    document.getElementById('bounce').value = physics.bounce;
-    document.getElementById('friction').value = physics.friction;
-    document.getElementById('airResistance').value = physics.airResistance;
-    document.getElementById('turbulence').value = physics.turbulence;
-    document.getElementById('vortexStrength').value = physics.vortexStrength;
-    document.getElementById('particleMass').value = physics.particleMass;
-    document.getElementById('particleLife').value = physics.particleLife;
-    document.getElementById('particleAcceleration').value = physics.acceleration;
-    document.getElementById('collisionEnabled').checked = physics.collisionEnabled;
+    document.getElementById('particleOpacity').value = config.opacity;
+    document.getElementById('particleOpacityValue').value = Math.round(config.opacity * 100);
     document.getElementById('trailLength').value = config.trailLength;
+    document.getElementById('particleBlur').value = config.blur;
+    document.getElementById('particleRotation').checked = config.enableRotation;
     document.getElementById('reverseTrail').checked = config.reverseTrail;
-    document.getElementById('presets').value = config.preset;
+}
 
-    // Clear any file inputs
-    const fileInputs = document.querySelectorAll('input[type="file"]');
-    fileInputs.forEach(input => {
-        input.value = '';
-    });
+function calculatePercentage(value, min, max) {
+    return Math.round(((value - min) / (max - min)) * 100);
 }
