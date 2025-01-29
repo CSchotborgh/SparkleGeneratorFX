@@ -26,7 +26,7 @@
             <button id="toggleMetricsButton" class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center active" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Toggle visibility of performance metrics panels" style="min-width: 100px;">
                 <i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Metrics On</span>
             </button>
-            </div>
+        </div>
 
         <!-- About Modal -->
         <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
@@ -544,44 +544,16 @@
     <script src="https://unpkg.com/kaboom@3000.0.1/dist/kaboom.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.0/dist/feather.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Ensure Chart.js is loaded before initializing particle system
-        window.addEventListener('load', () => {
-            if (typeof Chart === 'undefined') {
-                console.error('Chart.js not loaded properly');
-            }
-        });
-    </script>
-    <script src="{{ url_for('static', filename='js/particle-system.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="{{ url_for('static', filename='js/reset.js') }}"></script>
     <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/particle-system.js') }}"></script>
     <script src="{{ url_for('static', filename='js/export.js') }}"></script>
     <script src="{{ url_for('static', filename='js/video-export.js') }}"></script>
     <script src="{{ url_for('static', filename='js/preset-sharing.js') }}"></script>
     <script src="{{ url_for('static', filename='js/tutorial.js') }}"></script>
     <script>
-        // Initialize Feather icons
-        document.addEventListener('DOMContentLoaded', () => {
-            feather.replace();
-        });
-
-                // Add Toggle Metrics functionality
-        const toggleMetricsButton = document.getElementById('toggleMetricsButton');
-        const metricsPanels = document.querySelectorAll('.metrics-panel');
-        let metricsVisible = true;
-
-        toggleMetricsButton.addEventListener('click', () => {
-            metricsVisible = !metricsVisible;
-            metricsPanels.forEach(panel => {
-                panel.style.display = metricsVisible ? 'block' : 'none';
-            });
-            toggleMetricsButton.innerHTML = metricsVisible ? 
-                '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Metrics On</span>' : 
-                '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Metrics Off</span>';
-        toggleMetricsButton.classList.toggle('active', metricsVisible);
-            feather.replace(); // Re-render Feather icons after changing innerHTML
-        });
+        feather.replace();
     </script>
 </body>
 </html>
