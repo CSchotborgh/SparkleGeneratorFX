@@ -515,6 +515,11 @@ k.onUpdate(() => {
                 width = backgroundImage.width * containScale;
                 height = backgroundImage.height * containScale;
                 break;
+            case 'original':
+                // Use the image's natural dimensions
+                width = backgroundImage.width;
+                height = backgroundImage.height;
+                break;
             case 'stretch':
                 width = k.width();
                 height = k.height();
@@ -1243,7 +1248,7 @@ function updateAllSliders() {
     document.getElementById('vortexStrengthValue').value = calculatePercentage(physics.vortexStrength + 1, 0, 2);
     document.getElementById('particleMass').value = physics.particleMass;
     document.getElementById('particleLife').value = physics.particleLife;
-     document.getElementById('particleAcceleration').value = physics.acceleration;
+    document.getElementById('particleAcceleration').value = physics.acceleration;
 
     // Update visual control sliders
     document.getElementById('particleCount').value = config.count;
