@@ -4,6 +4,11 @@ const initialHeight = window.innerHeight;
 
 // Background configuration
 let backgroundColor = "#2ecc71"; // Default green background matching UI theme
+let backgroundConfig = {
+    scaleMode: 'cover',
+    position: 'center',
+    opacity: 1
+};
 
 // Default physics parameters - optimized for cross-device consistency
 const defaultPhysics = {
@@ -459,6 +464,26 @@ document.getElementById('backgroundImage').addEventListener('change', async (e) 
     }
 });
 
+// Add background configuration event listeners
+document.getElementById('bgScaleMode').addEventListener('change', function(e) {
+    backgroundConfig.scaleMode = e.target.value;
+});
+
+document.getElementById('bgPosition').addEventListener('change', function(e) {
+    backgroundConfig.position = e.target.value;
+});
+
+document.getElementById('bgOpacity').addEventListener('input', function(e) {
+    backgroundConfig.opacity = parseFloat(e.target.value);
+    document.getElementById('bgOpacityValue').value = Math.round(e.target.value * 100);
+});
+
+document.getElementById('bgOpacityValue').addEventListener('input', function(e) {
+    const value = Math.min(100, Math.max(0, parseInt(e.target.value))) / 100;
+    document.getElementById('bgOpacity').value = value;
+    backgroundConfig.opacity = value;
+});
+
 // Add event listener for background color changes
 document.getElementById('backgroundColor').addEventListener('input', function (e) {
     const selectedColor = e.target.value;
@@ -477,18 +502,70 @@ document.getElementById('particleShape').addEventListener('change', function (e)
 k.onUpdate(() => {
     // Draw background if available
     if (backgroundSprite && backgroundImage) {
-        const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-        const width = backgroundImage.width * scale;
-        const height = backgroundImage.height * scale;
-        const x = (k.width() - width) / 2;
-        const y = (k.height() - height) / 2;
+        let width, height, x, y;
+
+        switch (backgroundConfig.scaleMode) {
+            case 'cover':
+                const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
+                width = backgroundImage.width * scale;
+                height = backgroundImage.height * scale;
+                break;
+            case 'contain':
+                const containScale = Math.min(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
+                width = backgroundImage.width * containScale;
+                height = backgroundImage.height * containScale;
+                break;
+            case 'stretch':
+                width = k.width();
+                height = k.height();
+                break;
+            case 'tile':
+                width = backgroundImage.width;
+                height = backgroundImage.height;
+                // Handle tiling in multiple draws
+                for (let tileX = 0; tileX < k.width(); tileX += width) {
+                    for (let tileY = 0; tileY < k.height(); tileY += height) {
+                        k.drawSprite({
+                            sprite: backgroundSprite,
+                            pos: k.vec2(tileX, tileY),
+                            opacity: backgroundConfig.opacity,
+                            z: -1,
+                        });
+                    }
+                }
+                return; // Skip single draw for tiling
+        }
+
+        // Calculate position
+        switch (backgroundConfig.position) {
+            case 'center':
+                x = (k.width() - width) / 2;
+                y = (k.height() - height) / 2;
+                break;
+            case 'top':
+                x = (k.width() - width) / 2;
+                y = 0;
+                break;
+            case 'bottom':
+                x = (k.width() - width) / 2;
+                y = k.height() - height;
+                break;
+            case 'left':
+                x = 0;
+                y = (k.height() - height) / 2;
+                break;
+            case 'right':
+                x = k.width() - width;
+                y = (k.height() - height) / 2;
+                break;
+        }
 
         k.drawSprite({
             sprite: backgroundSprite,
             pos: k.vec2(x, y),
             scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
-            opacity: 1,
-            z: -1, // Set z-index to -1 to ensure background is behind particles
+            opacity: backgroundConfig.opacity,
+            z: -1,
         });
     }
 
@@ -872,8 +949,7 @@ function initializeGraphs() {
         data: {
             labels: Array(maxDataPoints).fill(''),
             datasets: [createDataset('Memory', '#2ecc71')]
-        }
-    });
+        }    });
 }
 
 // Initialize graphs when DOM is loaded
@@ -1167,15 +1243,15 @@ function updateAllSliders() {
     document.getElementById('vortexStrengthValue').value = calculatePercentage(physics.vortexStrength + 1, 0, 2);
     document.getElementById('particleMass').value = physics.particleMass;
     document.getElementById('particleLife').value = physics.particleLife;
-    document.getElementById('particleAcceleration').value = physics.acceleration;
+     document.getElementById('particleAcceleration').value = physics.acceleration;
 
     // Update visual control sliders
     document.getElementById('particleCount').value = config.count;
     document.getElementById('particleSize').value = config.size;
     document.getElementById('particleSpeed').value = config.speed;
     document.getElementById('particleColor').value = config.color;
-    document.getElementById('particleOpacity').value = config.opacity;
-    document.getElementById('particleOpacityValue').value = Math.round(config.opacity * 100);
+     document.getElementById('particleOpacity').value = config.opacity;
+     document.getElementById('particleOpacityValue').value = Math.round(config.opacity * 100);
     document.getElementById('trailLength').value = config.trailLength;
     document.getElementById('particleBlur').value = config.blur;
     document.getElementById('particleRotation').checked = config.enableRotation;
