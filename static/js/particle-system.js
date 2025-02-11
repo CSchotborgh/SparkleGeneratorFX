@@ -164,14 +164,22 @@ class Emitter {
         this.y = k.height() / 2;
         this.isDragging = false;
         this.active = true;
+        this.lastEmitTime = 0;
+        this.emitRate = 50; // milliseconds between emissions
     }
 
     update() {
         if (!this.active) return;
 
-        // Generate new particles to maintain count
-        while (particles.length < config.count) {
-            particles.push(this.generateParticle());
+        const currentTime = performance.now();
+
+        // If dragging and enough time has passed, emit particles
+        if (this.isDragging && currentTime - this.lastEmitTime > this.emitRate) {
+            // Generate new particles to maintain count
+            while (particles.length < config.count) {
+                particles.push(this.generateParticle());
+            }
+            this.lastEmitTime = currentTime;
         }
     }
 
@@ -179,9 +187,27 @@ class Emitter {
         const particle = new Particle();
         particle.x = this.x + (Math.random() - 0.5) * 10;
         particle.y = this.y + (Math.random() - 0.5) * 10;
-        particle.vx = (Math.random() - 0.5) * config.speed * 2;
-        particle.vy = (Math.random() - 0.5) * config.speed * 2;
+
+        // Add more dynamic initial velocities
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * config.speed * 2;
+        particle.vx = Math.cos(angle) * speed;
+        particle.vy = Math.sin(angle) * speed;
+
         return particle;
+    }
+
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+        if (this.isDragging) {
+            // Instantly generate some particles at the new position
+            for (let i = 0; i < 3; i++) {
+                if (particles.length < config.count) {
+                    particles.push(this.generateParticle());
+                }
+            }
+        }
     }
 }
 
@@ -193,24 +219,14 @@ k.canvas.addEventListener('mousedown', (e) => {
     if (e.button === 0) {
         emitter.isDragging = true;
         const rect = k.canvas.getBoundingClientRect();
-        emitter.x = e.clientX - rect.left;
-        emitter.y = e.clientY - rect.top;
-        // Generate particles immediately on click
-        for (let i = 0; i < 5; i++) {
-            particles.push(emitter.generateParticle());
-        }
+        emitter.setPosition(e.clientX - rect.left, e.clientY - rect.top);
     }
 });
 
 k.canvas.addEventListener('mousemove', (e) => {
     if (emitter.isDragging) {
         const rect = k.canvas.getBoundingClientRect();
-        emitter.x = e.clientX - rect.left;
-        emitter.y = e.clientY - rect.top;
-        // Generate particles while dragging
-        if (particles.length < config.count) {
-            particles.push(emitter.generateParticle());
-        }
+        emitter.setPosition(e.clientX - rect.left, e.clientY - rect.top);
     }
 });
 
@@ -230,12 +246,7 @@ k.canvas.addEventListener('touchstart', (e) => {
     emitter.isDragging = true;
     const rect = k.canvas.getBoundingClientRect();
     const touch = e.touches[0];
-    emitter.x = touch.clientX - rect.left;
-    emitter.y = touch.clientY - rect.top;
-    // Generate particles immediately on touch
-    for (let i = 0; i < 5; i++) {
-        particles.push(emitter.generateParticle());
-    }
+    emitter.setPosition(touch.clientX - rect.left, touch.clientY - rect.top);
 });
 
 k.canvas.addEventListener('touchmove', (e) => {
@@ -243,12 +254,7 @@ k.canvas.addEventListener('touchmove', (e) => {
     if (emitter.isDragging) {
         const rect = k.canvas.getBoundingClientRect();
         const touch = e.touches[0];
-        emitter.x = touch.clientX - rect.left;
-        emitter.y = touch.clientY - rect.top;
-        // Generate particles while dragging
-        if (particles.length < config.count) {
-            particles.push(emitter.generateParticle());
-        }
+        emitter.setPosition(touch.clientX - rect.left, touch.clientY - rect.top);
     }
 });
 
@@ -262,6 +268,9 @@ k.canvas.addEventListener('touchcancel', () => {
 
 // Main game loop
 k.onUpdate(() => {
+    // Update emitter
+    emitter.update();
+
     // Remove dead particles
     particles = particles.filter(p => p.life > 0);
 
@@ -967,7 +976,7 @@ function updateAllSliders() {
     document.getElementById('vortexStrengthValue').value = calculatePercentage(physics.vortexStrength + 1, 0, 2);
     document.getElementById('particleMass').value = physics.particleMass;
     document.getElementById('particleLife').value = physics.particleLife;
-    document.getElementById('particleAcceleration').value = physics.acceleration;
+    document.getElementById('particleAcceleration').value =physics.acceleration;
 
     // Update visual control sliders
     document.getElementById('particleCount').value = config.count;
