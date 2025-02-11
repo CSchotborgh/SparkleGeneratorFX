@@ -14,17 +14,12 @@ app = Flask(__name__,
     template_folder='templates'
 )
 
-# Use DATABASE_URL from environment, fallback to SQLite if not available
-database_url = os.environ.get("DATABASE_URL")
-if database_url and database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://")
-
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url or "sqlite:///particle_system.db"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "particle_system_secret"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///particle_system.db")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
-app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "particle_system_secret"
 
 class ParticlePreset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -34,10 +29,8 @@ class ParticlePreset(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     likes = db.Column(db.Integer, default=0)
 
-# Initialize the app with the database
 db.init_app(app)
 
-# Create all database tables
 with app.app_context():
     db.create_all()
 
