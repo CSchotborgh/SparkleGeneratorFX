@@ -47,7 +47,9 @@ const defaultConfig = {
     shape: 'circle',
     opacity: 0.8,
     blur: 0,
-    enableRotation: true
+    enableRotation: true,
+    particleSprite: null, // Add particleSprite property
+    originalSize: 4 // Add originalSize property
 };
 
 // Store initial settings in localStorage
@@ -154,11 +156,35 @@ class Particle {
     }
 
     drawShape(x, y, size, opacity, angle) {
-        k.drawCircle({
-            pos: k.vec2(x, y),
-            radius: size / 2,
-            color: k.rgb(...hexToRgb(config.color), opacity),
-        });
+        if (config.shape === 'image' && config.particleSprite) {
+            try {
+                // Draw sprite-based particle with improved scaling
+                const scale = size / (config.originalSize || 32); // Default size if originalSize is not set
+                k.drawSprite({
+                    sprite: config.particleSprite,
+                    pos: k.vec2(x, y),
+                    scale: k.vec2(scale, scale),
+                    opacity: opacity,
+                    angle: config.enableRotation ? angle : 0,
+                    anchor: "center",
+                });
+            } catch (error) {
+                console.error('Error drawing sprite:', error);
+                // Fallback to circle if sprite drawing fails
+                k.drawCircle({
+                    pos: k.vec2(x, y),
+                    radius: size / 2,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
+                });
+            }
+        } else {
+            // Default to circle if no sprite or different shape selected
+            k.drawCircle({
+                pos: k.vec2(x, y),
+                radius: size / 2,
+                color: k.rgb(...hexToRgb(config.color), opacity),
+            });
+        }
     }
 }
 
@@ -307,10 +333,100 @@ document.getElementById('backgroundColor').addEventListener('input', function (e
     backgroundConfig.backgroundColor = e.target.value; // Update backgroundConfig as well
 });
 
-// Add event listener for shape changes
-document.getElementById('particleShape').addEventListener('change', function (e) {
+// Update the particleShape event listener
+document.getElementById('particleShape').addEventListener('change', (e) => {
     config.shape = e.target.value;
+    const imageGroup = document.getElementById('imageEmitterGroup');
+    imageGroup.style.display = e.target.value === 'image' ? 'block' : 'none';
 });
+
+// Add event listener for particle sprite changes
+document.getElementById('particleSprite').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        const spriteName = 'particle';
+        await k.loadSprite(spriteName, dataUrl);
+        config.particleSprite = spriteName;
+        config.originalSize = k.sprites[spriteName].width; //set original size from sprite width
+
+    } catch (error) {
+        console.error('Error loading particle sprite:', error);
+    }
+});
+
+//Emitter Image Event Listener
+document.getElementById('emitterImage').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        const img = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
+
+        // Calculate appropriate size based on image dimensions
+        const maxSize = 64; // Maximum size for the sprite
+        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+
+        // Create a temporary canvas to resize the image if needed
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const scaledDataURL = canvas.toDataURL('image/png');
+        const spriteName = 'particle_emitter';
+
+        // Load the sprite with the scaled image
+        await k.loadSprite(spriteName, scaledDataURL);
+
+        // Update configuration
+        config.shape = 'image';
+        config.particleSprite = spriteName;
+        config.originalSize = Math.max(canvas.width, canvas.height);
+
+        // Reset particles with new sprite
+        particles.forEach(particle => {
+            particle.reset();
+        });
+
+        // Update UI
+        document.getElementById('particleShape').value = 'image';
+        const imageGroup = document.getElementById('imageEmitterGroup');
+        imageGroup.style.display = 'block';
+
+        // Show success message to user
+        console.log('Emitter image loaded successfully:', spriteName);
+    } catch (error) {
+        console.error('Error loading emitter image:', error);
+        // Reset to circle shape if image loading fails
+        config.shape = 'circle';
+        document.getElementById('particleShape').value = 'circle';
+        const imageGroup = document.getElementById('imageEmitterGroup');
+        imageGroup.style.display = 'none';
+    }
+});
+
 
 // Main game loop
 k.onUpdate(() => {
@@ -882,7 +998,7 @@ document.addEventListener('keydown', (e) => {
         switch (e.key) {
             case 'Escape':
                 focusedPanel.style.display = 'none';
-                break;
+                                break;
             case 'ArrowLeft':
                 e.preventDefault();
                 focusedPanel.style.left = `${parseInt(focusedPanel.style.left || 0) - step}px`;
@@ -1045,3 +1161,12 @@ function updateControlsToMatch(values) {
 function calculatePercentage(value, min, max) {
     return Math.round(((value - min) / (max - min)) * 100);
 }
+// Toggle all metrics panels
+document.getElementById('toggleMetricsButton').addEventListener('click', () => {
+    const panels = document.querySelectorAll('.metrics-panel');
+    const anyVisible = Array.from(panels).some(panel => panel.style.display !== 'none');
+
+    panels.forEach(panel => {
+        panel.style.display = anyVisible ? 'none' : 'block';
+    });
+});
