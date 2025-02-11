@@ -195,6 +195,10 @@ k.canvas.addEventListener('mousedown', (e) => {
         const rect = k.canvas.getBoundingClientRect();
         emitter.x = e.clientX - rect.left;
         emitter.y = e.clientY - rect.top;
+        // Generate particles immediately on click
+        for (let i = 0; i < 5; i++) {
+            particles.push(emitter.generateParticle());
+        }
     }
 });
 
@@ -203,6 +207,10 @@ k.canvas.addEventListener('mousemove', (e) => {
         const rect = k.canvas.getBoundingClientRect();
         emitter.x = e.clientX - rect.left;
         emitter.y = e.clientY - rect.top;
+        // Generate particles while dragging
+        if (particles.length < config.count) {
+            particles.push(emitter.generateParticle());
+        }
     }
 });
 
@@ -216,14 +224,46 @@ k.canvas.addEventListener('mouseleave', () => {
     emitter.isDragging = false;
 });
 
+// Touch events support
+k.canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    emitter.isDragging = true;
+    const rect = k.canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    emitter.x = touch.clientX - rect.left;
+    emitter.y = touch.clientY - rect.top;
+    // Generate particles immediately on touch
+    for (let i = 0; i < 5; i++) {
+        particles.push(emitter.generateParticle());
+    }
+});
+
+k.canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (emitter.isDragging) {
+        const rect = k.canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        emitter.x = touch.clientX - rect.left;
+        emitter.y = touch.clientY - rect.top;
+        // Generate particles while dragging
+        if (particles.length < config.count) {
+            particles.push(emitter.generateParticle());
+        }
+    }
+});
+
+k.canvas.addEventListener('touchend', () => {
+    emitter.isDragging = false;
+});
+
+k.canvas.addEventListener('touchcancel', () => {
+    emitter.isDragging = false;
+});
+
 // Main game loop
 k.onUpdate(() => {
-    // Update emitter
-    emitter.update();
-
     // Remove dead particles
     particles = particles.filter(p => p.life > 0);
-
 
     // Update and draw particles
     particles.forEach(particle => {
@@ -842,7 +882,6 @@ function updateMetrics() {
     metricsHistory.avgSpeed.shift();
     metricsHistory.memory.push(memoryUsage);
     metricsHistory.memory.shift();
-
 
     // Update graphs if they are initialized
     try {
