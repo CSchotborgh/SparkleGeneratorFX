@@ -1000,64 +1000,46 @@ function resetSystem() {
             config: defaultConfig
         };
 
-        // Reset physics parameters to stored defaults
+        // Reset physics and config to stored defaults
         Object.assign(physics, storedDefaults.physics);
-        // Reset configuration to stored defaults
         Object.assign(config, storedDefaults.config);
 
-        // Reset emitter position
-        if (emitter && typeof emitter.reset === 'function') {
-            emitter.reset();
-        }
-
-        // Clear all particles and create new ones
+        // Reset all particles
         particles = Array(config.count).fill().map(() => new Particle());
 
-        // Update input fields to reflect reset values
-        updateControlInputs();
+        // Reset emitter
+        emitter.reset();
 
-        console.log('System reset successful');
+        // Update UI controls to match reset values
+        updateControlsToMatch(storedDefaults);
     } catch (error) {
-        console.error('Error during system reset:', error);
+        console.error('Error resetting system:', error);
     }
 }
 
-function updateControlInputs() {
-    // Update physics sliders
-    document.getElementById('gravity').value = physics.gravity;
-    document.getElementById('gravityValue').value = calculatePercentage(physics.gravity, 0, 0.5);
-    document.getElementById('wind').value = physics.wind;
-    document.getElementById('windValue').value = calculatePercentage(physics.wind + 0.2, 0, 0.4);
-    document.getElementById('friction').value = physics.friction;
-    document.getElementById('frictionValue').textContent = calculatePercentage(physics.friction, 0.9, 1);
-    document.getElementById('bounce').value = physics.bounce;
-    document.getElementById('bounceValue').value = calculatePercentage(physics.bounce, 0, 1);
-    document.getElementById('airResistance').value = physics.airResistance;
-    document.getElementById('airResistanceValue').textContent = calculatePercentage(physics.airResistance, 0, 0.1);
-    document.getElementById('turbulence').value = physics.turbulence;
-    document.getElementById('turbulenceValue').textContent = calculatePercentage(physics.turbulence, 0, 0.5);
-    document.getElementById('vortexStrength').value = physics.vortexStrength;
-    document.getElementById('vortexStrengthValue').value = calculatePercentage(physics.vortexStrength + 1, 0, 2);
-    document.getElementById('particleMass').value = physics.particleMass;
-    document.getElementById('particleLife').value = physics.particleLife;
-    document.getElementById('particleAcceleration').value = physics.acceleration;
+// Update UI controls to match given values
+function updateControlsToMatch(values) {
+    // Update physics controls
+    document.getElementById('gravity').value = values.physics.gravity;
+    document.getElementById('wind').value = values.physics.wind;
+    document.getElementById('friction').value = values.physics.friction;
+    document.getElementById('bounce').value = values.physics.bounce;
+    document.getElementById('airResistance').value = values.physics.airResistance;
+    document.getElementById('turbulence').value = values.physics.turbulence;
+    document.getElementById('vortexStrength').value = values.physics.vortexStrength;
+    document.getElementById('particleMass').value = values.physics.particleMass;
+    document.getElementById('collisionEnabled').checked = values.physics.collisionEnabled;
 
-    // Update visual control sliders
-    document.getElementById('particleCount').value = config.count;
-    document.getElementById('particleSize').value = config.size;
-    document.getElementById('particleSpeed').value = config.speed;
-    document.getElementById('particleColor').value = config.color;
-    document.getElementById('particleOpacity').value = config.opacity;
-    document.getElementById('particleOpacityValue').value = Math.round(config.opacity * 100);
-    document.getElementById('trailLength').value = config.trailLength;
-    document.getElementById('particleBlur').value = config.blur;
-    document.getElementById('particleRotation').checked = config.enableRotation;
-    document.getElementById('reverseTrail').checked = config.reverseTrail;
-    document.getElementById('backgroundColor').value = backgroundConfig.backgroundColor;
-    document.getElementById('bgOpacity').value = backgroundConfig.opacity;
-    document.getElementById('bgOpacityValue').value = Math.round(backgroundConfig.opacity * 100);
-    document.getElementById('bgScaleMode').value = backgroundConfig.scaleMode;
-    document.getElementById('bgPosition').value = backgroundConfig.position;
+    // Update particle controls
+    document.getElementById('particleCount').value = values.config.count;
+    document.getElementById('particleSize').value = values.config.size;
+    document.getElementById('particleSpeed').value = values.config.speed;
+    document.getElementById('particleColor').value = values.config.color;
+
+    // Trigger update events
+    document.getElementById('particleCount').dispatchEvent(new Event('input'));
+    document.getElementById('particleSize').dispatchEvent(new Event('input'));
+    document.getElementById('particleSpeed').dispatchEvent(new Event('input'));
 }
 
 function calculatePercentage(value, min, max) {

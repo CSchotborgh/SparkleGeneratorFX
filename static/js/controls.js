@@ -28,13 +28,6 @@ document.getElementById('toggleControlPanel').addEventListener('click', () => {
     document.querySelector('.control-panel-overlay').classList.toggle('active');
 });
 
-// Background configuration
-const backgroundConfig = {
-    scaleMode: 'cover', // cover, contain, stretch, tile
-    position: 'center',
-    opacity: 1.0
-};
-
 // Add background control event listeners
 document.getElementById('backgroundImage').addEventListener('change', async (e) => {
     const file = e.target.files[0];
