@@ -157,18 +157,30 @@ class Particle {
 // Create particle pool
 let particles = Array(config.count).fill().map(() => new Particle());
 
-// Emitter class
+// Emitter class with proper functionality
 class Emitter {
     constructor() {
         this.x = k.width() / 2;
         this.y = k.height() / 2;
         this.isDragging = false;
+        this.active = true;
+    }
+
+    update() {
+        if (!this.active) return;
+
+        // Generate new particles to maintain count
+        while (particles.length < config.count) {
+            particles.push(this.generateParticle());
+        }
     }
 
     generateParticle() {
         const particle = new Particle();
         particle.x = this.x + (Math.random() - 0.5) * 10;
         particle.y = this.y + (Math.random() - 0.5) * 10;
+        particle.vx = (Math.random() - 0.5) * config.speed * 2;
+        particle.vy = (Math.random() - 0.5) * config.speed * 2;
         return particle;
     }
 }
@@ -176,7 +188,7 @@ class Emitter {
 // Create emitter instance
 const emitter = new Emitter();
 
-// Event listeners
+// Event listeners for emitter control
 k.canvas.addEventListener('mousedown', (e) => {
     if (e.button === 0) {
         emitter.isDragging = true;
@@ -204,6 +216,25 @@ k.canvas.addEventListener('mouseleave', () => {
     emitter.isDragging = false;
 });
 
+// Main game loop
+k.onUpdate(() => {
+    // Update emitter
+    emitter.update();
+
+    // Remove dead particles
+    particles = particles.filter(p => p.life > 0);
+
+
+    // Update and draw particles
+    particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+    });
+
+    // Update metrics
+    updateMetrics();
+});
+
 // Helper function to convert hex to RGB
 function hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -214,31 +245,6 @@ function hexToRgb(hex) {
     ] : [255, 255, 255];
 }
 
-// Main game loop
-k.onUpdate(() => {
-    // Remove dead particles
-    particles = particles.filter(p => p.life > 0);
-
-    // Generate new particles
-    while (particles.length < config.count) {
-        particles.push(emitter.generateParticle());
-    }
-
-    // Update and draw particles
-    particles.forEach(particle => {
-        particle.update();
-        particle.draw();
-    });
-});
-
-// Window resize handler
-window.addEventListener('resize', () => {
-    const newWidth = window.innerWidth;
-    const newHeight = window.innerHeight;
-
-    k.canvas.width = newWidth;
-    k.canvas.height = newHeight;
-});
 
 // Preset configurations
 const presets = {
@@ -465,16 +471,14 @@ const presets = {
     }
 };
 
-// Optional background configuration
-let backgroundColor = "#2ecc71";
+// Background configuration
 let backgroundConfig = {
-    scaleMode: 'cover',
-    position: 'center',
-    opacity: 1
+    scaleMode: 'cover', // 'cover', 'contain', 'stretch', 'tile'
+    position: 'center', // 'center', 'top', 'bottom', 'left', 'right'
+    opacity: 1.0
 };
 let backgroundImage = null;
 let backgroundSprite = null;
-
 
 // Background image handler with proper error handling
 document.getElementById('backgroundImage').addEventListener('change', async (e) => {
@@ -538,143 +542,6 @@ document.getElementById('backgroundColor').addEventListener('input', function (e
 document.getElementById('particleShape').addEventListener('change', function (e) {
     config.shape = e.target.value;
 });
-
-// Main game loop
-k.onUpdate(() => {
-    // Draw background if available
-    if (backgroundSprite && backgroundImage) {
-        let width, height, x, y;
-
-        switch (backgroundConfig.scaleMode) {
-            case 'cover':
-                const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-                width = backgroundImage.width * scale;
-                height = backgroundImage.height * scale;
-                break;
-            case 'contain':
-                const containScale = Math.min(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-                width = backgroundImage.width * containScale;
-                height = backgroundImage.height * containScale;
-                break;
-            case 'stretch':
-                width = k.width();
-                height = k.height();
-                break;
-            case 'tile':
-                width = backgroundImage.width;
-                height = backgroundImage.height;
-                // Handle tiling in multiple draws
-                for (let tileX = 0; tileX < k.width(); tileX += width) {
-                    for (let tileY = 0; tileY < k.height(); tileY += height) {
-                        k.drawSprite({
-                            sprite: backgroundSprite,
-                            pos: k.vec2(tileX, tileY),
-                            opacity: backgroundConfig.opacity,
-                            z: -1,
-                        });
-                    }
-                }
-                return; // Skip single draw for tiling
-        }
-
-        // Calculate position
-        switch (backgroundConfig.position) {
-            case 'center':
-                x = (k.width() - width) / 2;
-                y = (k.height() - height) / 2;
-                break;
-            case 'top':
-                x = (k.width() - width) / 2;
-                y = 0;
-                break;
-            case 'bottom':
-                x = (k.width() - width) / 2;
-                y = k.height() - height;
-                break;
-            case 'left':
-                x = 0;
-                y = (k.height() - height) / 2;
-                break;
-            case 'right':
-                x = k.width() - width;
-                y = (k.height() - height) / 2;
-                break;
-        }
-
-        k.drawSprite({
-            sprite: backgroundSprite,
-            pos: k.vec2(x, y),
-            scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
-            opacity: backgroundConfig.opacity,
-            z: -1,
-        });
-    }
-
-    // Update emitter
-    emitter.update();
-
-    // Remove dead particles
-    particles = particles.filter(p => p.life > 0);
-
-    // Generate new particles from emitter
-    const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); // Distribute particle generation over time
-    for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
-        particles.push(emitter.generateParticle());
-    }
-
-    // Update and draw particles
-    particles.forEach(particle => {
-        particle.update();
-        particle.draw();
-    });
-
-    // Update metrics display
-    updateMetrics();
-});
-
-// Helper function to convert hex to RGB
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16)
-    ] : [255, 255, 255];
-}
-
-// Window resize handler
-window.addEventListener('resize', () => {
-    const canvas = document.getElementById("gameCanvas");
-    const newWidth = window.innerWidth * 0.75;
-    const newHeight = window.innerHeight;
-
-    // Update canvas size
-    canvas.style.width = `${newWidth}px`;
-    canvas.style.height = `${newHeight}px`;
-    canvas.width = newWidth;
-    canvas.height = newHeight;
-
-    // Update Kaboom instance dimensions
-    k.canvas.width = newWidth;
-    k.canvas.height = newHeight;
-
-    // Update vortex center
-    physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
-
-    // Ensure particles are within bounds
-    particles.forEach(particle => {
-        if (particle.x > newWidth) particle.x = newWidth;
-        if (particle.y > newHeight) particle.y = newHeight;
-
-        // Update trail positions if needed
-        particle.trail = particle.trail.map(point => ({
-            x: Math.min(point.x, newWidth),
-            y: Math.min(point.y, newHeight),
-            angle: point.angle
-        }));
-    });
-});
-
 
 // Metrics tracking variables
 let lastTime = performance.now();
@@ -1016,7 +883,8 @@ function resetSystem() {
         Object.assign(config, storedDefaults.config);
 
         // Reset emitter position
-        emitter.reset();
+        emitter.x = k.width() / 2;
+        emitter.y = k.height() / 2;
 
         // Clear all particles and create new ones
         particles = Array(config.count).fill().map(() => new Particle());
