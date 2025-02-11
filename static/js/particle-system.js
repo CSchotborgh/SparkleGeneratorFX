@@ -2,15 +2,16 @@
 const initialWidth = window.innerWidth;
 const initialHeight = window.innerHeight;
 
-// Background configuration
-let backgroundColor = "#2ecc71"; // Default green background matching UI theme
-let backgroundConfig = {
-    scaleMode: 'cover',
-    position: 'center',
-    opacity: 1
-};
+// Initialize Kaboom.js
+const k = kaboom({
+    global: false,
+    canvas: document.getElementById("gameCanvas"),
+    width: initialWidth,
+    height: initialHeight,
+    background: [46, 204, 113], // Default green background
+});
 
-// Default physics parameters - optimized for cross-device consistency
+// Default physics parameters
 const defaultPhysics = {
     gravity: 0.1,
     wind: 0,
@@ -26,7 +27,7 @@ const defaultPhysics = {
     collisionEnabled: true
 };
 
-// Default particle system configuration - optimized for performance across devices
+// Default particle system configuration
 const defaultConfig = {
     count: 40,
     size: 4,
@@ -53,34 +54,18 @@ if (!localStorage.getItem('particleSystemDefaults')) {
 const physics = { ...defaultPhysics };
 const config = { ...defaultConfig };
 
-
-// Initialize variables for background
-let backgroundImage = null;
-let backgroundSprite = null;
-
-// Initialize Kaboom.js
-const k = kaboom({
-    global: false,
-    canvas: document.getElementById("gameCanvas"),
-    width: initialWidth,
-    height: initialHeight,
-    background: hexToRgb(backgroundColor),
-});
-
-// Particle class
+// Particle class with core functionality
 class Particle {
     constructor() {
         this.trail = [];
         this.trailLength = config.trailLength || 10;
-        this.shape = config.shape; // Store the shape configuration
+        this.shape = config.shape;
         this.reset();
     }
 
     reset() {
-        // Always initialize at the center of the screen
         this.x = k.width() / 2;
         this.y = k.height() / 2;
-        // Initialize with random velocities
         this.vx = (Math.random() - 0.5) * config.speed;
         this.vy = (Math.random() - 0.5) * config.speed;
         this.ax = 0;
@@ -90,8 +75,7 @@ class Particle {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.2;
         this.size = config.size * (0.5 + Math.random() * 0.5);
-        this.shape = config.shape; // Update shape when resetting
-        // Initialize trail from the center position
+        this.shape = config.shape;
         this.trail = Array(this.trailLength).fill().map(() => ({
             x: this.x,
             y: this.y,
@@ -100,46 +84,18 @@ class Particle {
     }
 
     update() {
-        // Apply physics to particle
+        // Apply physics
         this.ax = physics.wind;
         this.ay = physics.gravity;
 
-        // Apply air resistance (proportional to velocity squared)
+        // Apply air resistance
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
         if (speed > 0) {
             this.ax -= (this.vx / speed) * physics.airResistance * speed * speed;
             this.ay -= (this.vy / speed) * physics.airResistance * speed * speed;
         }
 
-        // Apply turbulence using Perlin noise
-        const time = Date.now() * 0.001;
-        this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
-        this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
-
-        // Apply attraction to emitter position
-        const dx = emitter.x - this.x;
-        const dy = emitter.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance > 0) {
-            const attractionStrength = 0.3; // Adjust this value to control attraction force
-            const attractionForce = attractionStrength / (distance * physics.particleMass);
-            this.ax += dx * attractionForce;
-            this.ay += dy * attractionForce;
-        }
-
-        // Apply vortex effect
-        if (physics.vortexStrength !== 0) {
-            const vx = this.x - physics.vortexCenter.x;
-            const vy = this.y - physics.vortexCenter.y;
-            const vortexDist = Math.sqrt(vx * vx + vy * vy);
-            if (vortexDist > 0) {
-                const vortexForce = physics.vortexStrength / (vortexDist * physics.particleMass);
-                this.ax += -vy * vortexForce;
-                this.ay += vx * vortexForce;
-            }
-        }
-
-        // Update velocity and position with acceleration
+        // Update velocity and position
         this.vx += (this.ax / physics.particleMass) * physics.acceleration;
         this.vy += (this.ay / physics.particleMass) * physics.acceleration;
 
@@ -149,7 +105,7 @@ class Particle {
         this.x += this.vx;
         this.y += this.vy;
 
-        // Bounce off screen edges
+        // Bounce off edges
         if (this.x < 0 || this.x > k.width()) {
             this.vx *= -physics.bounce;
             this.x = this.x < 0 ? 0 : k.width();
@@ -159,54 +115,18 @@ class Particle {
             this.y = this.y < 0 ? 0 : k.height();
         }
 
-        // Particle collisions if enabled
-        if (physics.collisionEnabled) {
-            for (const other of particles) {
-                if (other !== this) {
-                    const dx = other.x - this.x;
-                    const dy = other.y - this.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const minDist = (this.size + other.size) * 0.5;
-
-                    if (distance < minDist) {
-                        const angle = Math.atan2(dy, dx);
-                        const targetX = this.x + Math.cos(angle) * minDist;
-                        const targetY = this.y + Math.sin(angle) * minDist;
-
-                        const ax = (targetX - other.x) * 0.05;
-                        const ay = (targetY - other.y) * 0.05;
-
-                        this.vx -= ax;
-                        this.vy -= ay;
-                        other.vx += ax;
-                        other.vy += ay;
-                    }
-                }
-            }
-        }
-
         // Update rotation
         this.angle += this.spin;
 
-        // Update trail based on direction
-        if (config.reverseTrail) {
-            this.trail.shift();
-            this.trail.push({
-                x: this.x,
-                y: this.y,
-                angle: this.angle
-            });
-        } else {
-            this.trail.pop();
-            this.trail.unshift({
-                x: this.x,
-                y: this.y,
-                angle: this.angle
-            });
-        }
+        // Update trail
+        this.trail.pop();
+        this.trail.unshift({
+            x: this.x,
+            y: this.y,
+            angle: this.angle
+        });
 
         this.life -= this.decay;
-
         if (this.life <= 0) {
             this.reset();
         }
@@ -218,152 +138,37 @@ class Particle {
             const point = this.trail[i];
             const opacity = (1 - i / this.trail.length) * this.life * 0.5;
             const trailSize = this.size * (1 - i / this.trail.length);
-
             this.drawShape(point.x, point.y, trailSize, opacity, point.angle);
         }
 
         // Draw current particle
-        const opacity = this.life;
-        const shouldRotate = config.enableRotation;
-        this.drawShape(this.x, this.y, this.size, opacity, shouldRotate ? this.angle : 0);
+        this.drawShape(this.x, this.y, this.size, this.life, this.angle);
     }
 
     drawShape(x, y, size, opacity, angle) {
-        const finalOpacity = opacity * config.opacity;
-        if (this.shape === 'image' && config.particleSprite) {
-            const scale = size / config.originalSize;
-            k.drawSprite({
-                sprite: config.particleSprite,
-                pos: k.vec2(x - size/2, y - size/2),
-                scale: k.vec2(scale, scale),
-                angle: angle,
-                opacity: finalOpacity,
-            });
-            return;
-        }
-
-        switch (this.shape) {
-            case 'square':
-                k.drawRect({
-                    pos: k.vec2(x - size / 2, y - size / 2),
-                    width: size,
-                    height: size,
-                    angle: angle,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                });
-                break;
-            case 'triangle':
-                const points = [];
-                for (let i = 0; i < 3; i++) {
-                    const pointAngle = (i * 2 * Math.PI / 3) + angle;
-                    points.push(k.vec2(
-                        x + Math.cos(pointAngle) * size,
-                        y + Math.sin(pointAngle) * size
-                    ));
-                }
-                k.drawPolygon({
-                    pts: points,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                });
-                break;
-            case 'star':
-                const starPoints = [];
-                for (let i = 0; i < 5; i++) {
-                    const starAngle = (i * 4 * Math.PI / 5) + angle;
-                    starPoints.push(k.vec2(
-                        x + Math.cos(starAngle) * size,
-                        y + Math.sin(starAngle) * size * 0.5
-                    ));
-                }
-                k.drawPolygon({
-                    pts: starPoints,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                });
-                break;
-            default: // circle
-                k.drawCircle({
-                    pos: k.vec2(x, y),
-                    radius: size / 2,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
-                });
-        }
+        k.drawCircle({
+            pos: k.vec2(x, y),
+            radius: size / 2,
+            color: k.rgb(...hexToRgb(config.color), opacity),
+        });
     }
 }
 
 // Create particle pool
 let particles = Array(config.count).fill().map(() => new Particle());
 
-// Particle burst function
-function createParticleBurst(x, y, count = 20) {
-    const burstParticles = Array(count).fill().map(() => {
-        const particle = new Particle();
-        particle.x = x;
-        particle.y = y;
-
-        // Create radial burst effect
-        const angle = Math.random() * Math.PI * 2;
-        const speed = config.speed * (1 + Math.random());
-        particle.vx = Math.cos(angle) * speed;
-        particle.vy = Math.sin(angle) * speed;
-
-        // Shorter life for burst particles
-        particle.decay = 0.02 + Math.random() * 0.03;
-
-        // Set sprite if using image-based particles
-        if (animationFrames.length > 0) {
-            particle.sprite = animationFrames[currentFrame].sprite;
-            particle.originalSize = animationFrames[currentFrame].originalSize;
-        }
-
-        return particle;
-    });
-
-    particles.push(...burstParticles);
-
-    // Trim excess particles
-    while (particles.length > config.count * 2) {
-        particles.shift();
-    }
-}
-
-// Emitter class to manage particle generation
+// Emitter class
 class Emitter {
     constructor() {
-        this.x = physics.vortexCenter.x;
-        this.y = physics.vortexCenter.y;
-        this.vx = 0;
-        this.vy = 0;
-        this.lastX = this.x;
-        this.lastY = this.y;
+        this.x = k.width() / 2;
+        this.y = k.height() / 2;
         this.isDragging = false;
-    }
-
-    reset() {
-        this.x = physics.vortexCenter.x;
-        this.y = physics.vortexCenter.y;
-        this.vx = 0;
-        this.vy = 0;
-        this.lastX = this.x;
-        this.lastY = this.y;
-    }
-
-    update() {
-        // Calculate emitter velocity based on position change
-        this.vx = this.x - this.lastX;
-        this.vy = this.y - this.lastY;
-        this.lastX = this.x;
-        this.lastY = this.y;
     }
 
     generateParticle() {
         const particle = new Particle();
         particle.x = this.x + (Math.random() - 0.5) * 10;
         particle.y = this.y + (Math.random() - 0.5) * 10;
-        // Add emitter velocity to particle initial velocity for smoother motion
-        particle.vx = (Math.random() - 0.5) * config.speed + this.vx * 0.5;
-        particle.vy = (Math.random() - 0.5) * config.speed + this.vy * 0.5;
-        // Apply current shape configuration
-        particle.shape = config.shape;
         return particle;
     }
 }
@@ -371,9 +176,9 @@ class Emitter {
 // Create emitter instance
 const emitter = new Emitter();
 
-// Event listeners for drag and burst effects
+// Event listeners
 k.canvas.addEventListener('mousedown', (e) => {
-    if (e.button === 0) { // Left click
+    if (e.button === 0) {
         emitter.isDragging = true;
         const rect = k.canvas.getBoundingClientRect();
         emitter.x = e.clientX - rect.left;
@@ -390,205 +195,13 @@ k.canvas.addEventListener('mousemove', (e) => {
 });
 
 k.canvas.addEventListener('mouseup', (e) => {
-    if (e.button === 0) { // Left click release
+    if (e.button === 0) {
         emitter.isDragging = false;
     }
 });
 
 k.canvas.addEventListener('mouseleave', () => {
-    if (emitter.isDragging) {
-        emitter.isDragging = false;
-    }
-});
-
-// Right click for burst
-k.canvas.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    const rect = k.canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    createParticleBurst(x, y);
-});
-
-// Touch events
-k.canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    emitter.isDragging = true;
-    const rect = k.canvas.getBoundingClientRect();
-    const touch = e.touches[0];
-    emitter.x = touch.clientX - rect.left;
-    emitter.y = touch.clientY - rect.top;
-}, { passive: false });
-
-k.canvas.addEventListener('touchmove', (e) => {
-    if (emitter.isDragging) {
-        e.preventDefault();
-        const rect = k.canvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        emitter.x = touch.clientX - rect.left;
-        emitter.y = touch.clientY - rect.top;
-    }
-}, { passive: false });
-
-k.canvas.addEventListener('touchend', () => {
     emitter.isDragging = false;
-});
-
-// Background image handler
-document.getElementById('backgroundImage').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-        const dataUrl = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-
-        // Load the background image
-        backgroundImage = await new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = dataUrl;
-        });
-
-        // Create a sprite from the background image
-        const spriteName = 'background';
-        await k.loadSprite(spriteName, dataUrl);
-        backgroundSprite = spriteName;
-    } catch (error) {
-        console.error('Error loading background image:', error);
-    }
-});
-
-// Add background configuration event listeners
-document.getElementById('bgScaleMode').addEventListener('change', function(e) {
-    backgroundConfig.scaleMode = e.target.value;
-});
-
-document.getElementById('bgPosition').addEventListener('change', function(e) {
-    backgroundConfig.position = e.target.value;
-});
-
-document.getElementById('bgOpacity').addEventListener('input', function(e) {
-    backgroundConfig.opacity = parseFloat(e.target.value);
-    document.getElementById('bgOpacityValue').value = Math.round(e.target.value * 100);
-});
-
-document.getElementById('bgOpacityValue').addEventListener('input', function(e) {
-    const value = Math.min(100, Math.max(0, parseInt(e.target.value))) / 100;
-    document.getElementById('bgOpacity').value = value;
-    backgroundConfig.opacity = value;
-});
-
-// Add event listener for background color changes
-document.getElementById('backgroundColor').addEventListener('input', function (e) {
-    const selectedColor = e.target.value;
-    // Update the background color in real-time when color picker changes
-    const [r, g, b] = hexToRgb(selectedColor);
-    k.setBackground(k.rgb(r, g, b, 0.3)); // Keeping the same transparency for consistency
-});
-
-
-// Add event listener for shape changes
-document.getElementById('particleShape').addEventListener('change', function (e) {
-    config.shape = e.target.value;
-});
-
-// Main game loop
-k.onUpdate(() => {
-    // Draw background if available
-    if (backgroundSprite && backgroundImage) {
-        let width, height, x, y;
-
-        switch (backgroundConfig.scaleMode) {
-            case 'cover':
-                const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-                width = backgroundImage.width * scale;
-                height = backgroundImage.height * scale;
-                break;
-            case 'contain':
-                const containScale = Math.min(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-                width = backgroundImage.width * containScale;
-                height = backgroundImage.height * containScale;
-                break;
-            case 'stretch':
-                width = k.width();
-                height = k.height();
-                break;
-            case 'tile':
-                width = backgroundImage.width;
-                height = backgroundImage.height;
-                // Handle tiling in multiple draws
-                for (let tileX = 0; tileX < k.width(); tileX += width) {
-                    for (let tileY = 0; tileY < k.height(); tileY += height) {
-                        k.drawSprite({
-                            sprite: backgroundSprite,
-                            pos: k.vec2(tileX, tileY),
-                            opacity: backgroundConfig.opacity,
-                            z: -1,
-                        });
-                    }
-                }
-                return; // Skip single draw for tiling
-        }
-
-        // Calculate position
-        switch (backgroundConfig.position) {
-            case 'center':
-                x = (k.width() - width) / 2;
-                y = (k.height() - height) / 2;
-                break;
-            case 'top':
-                x = (k.width() - width) / 2;
-                y = 0;
-                break;
-            case 'bottom':
-                x = (k.width() - width) / 2;
-                y = k.height() - height;
-                break;
-            case 'left':
-                x = 0;
-                y = (k.height() - height) / 2;
-                break;
-            case 'right':
-                x = k.width() - width;
-                y = (k.height() - height) / 2;
-                break;
-        }
-
-        k.drawSprite({
-            sprite: backgroundSprite,
-            pos: k.vec2(x, y),
-            scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
-            opacity: backgroundConfig.opacity,
-            z: -1,
-        });
-    }
-
-    // Update emitter
-    emitter.update();
-
-    // Remove dead particles
-    particles = particles.filter(p => p.life > 0);
-
-    // Generate new particles from emitter
-    const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); // Distribute particle generation over time
-    for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
-        particles.push(emitter.generateParticle());
-    }
-
-    // Update and draw particles
-    particles.forEach(particle => {
-        particle.update();
-        particle.draw();
-    });
-
-    // Update metrics display
-    updateMetrics();
 });
 
 // Helper function to convert hex to RGB
@@ -600,6 +213,32 @@ function hexToRgb(hex) {
         parseInt(result[3], 16)
     ] : [255, 255, 255];
 }
+
+// Main game loop
+k.onUpdate(() => {
+    // Remove dead particles
+    particles = particles.filter(p => p.life > 0);
+
+    // Generate new particles
+    while (particles.length < config.count) {
+        particles.push(emitter.generateParticle());
+    }
+
+    // Update and draw particles
+    particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+    });
+});
+
+// Window resize handler
+window.addEventListener('resize', () => {
+    const newWidth = window.innerWidth;
+    const newHeight = window.innerHeight;
+
+    k.canvas.width = newWidth;
+    k.canvas.height = newHeight;
+});
 
 // Preset configurations
 const presets = {
@@ -826,6 +465,183 @@ const presets = {
     }
 };
 
+// Optional background configuration
+let backgroundColor = "#2ecc71";
+let backgroundConfig = {
+    scaleMode: 'cover',
+    position: 'center',
+    opacity: 1
+};
+let backgroundImage = null;
+let backgroundSprite = null;
+
+
+// Background image handler with proper error handling
+document.getElementById('backgroundImage').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        // Load the background image
+        backgroundImage = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
+
+        // Create a sprite from the background image
+        const spriteName = 'background';
+        await k.loadSprite(spriteName, dataUrl);
+        backgroundSprite = spriteName;
+    } catch (error) {
+        console.error('Error loading background image:', error);
+    }
+});
+
+// Add background configuration event listeners
+document.getElementById('bgScaleMode').addEventListener('change', function(e) {
+    backgroundConfig.scaleMode = e.target.value;
+});
+
+document.getElementById('bgPosition').addEventListener('change', function(e) {
+    backgroundConfig.position = e.target.value;
+});
+
+document.getElementById('bgOpacity').addEventListener('input', function(e) {
+    backgroundConfig.opacity = parseFloat(e.target.value);
+    document.getElementById('bgOpacityValue').value = Math.round(e.target.value * 100);
+});
+
+document.getElementById('bgOpacityValue').addEventListener('input', function(e) {
+    const value = Math.min(100, Math.max(0, parseInt(e.target.value))) / 100;
+    document.getElementById('bgOpacity').value = value;
+    backgroundConfig.opacity = value;
+});
+
+// Add event listener for background color changes
+document.getElementById('backgroundColor').addEventListener('input', function (e) {
+    const selectedColor = e.target.value;
+    // Update the background color in real-time when color picker changes
+    const [r, g, b] = hexToRgb(selectedColor);
+    k.setBackground(k.rgb(r, g, b, 0.3)); // Keeping the same transparency for consistency
+});
+
+// Add event listener for shape changes
+document.getElementById('particleShape').addEventListener('change', function (e) {
+    config.shape = e.target.value;
+});
+
+// Main game loop
+k.onUpdate(() => {
+    // Draw background if available
+    if (backgroundSprite && backgroundImage) {
+        let width, height, x, y;
+
+        switch (backgroundConfig.scaleMode) {
+            case 'cover':
+                const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
+                width = backgroundImage.width * scale;
+                height = backgroundImage.height * scale;
+                break;
+            case 'contain':
+                const containScale = Math.min(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
+                width = backgroundImage.width * containScale;
+                height = backgroundImage.height * containScale;
+                break;
+            case 'stretch':
+                width = k.width();
+                height = k.height();
+                break;
+            case 'tile':
+                width = backgroundImage.width;
+                height = backgroundImage.height;
+                // Handle tiling in multiple draws
+                for (let tileX = 0; tileX < k.width(); tileX += width) {
+                    for (let tileY = 0; tileY < k.height(); tileY += height) {
+                        k.drawSprite({
+                            sprite: backgroundSprite,
+                            pos: k.vec2(tileX, tileY),
+                            opacity: backgroundConfig.opacity,
+                            z: -1,
+                        });
+                    }
+                }
+                return; // Skip single draw for tiling
+        }
+
+        // Calculate position
+        switch (backgroundConfig.position) {
+            case 'center':
+                x = (k.width() - width) / 2;
+                y = (k.height() - height) / 2;
+                break;
+            case 'top':
+                x = (k.width() - width) / 2;
+                y = 0;
+                break;
+            case 'bottom':
+                x = (k.width() - width) / 2;
+                y = k.height() - height;
+                break;
+            case 'left':
+                x = 0;
+                y = (k.height() - height) / 2;
+                break;
+            case 'right':
+                x = k.width() - width;
+                y = (k.height() - height) / 2;
+                break;
+        }
+
+        k.drawSprite({
+            sprite: backgroundSprite,
+            pos: k.vec2(x, y),
+            scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
+            opacity: backgroundConfig.opacity,
+            z: -1,
+        });
+    }
+
+    // Update emitter
+    emitter.update();
+
+    // Remove dead particles
+    particles = particles.filter(p => p.life > 0);
+
+    // Generate new particles from emitter
+    const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); // Distribute particle generation over time
+    for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
+        particles.push(emitter.generateParticle());
+    }
+
+    // Update and draw particles
+    particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+    });
+
+    // Update metrics display
+    updateMetrics();
+});
+
+// Helper function to convert hex to RGB
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+    ] : [255, 255, 255];
+}
+
 // Window resize handler
 window.addEventListener('resize', () => {
     const canvas = document.getElementById("gameCanvas");
@@ -858,6 +674,7 @@ window.addEventListener('resize', () => {
         }));
     });
 });
+
 
 // Metrics tracking variables
 let lastTime = performance.now();
@@ -949,7 +766,8 @@ function initializeGraphs() {
         data: {
             labels: Array(maxDataPoints).fill(''),
             datasets: [createDataset('Memory', '#2ecc71')]
-        }    });
+        }
+    });
 }
 
 // Initialize graphs when DOM is loaded
@@ -978,7 +796,6 @@ function dragStart(e, panel) {
         initialX = e.clientX - xOffset;
         initialY = e.clientY - yOffset;
     }
-
     if (e.target.closest('.metrics-panel')) {
         currentPanel = panel;
         isDragging = true;
@@ -1243,15 +1060,15 @@ function updateAllSliders() {
     document.getElementById('vortexStrengthValue').value = calculatePercentage(physics.vortexStrength + 1, 0, 2);
     document.getElementById('particleMass').value = physics.particleMass;
     document.getElementById('particleLife').value = physics.particleLife;
-     document.getElementById('particleAcceleration').value = physics.acceleration;
+    document.getElementById('particleAcceleration').value = physics.acceleration;
 
     // Update visual control sliders
     document.getElementById('particleCount').value = config.count;
     document.getElementById('particleSize').value = config.size;
     document.getElementById('particleSpeed').value = config.speed;
     document.getElementById('particleColor').value = config.color;
-     document.getElementById('particleOpacity').value = config.opacity;
-     document.getElementById('particleOpacityValue').value = Math.round(config.opacity * 100);
+    document.getElementById('particleOpacity').value = config.opacity;
+    document.getElementById('particleOpacityValue').value = Math.round(config.opacity * 100);
     document.getElementById('trailLength').value = config.trailLength;
     document.getElementById('particleBlur').value = config.blur;
     document.getElementById('particleRotation').checked = config.enableRotation;
