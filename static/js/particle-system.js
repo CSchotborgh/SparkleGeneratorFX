@@ -191,14 +191,14 @@ class Particle {
 // Create particle pool
 let particles = Array(config.count).fill().map(() => new Particle());
 
-// Emitter class with improved mouse/touch tracking
+// Emitter class
 class Emitter {
     constructor() {
         this.x = k.width() / 2;
         this.y = k.height() / 2;
         this.isDragging = false;
         this.lastEmitTime = 0;
-        this.emitRate = 60; // particles per second
+        this.emitRate = 60;
     }
 
     update() {
@@ -223,36 +223,36 @@ class Emitter {
         return particle;
     }
 
+    updatePosition(clientX, clientY) {
+        if (!k.canvas) return;
+        const rect = k.canvas.getBoundingClientRect();
+        this.x = clientX - rect.left;
+        this.y = clientY - rect.top;
+    }
+
     reset() {
         this.x = k.width() / 2;
         this.y = k.height() / 2;
         this.isDragging = false;
         this.lastEmitTime = 0;
     }
-
-    updatePosition(clientX, clientY) {
-        const rect = k.canvas.getBoundingClientRect();
-        this.x = clientX - rect.left;
-        this.y = clientY - rect.top;
-    }
 }
 
+// Create emitter instance
 const emitter = new Emitter();
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = k.canvas;
-
     if (!canvas) {
         console.error('Canvas element not found');
         return;
     }
 
-    // Mouse/Touch event handlers
     function handleStart(e) {
         e.preventDefault();
         const event = e.touches ? e.touches[0] : e;
-        if (e.button === undefined || e.button === 0) {
+        if (event) {
             emitter.isDragging = true;
             emitter.updatePosition(event.clientX, event.clientY);
         }
@@ -262,32 +262,28 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         if (emitter.isDragging) {
             const event = e.touches ? e.touches[0] : e;
-            emitter.updatePosition(event.clientX, event.clientY);
+            if (event) {
+                emitter.updatePosition(event.clientX, event.clientY);
+            }
         }
     }
 
     function handleEnd(e) {
-        e.preventDefault();
-        if (e.button === undefined || e.button === 0) {
-            emitter.isDragging = false;
-        }
+        if (e) e.preventDefault();
+        emitter.isDragging = false;
     }
 
     // Mouse events
     canvas.addEventListener('mousedown', handleStart);
     canvas.addEventListener('mousemove', handleMove);
     canvas.addEventListener('mouseup', handleEnd);
-    canvas.addEventListener('mouseleave', () => {
-        emitter.isDragging = false;
-    });
+    canvas.addEventListener('mouseleave', handleEnd);
 
     // Touch events
     canvas.addEventListener('touchstart', handleStart, { passive: false });
     canvas.addEventListener('touchmove', handleMove, { passive: false });
     canvas.addEventListener('touchend', handleEnd, { passive: false });
-    canvas.addEventListener('touchcancel', () => {
-        emitter.isDragging = false;
-    });
+    canvas.addEventListener('touchcancel', handleEnd, { passive: false });
 
 
     // Initialize background control options
@@ -1001,7 +997,8 @@ function dragStart(e, panel) {
     if (e.target.tagName === 'BUTTON') return;
 
     if (e.type === "touchstart") {
-        initialX = e.touches[0].clientX - xOffset;        initialY = e.touches[0].clientY - yOffset;
+        initialX = e.touches[0].clientX - xOffset;
+        initialY = e.touches[0].clientY - yOffset;
     } else {
         initialX = e.clientX - xOffset;
         initialY = e.clientY - yOffset;
@@ -1009,7 +1006,8 @@ function dragStart(e, panel) {
     if (e.target.closest('.metrics-panel')) {
         currentPanel = panel;
         isDragging = true;
-    }    }
+    }
+}
 
 function dragEnd() {
     initialX = currentX;
