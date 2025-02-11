@@ -1,13 +1,14 @@
+// Initialize dimensions
+const initialWidth = window.innerWidth;
+const initialHeight = window.innerHeight;
+
 // Initialize background configuration
 const backgroundConfig = {
     scaleMode: 'cover',
     position: 'center',
-    opacity: 1.0
+    opacity: 1.0,
+    backgroundColor: "#2ecc71"
 };
-
-// Initialize dimensions
-const initialWidth = window.innerWidth;
-const initialHeight = window.innerHeight;
 
 // Initialize Kaboom.js
 const k = kaboom({
@@ -195,6 +196,12 @@ class Emitter {
         particle.vy = (Math.random() - 0.5) * config.speed;
         return particle;
     }
+    reset() {
+        this.x = k.width() / 2;
+        this.y = k.height() / 2;
+        this.isDragging = false;
+        this.lastEmitTime = 0;
+    }
 }
 
 // Create emitter instance
@@ -297,6 +304,7 @@ document.getElementById('bgOpacityValue').addEventListener('input', function(e) 
 // Add event listener for background color changes
 document.getElementById('backgroundColor').addEventListener('input', function (e) {
     backgroundColor = e.target.value;
+    backgroundConfig.backgroundColor = e.target.value; // Update backgroundConfig as well
 });
 
 // Add event listener for shape changes
@@ -978,7 +986,7 @@ function updateMetrics() {
             graphs.memory.data.datasets[0].data = metricsHistory.memory;
             graphs.memory.update('none');
         }
-    } catch (error) {
+    } catch(error) {
         console.warn('Error updating metrics graphs:', error);
     }
 }
@@ -993,37 +1001,28 @@ function resetSystem() {
         };
 
         // Reset physics parameters to stored defaults
-        Object.assign(physics, storedDefaults.physics);        // Reset configuration to stored defaults
+        Object.assign(physics, storedDefaults.physics);
+        // Reset configuration to stored defaults
         Object.assign(config, storedDefaults.config);
 
         // Reset emitter position
-        emitter.reset();
+        if (emitter && typeof emitter.reset === 'function') {
+            emitter.reset();
+        }
 
         // Clear all particles and create new ones
         particles = Array(config.count).fill().map(() => new Particle());
 
-        // Reset background
-        const [r, g, b] = hexToRgb('#2ecc71');
-        k.setBackground(k.rgb(r, g, b));
+        // Update input fields to reflect reset values
+        updateControlInputs();
 
-        // Clear background image if any
-        backgroundImage = null;
-        backgroundSprite = null;
-
-        // Update all UI controls
-        updateAllSliders();
-
-        // Clear any file inputs
-        const fileInputs = document.querySelectorAll('input[type="file"]');
-        fileInputs.forEach(input => {
-            if (input) input.value = '';
-        });
+        console.log('System reset successful');
     } catch (error) {
-        console.error('Reset error:', error);
+        console.error('Error during system reset:', error);
     }
 }
 
-function updateAllSliders() {
+function updateControlInputs() {
     // Update physics sliders
     document.getElementById('gravity').value = physics.gravity;
     document.getElementById('gravityValue').value = calculatePercentage(physics.gravity, 0, 0.5);
@@ -1054,6 +1053,11 @@ function updateAllSliders() {
     document.getElementById('particleBlur').value = config.blur;
     document.getElementById('particleRotation').checked = config.enableRotation;
     document.getElementById('reverseTrail').checked = config.reverseTrail;
+    document.getElementById('backgroundColor').value = backgroundConfig.backgroundColor;
+    document.getElementById('bgOpacity').value = backgroundConfig.opacity;
+    document.getElementById('bgOpacityValue').value = Math.round(backgroundConfig.opacity * 100);
+    document.getElementById('bgScaleMode').value = backgroundConfig.scaleMode;
+    document.getElementById('bgPosition').value = backgroundConfig.position;
 }
 
 function calculatePercentage(value, min, max) {

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
@@ -8,11 +8,7 @@ class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
-app = Flask(__name__, 
-    static_url_path='',
-    static_folder='static',
-    template_folder='templates'
-)
+app = Flask(__name__)
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "particle_system_secret"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///particle_system.db")
@@ -39,7 +35,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/static/<path:path>')
-def send_static(path):
+def serve_static(path):
     return send_from_directory('static', path)
 
 @app.route('/api/presets', methods=['GET'])
