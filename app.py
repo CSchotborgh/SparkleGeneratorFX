@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 import base64
 import subprocess
 import tempfile
@@ -7,12 +7,17 @@ from pathlib import Path
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 # Configuration
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(24)
@@ -38,13 +43,25 @@ db.init_app(app)
 with app.app_context():
     try:
         db.create_all()
-        app.logger.info("Database tables created successfully")
+        logger.info("Database tables created successfully")
     except Exception as e:
-        app.logger.error(f"Error creating database tables: {e}")
+        logger.error(f"Error creating database tables: {e}")
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        logger.error(f"Error rendering index template: {e}")
+        return "Error loading page", 500
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    try:
+        return send_from_directory(app.static_folder, filename)
+    except Exception as e:
+        logger.error(f"Error serving static file {filename}: {e}")
+        return "File not found", 404
 
 @app.route('/api/presets', methods=['GET'])
 def list_presets():
@@ -59,7 +76,7 @@ def list_presets():
             'created_at': preset.created_at.isoformat()
         } for preset in presets])
     except Exception as e:
-        app.logger.error(f"Error fetching presets: {e}")
+        logger.error(f"Error fetching presets: {e}")
         return jsonify({"error": "Failed to fetch presets"}), 500
 
 @app.route('/api/presets', methods=['POST'])
@@ -83,7 +100,7 @@ def create_preset():
         }), 201
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Error creating preset: {e}")
+        logger.error(f"Error creating preset: {e}")
         return jsonify({"error": "Failed to create preset"}), 500
 
 @app.route('/api/presets/<int:preset_id>/like', methods=['POST'])
@@ -95,7 +112,7 @@ def like_preset(preset_id):
         return jsonify({'likes': preset.likes})
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Error liking preset {preset_id}: {e}")
+        logger.error(f"Error liking preset {preset_id}: {e}")
         return jsonify({"error": "Failed to like preset"}), 500
 
 @app.route('/export-video', methods=['POST'])
@@ -136,9 +153,20 @@ def export_video():
                 download_name=f'particle-animation.{format}'
             )
     except Exception as e:
-        app.logger.error(f"Error exporting video: {e}")
+        logger.error(f"Error exporting video: {e}")
         return jsonify({"error": "Failed to export video"}), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    logger.error(f"404 Error: {error}")
+    return jsonify({"error": "Resource not found"}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    logger.error(f"500 Error: {error}")
+    return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 3000))
+    logger.info(f"Starting Flask server on port {port}")
     app.run(host='0.0.0.0', port=port, debug=True)
