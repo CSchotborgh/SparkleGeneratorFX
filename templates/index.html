@@ -361,8 +361,43 @@
                             </h2>
                             <div id="visualEffects" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
+                                    <!-- Background Image Controls -->
+                                    <div class="control-group mb-4">
+                                        <label class="form-label" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload and configure background image">Background Image Settings</label>
+                                        <input type="file" class="form-control bg-dark text-light mb-2" id="backgroundImage" accept="image/*">
+
+                                        <label for="bgScaleMode" class="form-label">Scale Mode</label>
+                                        <select class="form-select bg-dark text-light mb-2" id="bgScaleMode">
+                                            <option value="cover">Cover (Fill Screen)</option>
+                                            <option value="contain">Contain (Keep Ratio)</option>
+                                            <option value="tile">Tile</option>
+                                            <option value="stretch">Stretch</option>
+                                        </select>
+
+                                        <label for="bgPosition" class="form-label">Position</label>
+                                        <select class="form-select bg-dark text-light mb-2" id="bgPosition">
+                                            <option value="center">Center</option>
+                                            <option value="top">Top</option>
+                                            <option value="bottom">Bottom</option>
+                                            <option value="left">Left</option>
+                                            <option value="right">Right</option>
+                                        </select>
+
+                                        <div class="row">
+                                            <div class="col">
+                                                <label for="bgOpacity" class="form-label">Opacity</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="range" class="form-range" id="bgOpacity" min="0" max="1" step="0.1" value="1">
+                                                    <input type="number" class="form-control form-control-sm percentage-input" id="bgOpacityValue" value="100" min="0" max="100">
+                                                    <span class="percentage-symbol">%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Original Visual Effects Controls -->
                                     <div class="control-group">
-                                        <label for="particleOpacity" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust the transparency of particles">Opacity</label>
+                                        <label for="particleOpacity">Particle Opacity</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <input type="range" class="form-range" id="particleOpacity" min="0" max="1" step="0.1" value="1">
                                             <input type="number" class="form-control form-control-sm percentage-input" id="particleOpacityValue" value="100" min="0" max="100">
