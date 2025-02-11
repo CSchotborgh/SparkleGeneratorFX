@@ -1,3 +1,19 @@
+// Add background control options
+document.getElementById('bgScaleMode').addEventListener('change', (e) => {
+    const mode = e.target.value;
+    backgroundConfig.scaleMode = mode;
+    document.querySelector('.background-options').style.display = mode === 'none' ? 'none' : 'block';
+});
+
+document.getElementById('bgPosition').addEventListener('change', (e) => {
+    backgroundConfig.position = e.target.value;
+});
+
+document.getElementById('bgOpacity').addEventListener('input', (e) => {
+    const value = parseFloat(e.target.value);
+    backgroundConfig.opacity = value;
+    document.getElementById('bgOpacityValue').textContent = Math.round(value * 100) + '%';
+});
 
 // Initialize tooltips
 document.addEventListener('DOMContentLoaded', function() {
@@ -7,13 +23,38 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-
-
 // Control panel toggle
 document.getElementById('toggleControlPanel').addEventListener('click', () => {
     document.querySelector('.control-panel-overlay').classList.toggle('active');
 });
 
+// Background configuration
+const backgroundConfig = {
+    scaleMode: 'cover', // cover, contain, stretch, tile
+    position: 'center',
+    opacity: 1.0
+};
+
+// Add background control event listeners
+document.getElementById('backgroundImage').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                backgroundImage = img;
+                updateBackground();
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    } catch (error) {
+        console.error('Error loading background image:', error);
+    }
+});
 
 // Control panel event listeners
 function calculatePercentage(value, min, max) {

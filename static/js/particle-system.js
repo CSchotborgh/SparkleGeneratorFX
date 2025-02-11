@@ -1,3 +1,10 @@
+// Initialize background configuration
+const backgroundConfig = {
+    scaleMode: 'cover',
+    position: 'center',
+    opacity: 1.0
+};
+
 // Initialize dimensions
 const initialWidth = window.innerWidth;
 const initialHeight = window.innerHeight;
@@ -157,18 +164,35 @@ class Particle {
 // Create particle pool
 let particles = Array(config.count).fill().map(() => new Particle());
 
-// Emitter class
+// Update emitter class for proper functionality
 class Emitter {
     constructor() {
         this.x = k.width() / 2;
         this.y = k.height() / 2;
         this.isDragging = false;
+        this.lastEmitTime = 0;
+        this.emitRate = 60; // particles per second
+    }
+
+    update() {
+        if (this.isDragging) {
+            const currentTime = performance.now();
+            if (currentTime - this.lastEmitTime > (1000 / this.emitRate)) {
+                const particlesToGenerate = Math.max(1, Math.floor(config.count / 60));
+                for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
+                    particles.push(this.generateParticle());
+                }
+                this.lastEmitTime = currentTime;
+            }
+        }
     }
 
     generateParticle() {
         const particle = new Particle();
         particle.x = this.x + (Math.random() - 0.5) * 10;
         particle.y = this.y + (Math.random() - 0.5) * 10;
+        particle.vx = (Math.random() - 0.5) * config.speed;
+        particle.vy = (Math.random() - 0.5) * config.speed;
         return particle;
     }
 }
@@ -214,12 +238,155 @@ function hexToRgb(hex) {
     ] : [255, 255, 255];
 }
 
+// Optional background configuration
+let backgroundColor = "#2ecc71";
+let backgroundImage = null;
+let backgroundSprite = null;
+
+
+// Background image handler with proper error handling
+document.getElementById('backgroundImage').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        // Load the background image
+        backgroundImage = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
+
+        // Create a sprite from the background image
+        const spriteName = 'background';
+        await k.loadSprite(spriteName, dataUrl);
+        backgroundSprite = spriteName;
+    } catch (error) {
+        console.error('Error loading background image:', error);
+    }
+});
+
+// Add background configuration event listeners
+document.getElementById('bgScaleMode').addEventListener('change', function(e) {
+    backgroundConfig.scaleMode = e.target.value;
+});
+
+document.getElementById('bgPosition').addEventListener('change', function(e) {
+    backgroundConfig.position = e.target.value;
+});
+
+document.getElementById('bgOpacity').addEventListener('input', function(e) {
+    backgroundConfig.opacity = parseFloat(e.target.value);
+    document.getElementById('bgOpacityValue').value = Math.round(e.target.value * 100);
+});
+
+document.getElementById('bgOpacityValue').addEventListener('input', function(e) {
+    const value = Math.min(100, Math.max(0, parseInt(e.target.value))) / 100;
+    document.getElementById('bgOpacity').value = value;
+    backgroundConfig.opacity = value;
+});
+
+// Add event listener for background color changes
+document.getElementById('backgroundColor').addEventListener('input', function (e) {
+    backgroundColor = e.target.value;
+});
+
+// Add event listener for shape changes
+document.getElementById('particleShape').addEventListener('change', function (e) {
+    config.shape = e.target.value;
+});
+
 // Main game loop
 k.onUpdate(() => {
+    // Update background color
+    if (backgroundColor) {
+        const [r, g, b] = hexToRgb(backgroundColor);
+        k.setBackground(k.rgb(r, g, b));
+    }
+
+    // Draw background if available
+    if (backgroundSprite && backgroundImage) {
+        let width, height, x, y;
+
+        switch (backgroundConfig.scaleMode) {
+            case 'cover':
+                const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
+                width = backgroundImage.width * scale;
+                height = backgroundImage.height * scale;
+                break;
+            case 'contain':
+                const containScale = Math.min(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
+                width = backgroundImage.width * containScale;
+                height = backgroundImage.height * containScale;
+                break;
+            case 'stretch':
+                width = k.width();
+                height = k.height();
+                break;
+            case 'tile':
+                width = backgroundImage.width;
+                height = backgroundImage.height;
+                for (let tileX = 0; tileX < k.width(); tileX += width) {
+                    for (let tileY = 0; tileY < k.height(); tileY += height) {
+                        k.drawSprite({
+                            sprite: backgroundSprite,
+                            pos: k.vec2(tileX, tileY),
+                            opacity: backgroundConfig.opacity,
+                            z: -1,
+                        });
+                    }
+                }
+                return;
+        }
+
+        // Calculate position based on alignment
+        switch (backgroundConfig.position) {
+            case 'center':
+                x = (k.width() - width) / 2;
+                y = (k.height() - height) / 2;
+                break;
+            case 'top':
+                x = (k.width() - width) / 2;
+                y = 0;
+                break;
+            case 'bottom':
+                x = (k.width() - width) / 2;
+                y = k.height() - height;
+                break;
+            case 'left':
+                x = 0;
+                y = (k.height() - height) / 2;
+                break;
+            case 'right':
+                x = k.width() - width;
+                y = (k.height() - height) / 2;
+                break;
+        }
+
+        k.drawSprite({
+            sprite: backgroundSprite,
+            pos: k.vec2(x, y),
+            scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
+            opacity: backgroundConfig.opacity,
+            z: -1,
+        });
+    }
+
+    // Update emitter
+    emitter.update();
+
     // Remove dead particles
     particles = particles.filter(p => p.life > 0);
 
-    // Generate new particles
+    // Generate new particles if needed
     while (particles.length < config.count) {
         particles.push(emitter.generateParticle());
     }
@@ -229,15 +396,9 @@ k.onUpdate(() => {
         particle.update();
         particle.draw();
     });
-});
 
-// Window resize handler
-window.addEventListener('resize', () => {
-    const newWidth = window.innerWidth;
-    const newHeight = window.innerHeight;
-
-    k.canvas.width = newWidth;
-    k.canvas.height = newHeight;
+    // Update metrics display
+    updateMetrics();
 });
 
 // Preset configurations
@@ -464,183 +625,6 @@ const presets = {
         }
     }
 };
-
-// Optional background configuration
-let backgroundColor = "#2ecc71";
-let backgroundConfig = {
-    scaleMode: 'cover',
-    position: 'center',
-    opacity: 1
-};
-let backgroundImage = null;
-let backgroundSprite = null;
-
-
-// Background image handler with proper error handling
-document.getElementById('backgroundImage').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-        const dataUrl = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-
-        // Load the background image
-        backgroundImage = await new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = dataUrl;
-        });
-
-        // Create a sprite from the background image
-        const spriteName = 'background';
-        await k.loadSprite(spriteName, dataUrl);
-        backgroundSprite = spriteName;
-    } catch (error) {
-        console.error('Error loading background image:', error);
-    }
-});
-
-// Add background configuration event listeners
-document.getElementById('bgScaleMode').addEventListener('change', function(e) {
-    backgroundConfig.scaleMode = e.target.value;
-});
-
-document.getElementById('bgPosition').addEventListener('change', function(e) {
-    backgroundConfig.position = e.target.value;
-});
-
-document.getElementById('bgOpacity').addEventListener('input', function(e) {
-    backgroundConfig.opacity = parseFloat(e.target.value);
-    document.getElementById('bgOpacityValue').value = Math.round(e.target.value * 100);
-});
-
-document.getElementById('bgOpacityValue').addEventListener('input', function(e) {
-    const value = Math.min(100, Math.max(0, parseInt(e.target.value))) / 100;
-    document.getElementById('bgOpacity').value = value;
-    backgroundConfig.opacity = value;
-});
-
-// Add event listener for background color changes
-document.getElementById('backgroundColor').addEventListener('input', function (e) {
-    const selectedColor = e.target.value;
-    // Update the background color in real-time when color picker changes
-    const [r, g, b] = hexToRgb(selectedColor);
-    k.setBackground(k.rgb(r, g, b, 0.3)); // Keeping the same transparency for consistency
-});
-
-// Add event listener for shape changes
-document.getElementById('particleShape').addEventListener('change', function (e) {
-    config.shape = e.target.value;
-});
-
-// Main game loop
-k.onUpdate(() => {
-    // Draw background if available
-    if (backgroundSprite && backgroundImage) {
-        let width, height, x, y;
-
-        switch (backgroundConfig.scaleMode) {
-            case 'cover':
-                const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-                width = backgroundImage.width * scale;
-                height = backgroundImage.height * scale;
-                break;
-            case 'contain':
-                const containScale = Math.min(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-                width = backgroundImage.width * containScale;
-                height = backgroundImage.height * containScale;
-                break;
-            case 'stretch':
-                width = k.width();
-                height = k.height();
-                break;
-            case 'tile':
-                width = backgroundImage.width;
-                height = backgroundImage.height;
-                // Handle tiling in multiple draws
-                for (let tileX = 0; tileX < k.width(); tileX += width) {
-                    for (let tileY = 0; tileY < k.height(); tileY += height) {
-                        k.drawSprite({
-                            sprite: backgroundSprite,
-                            pos: k.vec2(tileX, tileY),
-                            opacity: backgroundConfig.opacity,
-                            z: -1,
-                        });
-                    }
-                }
-                return; // Skip single draw for tiling
-        }
-
-        // Calculate position
-        switch (backgroundConfig.position) {
-            case 'center':
-                x = (k.width() - width) / 2;
-                y = (k.height() - height) / 2;
-                break;
-            case 'top':
-                x = (k.width() - width) / 2;
-                y = 0;
-                break;
-            case 'bottom':
-                x = (k.width() - width) / 2;
-                y = k.height() - height;
-                break;
-            case 'left':
-                x = 0;
-                y = (k.height() - height) / 2;
-                break;
-            case 'right':
-                x = k.width() - width;
-                y = (k.height() - height) / 2;
-                break;
-        }
-
-        k.drawSprite({
-            sprite: backgroundSprite,
-            pos: k.vec2(x, y),
-            scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
-            opacity: backgroundConfig.opacity,
-            z: -1,
-        });
-    }
-
-    // Update emitter
-    emitter.update();
-
-    // Remove dead particles
-    particles = particles.filter(p => p.life > 0);
-
-    // Generate new particles from emitter
-    const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); // Distribute particle generation over time
-    for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
-        particles.push(emitter.generateParticle());
-    }
-
-    // Update and draw particles
-    particles.forEach(particle => {
-        particle.update();
-        particle.draw();
-    });
-
-    // Update metrics display
-    updateMetrics();
-});
-
-// Helper function to convert hex to RGB
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16)
-    ] : [255, 255, 255];
-}
 
 // Window resize handler
 window.addEventListener('resize', () => {
@@ -976,7 +960,6 @@ function updateMetrics() {
     metricsHistory.memory.push(memoryUsage);
     metricsHistory.memory.shift();
 
-
     // Update graphs if they are initialized
     try {
         if (graphs.fps && graphs.fps.data) {
@@ -1010,9 +993,7 @@ function resetSystem() {
         };
 
         // Reset physics parameters to stored defaults
-        Object.assign(physics, storedDefaults.physics);
-
-        // Reset configuration to stored defaults
+        Object.assign(physics, storedDefaults.physics);        // Reset configuration to stored defaults
         Object.assign(config, storedDefaults.config);
 
         // Reset emitter position
@@ -1023,7 +1004,7 @@ function resetSystem() {
 
         // Reset background
         const [r, g, b] = hexToRgb('#2ecc71');
-        k.setBackground(k.rgb(r, g, b, 0.3));
+        k.setBackground(k.rgb(r, g, b));
 
         // Clear background image if any
         backgroundImage = null;
