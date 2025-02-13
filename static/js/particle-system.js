@@ -772,23 +772,32 @@ window.addEventListener('resize', () => {
         });
     }
 
-    // No particle position updates - let the particles stay where they are
-
     // Handle control panel visibility
     const controlPanel = document.querySelector('.control-panel-overlay');
     const toggleButton = document.querySelector('.control-panel-toggle');
 
-    if (controlPanel) {
-        // Ensure control panel stays within viewport
+    if (controlPanel && toggleButton) {
+        // Calculate panel width based on viewport
         const panelWidth = Math.min(400, window.innerWidth * 0.9);
         controlPanel.style.width = `${panelWidth}px`;
+        controlPanel.style.height = '100vh';
 
-        // If panel is active, update toggle button position
+        // Keep panel and toggle button in view
         if (controlPanel.classList.contains('active')) {
+            controlPanel.style.right = '0';
             toggleButton.style.right = `${panelWidth}px`;
         } else {
+            controlPanel.style.right = `-${panelWidth}px`;
             toggleButton.style.right = '0';
         }
+
+        // Ensure proper z-index
+        controlPanel.style.zIndex = '1100';
+        toggleButton.style.zIndex = '1101';
+
+        // Update toggle button position
+        toggleButton.style.top = '50%';
+        toggleButton.style.transform = 'translateY(-50%)';
     }
 });
 
