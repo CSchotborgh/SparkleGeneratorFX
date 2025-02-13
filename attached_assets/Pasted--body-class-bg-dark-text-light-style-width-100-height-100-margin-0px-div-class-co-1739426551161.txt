@@ -1,35 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Particle System Generator</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/feather-icons@4.29.0/dist/feather.min.css" rel="stylesheet">
-    <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-</head>
-<body class="bg-dark text-light">
-    <div class="container-fluid p-0 vh-100 vw-100 position-fixed top-0 start-0">
+<body class="bg-dark text-light" style="width: 100%; height: 100%; margin: 0px;">
+    <div class="container-fluid">
         <!-- Top Navigation Buttons -->
         <div class="top-nav-container">
-            <img src="{{ url_for('static', filename='images/sumochuck_logo.png') }}" alt="Sumochuck Logo" class="nav-logo me-2" style="height: 60px; width: auto;">
-            <button id="resetButton" class="btn btn-outline-danger me-2 d-flex align-items-center justify-content-center" onclick="resetSystem()" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Reset all particle settings to their default values" style="min-width: 100px;">
-                <i data-feather="refresh-cw" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Reset All</span>
+            <img src="/static/images/sumochuck_logo.png" alt="Sumochuck Logo" class="nav-logo me-2" style="height: 60px; width: auto;">
+            <button id="resetButton" class="btn btn-outline-danger me-2 d-flex align-items-center justify-content-center" onclick="resetSystem()" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" style="min-width: 100px;" data-bs-original-title="Reset all particle settings to their default values">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw me-1" style="width: 16px; height: 16px;" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg><span style="white-space: nowrap;">Reset All</span>
             </button>
-            <button class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#aboutModal" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Learn more about SparkleGeneratorFX and its features" style="min-width: 100px;">
-                <i data-feather="info" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">About</span>
+            <button class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#aboutModal" tabindex="0" data-bs-placement="bottom" title="Learn more about SparkleGeneratorFX and its features" style="min-width: 100px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info me-1" style="width: 16px; height: 16px;" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg><span style="white-space: nowrap;">About</span>
             </button>
-            <button class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" onclick="startTutorial()" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Take a guided tour of all features and controls" style="min-width: 100px;">
-                <i data-feather="help-circle" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">QuickTour</span>
+            <button class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" onclick="startTutorial()" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" style="min-width: 100px;" data-bs-original-title="Take a guided tour of all features and controls">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-help-circle me-1" style="width: 16px; height: 16px;" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span style="white-space: nowrap;">QuickTour</span>
             </button>
-            <button id="toggleMetricsButton" class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center active" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Toggle visibility of performance metrics panels" style="min-width: 100px;">
-                <i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;" aria-hidden="true"></i><span style="white-space: nowrap;">Metrics On</span>
-            </button>
-        </div>
+            <button id="toggleMetricsButton" class="btn btn-outline-light me-2 d-flex align-items-center justify-content-center" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" style="min-width: 100px;" data-bs-original-title="Toggle visibility of performance metrics panels"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2 me-1" style="width: 16px; height: 16px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg><span style="white-space: nowrap;">Metrics Off</span></button>
+            </div>
 
         <!-- About Modal -->
-        <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true" style="display: none;">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content bg-dark text-light">
                     <div class="modal-header">
@@ -44,7 +31,7 @@
                         </div>
                         <p>Author/Creator/Developer/Artist:</p>
                         <div class="mb-3">
-                            <img src="{{ url_for('static', filename='images/chuck.jpg') }}" alt="Chuck A. Schotborgh" width="64" height="64" class="rounded-circle">
+                            <img src="/static/images/chuck.jpg" alt="Chuck A. Schotborgh" width="64" height="64" class="rounded-circle">
                         </div>
                         <p>
                         Chuck A. Schotborgh<br>
@@ -56,7 +43,7 @@
                         <p>A Toast to the Genius' at Replit for making this all happen.</p>
 
                         <div class="mt-3">
-                            <h6>Platform & Technical Details:</h6>
+                            <h6>Platform &amp; Technical Details:</h6>
                             <ul>
                                 <li>Built using Kaboom.js for high-performance particle physics</li>
                                 <li>Flask backend with Python for robust server operations</li>
@@ -87,7 +74,7 @@
         <div class="row">
             <div class="col-md-9">
                 <!-- FPS Metrics Panel -->
-                <div id="fpsPanel" class="metrics-panel">
+                <div id="fpsPanel" class="metrics-panel" tabindex="0" role="region" aria-label="FPS Monitor" style="display: none; transform: none; top: 120px; left: 20px;">
                     <div class="metrics-header">
                         <h4>FPS Monitor</h4>
                         <div class="panel-controls">
@@ -98,14 +85,14 @@
                     <div class="metrics-section">
                         <div class="metric">
                             <label>FPS:</label>
-                            <span id="fpsMetric">0</span>
+                            <span id="fpsMetric">21</span>
                         </div>
-                        <canvas id="fpsGraph" class="metric-graph"></canvas>
+                        <canvas id="fpsGraph" class="metric-graph" width="239" height="150" style="display: block; box-sizing: border-box; height: 150px; width: 239px;"></canvas>
                     </div>
                 </div>
 
                 <!-- Particle Count Panel -->
-                <div id="particlePanel" class="metrics-panel">
+                <div id="particlePanel" class="metrics-panel" tabindex="0" role="region" aria-label="Particle Count" style="display: none; transform: none; top: 120px; left: calc(40px + clamp(250px, 20vw, 400px));">
                     <div class="metrics-header">
                         <h4>Particle Count</h4>
                         <div class="panel-controls">
@@ -116,14 +103,14 @@
                     <div class="metrics-section">
                         <div class="metric">
                             <label>Active Particles:</label>
-                            <span id="particleCountMetric">0</span>
+                            <span id="particleCountMetric">100</span>
                         </div>
-                        <canvas id="particleCountGraph" class="metric-graph"></canvas>
+                        <canvas id="particleCountGraph" class="metric-graph" width="239" height="150" style="display: block; box-sizing: border-box; height: 150px; width: 239px;"></canvas>
                     </div>
                 </div>
 
                 <!-- Speed Metrics Panel -->
-                <div id="speedPanel" class="metrics-panel">
+                <div id="speedPanel" class="metrics-panel" tabindex="0" role="region" aria-label="Particle Speed" style="display: none; transform: none; top: calc(140px + clamp(150px, 15vh, 200px)); left: 20px;">
                     <div class="metrics-header">
                         <h4>Particle Speed</h4>
                         <div class="panel-controls">
@@ -134,14 +121,14 @@
                     <div class="metrics-section">
                         <div class="metric">
                             <label>Average Speed:</label>
-                            <span id="avgSpeedMetric">0</span>
+                            <span id="avgSpeedMetric">4.54</span>
                         </div>
-                        <canvas id="speedGraph" class="metric-graph"></canvas>
+                        <canvas id="speedGraph" class="metric-graph" width="239" height="150" style="display: block; box-sizing: border-box; height: 150px; width: 239px;"></canvas>
                     </div>
                 </div>
 
                 <!-- Memory Usage Panel -->
-                <div id="memoryPanel" class="metrics-panel">
+                <div id="memoryPanel" class="metrics-panel" tabindex="0" role="region" aria-label="Memory Usage" style="display: none; transform: none; top: calc(140px + clamp(150px, 15vh, 200px)); left: calc(40px + clamp(250px, 20vw, 400px));">
                     <div class="metrics-header">
                         <h4>Memory Usage</h4>
                         <div class="panel-controls">
@@ -152,14 +139,14 @@
                     <div class="metrics-section">
                         <div class="metric">
                             <label>Memory Usage:</label>
-                            <span id="memoryMetric">0 MB</span>
+                            <span id="memoryMetric">0.02 MB</span>
                         </div>
-                        <canvas id="memoryGraph" class="metric-graph"></canvas>
+                        <canvas id="memoryGraph" class="metric-graph" width="239" height="150" style="display: block; box-sizing: border-box; height: 150px; width: 239px;"></canvas>
                     </div>
                 </div>
 
                 <!-- Position Panel -->
-                <div id="positionPanel" class="metrics-panel">
+                <div id="positionPanel" class="metrics-panel" tabindex="0" role="region" aria-label="Emitter Position" style="display: none; transform: none; top: calc(160px + 2 * clamp(150px, 15vh, 200px)); left: 20px;">
                     <div class="metrics-header">
                         <h4>Emitter Position</h4>
                         <div class="panel-controls">
@@ -169,15 +156,15 @@
                     </div>
                     <div class="metric">
                         <label>Position:</label>
-                        <span id="emitterPosMetric">x: 0, y: 0</span>
+                        <span id="emitterPosMetric">x: 971, y: 241</span>
                     </div>
                 </div>
-                <canvas id="gameCanvas"></canvas>
+                <canvas id="gameCanvas" width="698" height="798" tabindex="0" style="outline: none; cursor: default; width: 698.25px; height: 798px;" data-hint="Click and drag to move particles. Right-click for burst effects." data-hintposition="middle-middle"></canvas>
             </div>
         </div>
         <div class="control-panel-overlay">
             <button id="toggleControlPanel" class="control-panel-toggle">
-                <i data-feather="settings"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </button>
             <div class="control-panel">
                     <h3>Particle Controls</h3>
@@ -186,14 +173,14 @@
                         <!-- Basic Particle Controls -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#basicControls" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust fundamental particle properties like count, size, and speed">
+                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#basicControls" data-bs-placement="right" title="Adjust fundamental particle properties like count, size, and speed" aria-expanded="false">
                                     Basic Particle Controls
                                 </button>
                             </h2>
-                            <div id="basicControls" class="accordion-collapse collapse show" data-bs-parent="#controlsAccordion">
+                            <div id="basicControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion" style="">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="particleCount" data-bs-toggle="tooltip" data-bs-placement="right" title="Control the number of particles in the system">Particle Count</label>
+                                        <label for="particleCount" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Control the number of particles in the system">Particle Count</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <input type="range" class="form-range" id="particleCount" min="1" max="100" value="50">
                                             <input type="number" class="form-control form-control-sm percentage-input" id="particleCountValue" value="50" min="0" max="100">
@@ -201,7 +188,7 @@
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleSize" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust particle size from small (1px) to large (1000px)">Size</label>
+                                        <label for="particleSize" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Adjust particle size from small (1px) to large (1000px)">Size</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <input type="range" class="form-range" id="particleSize" min="1" max="1000" value="5">
                                             <input type="number" class="form-control form-control-sm" id="particleSizeValue" value="5" min="1" max="1000">
@@ -209,7 +196,7 @@
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleSpeed" data-bs-toggle="tooltip" data-bs-placement="right" title="Control how fast particles move across the screen (frames per second)">Speed</label>
+                                        <label for="particleSpeed" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Control how fast particles move across the screen (frames per second)">Speed</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <input type="range" class="form-range" id="particleSpeed" min="0" max="160" value="60">
                                             <input type="number" class="form-control form-control-sm" id="particleSpeedValue" value="60" min="0" max="160">
@@ -223,14 +210,14 @@
                         <!-- Physics Controls -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#physicsControls">
+                                <button class="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#physicsControls" aria-expanded="true">
                                     Physics Controls
                                 </button>
                             </h2>
-                            <div id="physicsControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
+                            <div id="physicsControls" class="accordion-collapse collapse show" data-bs-parent="#controlsAccordion" style="">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="gravity" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls the downward force applied to particles (0-100%)">Gravity</label>
+                                        <label for="gravity" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Controls the downward force applied to particles (0-100%)">Gravity</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <input type="range" class="form-range" id="gravity" min="0" max="0.5" step="0.01" value="0.1">
                                             <input type="number" class="form-control form-control-sm percentage-input" id="gravityValue" value="20" min="0" max="100">
@@ -238,7 +225,7 @@
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="wind" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls horizontal force affecting particle movement (-100% to 100%)">Wind</label>
+                                        <label for="wind" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Controls horizontal force affecting particle movement (-100% to 100%)">Wind</label>
                                         <div class="d-flex align-items-center gap-2">
                                             <input type="range" class="form-range" id="wind" min="-0.2" max="0.2" step="0.01" value="0">
                                             <input type="number" class="form-control form-control-sm percentage-input" id="windValue" value="50" min="0" max="100">
@@ -246,39 +233,39 @@
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="bounce" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how much particles bounce when hitting boundaries">Bounce (<span id="bounceValue">80</span>%)</label>
+                                        <label for="bounce" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Controls how much particles bounce when hitting boundaries">Bounce (<span id="bounceValue">80</span>%)</label>
                                         <input type="range" class="form-range" id="bounce" min="0" max="1" step="0.1" value="0.8">
                                     </div>
                                     <div class="control-group">
-                                        <label for="friction" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how quickly particles slow down when moving">Friction (<span id="frictionValue">90</span>%)</label>
+                                        <label for="friction" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Controls how quickly particles slow down when moving">Friction (<span id="frictionValue">90</span>%)</label>
                                         <input type="range" class="form-range" id="friction" min="0.9" max="1" step="0.01" value="0.99">
                                     </div>
                                     <div class="control-group">
-                                        <label for="airResistance" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how quickly particles slow down in the air">Air Resistance (<span id="airResistanceValue">20</span>%)</label>
+                                        <label for="airResistance" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Controls how quickly particles slow down in the air">Air Resistance (<span id="airResistanceValue">20</span>%)</label>
                                         <input type="range" class="form-range" id="airResistance" min="0" max="0.1" step="0.001" value="0.02">
                                     </div>
                                     <div class="control-group">
-                                        <label for="turbulence" data-bs-toggle="tooltip" data-bs-placement="right" title="Adds random movement to particles creating chaotic patterns">Turbulence (<span id="turbulenceValue">20</span>%)</label>
+                                        <label for="turbulence" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Adds random movement to particles creating chaotic patterns">Turbulence (<span id="turbulenceValue">20</span>%)</label>
                                         <input type="range" class="form-range" id="turbulence" min="0" max="0.5" step="0.01" value="0.1">
                                     </div>
                                     <div class="control-group">
-                                        <label for="vortexStrength" data-bs-toggle="tooltip" data-bs-placement="right" title="Creates a spinning effect that pulls particles toward the center">Vortex Strength (<span id="vortexStrengthValue">50</span>%)</label>
+                                        <label for="vortexStrength" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Creates a spinning effect that pulls particles toward the center">Vortex Strength (<span id="vortexStrengthValue">50</span>%)</label>
                                         <input type="range" class="form-range" id="vortexStrength" min="-1" max="1" step="0.1" value="0">
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleMass" data-bs-toggle="tooltip" data-bs-placement="right" title="Affects how particles respond to forces like gravity and wind">Particle Mass (<span id="particleMassValue">18</span>%)</label>
+                                        <label for="particleMass" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Affects how particles respond to forces like gravity and wind">Particle Mass (<span id="particleMassValue">18</span>%)</label>
                                         <input type="range" class="form-range" id="particleMass" min="0.1" max="5" step="0.1" value="1.0">
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleLife" data-bs-toggle="tooltip" data-bs-placement="right" title="Sets how long particles exist before disappearing">Particle Life</label>
+                                        <label for="particleLife" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Sets how long particles exist before disappearing">Particle Life</label>
                                         <input type="range" class="form-range" id="particleLife" min="0.1" max="5" step="0.1" value="1.0">
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleAcceleration" data-bs-toggle="tooltip" data-bs-placement="right" title="Controls how quickly particles speed up or slow down">Acceleration</label>
+                                        <label for="particleAcceleration" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Controls how quickly particles speed up or slow down">Acceleration</label>
                                         <input type="range" class="form-range" id="particleAcceleration" min="0" max="2" step="0.1" value="1.0">
                                     </div>
                                     <div class="control-group">
-                                        <label for="collisionEnabled" data-bs-toggle="tooltip" data-bs-placement="right" title="Toggles particle collision detection on/off">Enable Collisions</label>
+                                        <label for="collisionEnabled" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Toggles particle collision detection on/off">Enable Collisions</label>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="collisionEnabled">
                                         </div>
@@ -290,14 +277,14 @@
                         <!-- Advanced Particle Options -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#advancedControls">
+                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#advancedControls" aria-expanded="false">
                                     Advanced Particle Options
                                 </button>
                             </h2>
-                            <div id="advancedControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
+                            <div id="advancedControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion" style="">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="particleShape" data-bs-toggle="tooltip" data-bs-placement="right" title="Choose the geometric shape of particles or use a custom image">Particle Shape</label>
+                                        <label for="particleShape" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Choose the geometric shape of particles or use a custom image">Particle Shape</label>
                                         <select class="form-select bg-dark text-light" id="particleShape">
                                             <option value="circle">Circle</option>
                                             <option value="square">Square</option>
@@ -306,12 +293,12 @@
                                             <option value="image">Custom Image</option>
                                         </select>
                                     </div>
-                                    <div class="control-group" id="imageEmitterGroup" style="display: none;">
-                                        <label for="emitterImage" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a custom PNG image to use as particle shape">Emitter Image (PNG)</label>
+                                    <div class="control-group" id="imageEmitterGroup" style="display: block;">
+                                        <label for="emitterImage" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Upload a custom PNG image to use as particle shape">Emitter Image (PNG)</label>
                                         <input type="file" class="form-control bg-dark text-light" id="emitterImage" accept=".png">
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleRotation" data-bs-toggle="tooltip" data-bs-placement="right" title="Toggle particle rotation animation on or off">Enable Rotation</label>
+                                        <label for="particleRotation" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Toggle particle rotation animation on or off">Enable Rotation</label>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="particleRotation">
                                         </div>
@@ -323,30 +310,30 @@
                         <!-- Visual Effects -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#visualEffects">
+                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#visualEffects" aria-expanded="false">
                                     Visual Effects
                                 </button>
                             </h2>
                             <div id="visualEffects" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="particleOpacity" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust the transparency of particles">Opacity</label>
+                                        <label for="particleOpacity" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Adjust the transparency of particles">Opacity</label>
                                         <input type="range" class="form-range" id="particleOpacity" min="0" max="1" step="0.1" value="1">
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleBlur" data-bs-toggle="tooltip" data-bs-placement="right" title="Add blur effect to particles">Blur Effect</label>
+                                        <label for="particleBlur" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Add blur effect to particles">Blur Effect</label>
                                         <input type="range" class="form-range" id="particleBlur" min="0" max="10" step="1" value="0">
                                     </div>
                                     <div class="control-group">
-                                        <label for="particleColor" data-bs-toggle="tooltip" data-bs-placement="right" title="Set the color of particles using a color picker">Color</label>
+                                        <label for="particleColor" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Set the color of particles using a color picker">Color</label>
                                         <input type="color" class="form-control" id="particleColor" value="#ffffff">
                                     </div>
                                     <div class="control-group">
-                                        <label for="trailLength" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust how long the particle trail appears behind moving particles">Trail Length</label>
+                                        <label for="trailLength" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Adjust how long the particle trail appears behind moving particles">Trail Length</label>
                                         <input type="range" class="form-range" id="trailLength" min="0" max="30" value="10">
                                     </div>
                                     <div class="control-group">
-                                        <label for="reverseTrail" data-bs-toggle="tooltip" data-bs-placement="right" title="Reverse the direction of particle trails">Reverse Trail</label>
+                                        <label for="reverseTrail" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Reverse the direction of particle trails">Reverse Trail</label>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="reverseTrail">
                                         </div>
@@ -358,14 +345,14 @@
                         <!-- Presets -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#presetControls">
+                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#presetControls" aria-expanded="false">
                                     Presets
                                 </button>
                             </h2>
                             <div id="presetControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="presets" data-bs-toggle="tooltip" data-bs-placement="right" title="Choose from predefined particle effect configurations">Select Preset</label>
+                                        <label for="presets" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Choose from predefined particle effect configurations">Select Preset</label>
                                         <select class="form-select" id="presets">
                                             <option value="polygonWeb">Polygon Web</option>
                                             <option value="heroWeb">Hero Web</option>
@@ -384,7 +371,7 @@
                         <!-- Export Options -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#exportOptions">
+                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#exportOptions" aria-expanded="false">
                                     Export Options
                                 </button>
                             </h2>
@@ -399,8 +386,8 @@
                                         <button class="btn btn-outline-light mb-2" onclick="exportToPNG()">Export PNG</button>
                                     </div>
                                     <div class="control-group">
-                                        <label data-bs-toggle="tooltip" data-bs-placement="right" title="Import multiple PNG images to create animated particle sequences">Image and Sequences</label>
-                                        <input type="file" class="form-control" id="imageImport" accept="image/png" multiple>
+                                        <label data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Import multiple PNG images to create animated particle sequences">Image and Sequences</label>
+                                        <input type="file" class="form-control" id="imageImport" accept="image/png" multiple="">
                                         <div class="mt-2">
                                             <button class="btn btn-outline-light" onclick="startAnimation()">Play</button>
                                             <button class="btn btn-outline-light" onclick="stopAnimation()">Stop</button>
@@ -413,7 +400,7 @@
                         <!-- Video Recording -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#videoRecording">
+                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#videoRecording" aria-expanded="false">
                                     Video Recording
                                 </button>
                             </h2>
@@ -422,7 +409,7 @@
                                     <div class="control-group">
                                         <div class="recording-controls">
                                             <button id="startRecording" class="btn btn-outline-light mb-2" onclick="startRecording()">Start Recording</button>
-                                            <button id="stopRecording" class="btn btn-outline-light mb-2" onclick="stopRecording()" disabled>Stop Recording</button>
+                                            <button id="stopRecording" class="btn btn-outline-light mb-2" onclick="stopRecording()" disabled="">Stop Recording</button>
                                             <div id="frameCount" class="text-light mb-2">0 frames</div>
                                         </div>
                                         <div id="recordingExportOptions" style="display: none;">
@@ -439,18 +426,18 @@
                         <!-- Background Controls -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#backgroundControls">
+                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#backgroundControls" aria-expanded="false">
                                     Background Controls
                                 </button>
                             </h2>
                             <div id="backgroundControls" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
                                     <div class="control-group">
-                                        <label for="backgroundColor" data-bs-toggle="tooltip" data-bs-placement="right" title="Change the background color of the particle system">Background Color</label>
+                                        <label for="backgroundColor" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Change the background color of the particle system">Background Color</label>
                                         <input type="color" class="form-control" id="backgroundColor" value="#2ecc71">
                                     </div>
                                     <div class="control-group">
-                                        <label for="backgroundImage" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload an image to set as the particle system background">Background Image</label>
+                                        <label for="backgroundImage" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Upload an image to set as the particle system background">Background Image</label>
                                         <input type="file" class="form-control" id="backgroundImage" accept=".jpg,.jpeg,.png,.gif">
                                     </div>
                                 </div>
@@ -460,7 +447,7 @@
                         <!-- Share Preset -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sharePreset">
+                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sharePreset" aria-expanded="false">
                                     Share Preset
                                 </button>
                             </h2>
@@ -478,15 +465,43 @@
                         <!-- Shared Presets -->
                         <div class="accordion-item bg-dark">
                             <h2 class="accordion-header">
-                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sharedPresetsSection">
+                                <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sharedPresetsSection" aria-expanded="false">
                                     Shared Presets
                                 </button>
                             </h2>
                             <div id="sharedPresetsSection" class="accordion-collapse collapse" data-bs-parent="#controlsAccordion">
                                 <div class="accordion-body">
-                                    <div id="sharedPresets" class="shared-presets-container">
-                                        <!-- Shared presets will be loaded here -->
-                                    </div>
+                                    <div id="sharedPresets" class="shared-presets-container"><div class="shared-preset">
+                <div class="preset-header">
+                    <h5>birth</h5>
+                    <span class="likes">3 ❤️</span>
+                </div>
+                <p class="preset-description">klbbo</p>
+                <div class="preset-actions">
+                    <button class="btn btn-sm btn-outline-light" onclick="loadPreset(1)">Load</button>
+                    <button class="btn btn-sm btn-outline-light" onclick="likePreset(1)">Like</button>
+                </div>
+            </div><div class="shared-preset">
+                <div class="preset-header">
+                    <h5>bumbles</h5>
+                    <span class="likes">2 ❤️</span>
+                </div>
+                <p class="preset-description">kpm</p>
+                <div class="preset-actions">
+                    <button class="btn btn-sm btn-outline-light" onclick="loadPreset(2)">Load</button>
+                    <button class="btn btn-sm btn-outline-light" onclick="likePreset(2)">Like</button>
+                </div>
+            </div><div class="shared-preset">
+                <div class="preset-header">
+                    <h5>Hshs</h5>
+                    <span class="likes">0 ❤️</span>
+                </div>
+                <p class="preset-description">Nsna</p>
+                <div class="preset-actions">
+                    <button class="btn btn-sm btn-outline-light" onclick="loadPreset(3)">Load</button>
+                    <button class="btn btn-sm btn-outline-light" onclick="likePreset(3)">Like</button>
+                </div>
+            </div></div>
                                 </div>
                             </div>
                         </div>
@@ -495,7 +510,7 @@
             </div>
         </div>
 
-    </div>
+    
 
     <script src="https://unpkg.com/kaboom@3000.0.1/dist/kaboom.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -510,12 +525,12 @@
             }
         });
     </script>
-    <script src="{{ url_for('static', filename='js/particle-system.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/export.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/video-export.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/preset-sharing.js') }}"></script>
-    <script src="{{ url_for('static',filename='js/tutorial.js') }}"></script>
+    <script src="/static/js/particle-system.js"></script>
+    <script src="/static/js/controls.js"></script>
+    <script src="/static/js/export.js"></script>
+    <script src="/static/js/video-export.js"></script>
+    <script src="/static/js/preset-sharing.js"></script>
+    <script src="/static/js/tutorial.js"></script>
     <script>
         // Initialize Feather icons
         document.addEventListener('DOMContentLoaded', () => {
@@ -539,5 +554,3 @@
             feather.replace(); // Re-render Feather icons after changing innerHTML
         });
     </script>
-</body>
-</html>
