@@ -29,11 +29,13 @@ body {
     right: -100%;
     width: min(400px, 90vw);
     height: 100vh;
-    background-color: rgba(33, 33, 33, 0.25);
+    background-color: rgba(33, 33, 33, 0.95);
     transition: right 0.3s ease-in-out;
-    z-index: 1000;
+    z-index: 1100;
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
-    display: block !important; /* Ensure visibility */
+    display: block !important;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
 .control-panel-overlay.active {
@@ -45,11 +47,12 @@ body {
     height: 100%;
     overflow-y: auto;
     max-width: 100%;
+    position: relative;
 }
 
 .control-panel-toggle {
-    position: absolute;
-    left: -48px;
+    position: fixed;
+    right: 0;
     top: 50%;
     transform: translateY(-50%);
     background: rgba(255, 165, 0, 1);
@@ -58,15 +61,37 @@ body {
     border-radius: 8px 0 0 8px;
     cursor: pointer;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
-    display: block !important; /* Ensure visibility */
-    z-index: 1001; /* Ensure button stays above panel */
+    transition: all 0.3s ease;
+    display: block !important;
+    z-index: 1101;
+    width: 48px;
+}
+
+.control-panel-overlay.active + .control-panel-toggle {
+    right: min(400px, 90vw);
 }
 
 .control-panel-toggle i {
     color: white;
     width: 24px;
     height: 24px;
+}
+
+@media (max-width: 768px) {
+    .control-panel-toggle {
+        width: 36px;
+        padding: 18px 8px;
+    }
+
+    .control-panel-overlay.active + .control-panel-toggle {
+        right: 85vw;
+    }
+}
+
+@media (max-width: 480px) {
+    .control-panel-overlay.active + .control-panel-toggle {
+        right: 95vw;
+    }
 }
 
 .control-group {
@@ -434,7 +459,7 @@ h3, h4 {
 }
 
 /* Accessibility Styles */
-:focus {
+::focus {
     outline: 2px solid #2ecc71 !important;
     outline-offset: 2px !important;
 }
