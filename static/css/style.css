@@ -33,6 +33,7 @@ body {
     transition: right 0.3s ease-in-out;
     z-index: 1000;
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+    display: block !important; /* Ensure visibility */
 }
 
 .control-panel-overlay.active {
@@ -58,6 +59,8 @@ body {
     cursor: pointer;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease;
+    display: block !important; /* Ensure visibility */
+    z-index: 1001; /* Ensure button stays above panel */
 }
 
 .control-panel-toggle i {
