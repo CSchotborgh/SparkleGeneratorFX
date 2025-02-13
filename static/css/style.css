@@ -13,8 +13,8 @@ body {
 
 /* Update canvas styles for full coverage */
 #gameCanvas {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background-color: #000;
     position: fixed;
     top: 0;
@@ -26,16 +26,13 @@ body {
 .control-panel-overlay {
     position: fixed;
     top: 0;
-    right: -100%;
-    width: min(400px, 90vw);
+    right: -400px;
+    width: 400px;
     height: 100vh;
-    background-color: rgba(33, 33, 33, 0.95);
+    background-color: rgba(33, 33, 33, 0.25);
     transition: right 0.3s ease-in-out;
-    z-index: 1100;
+    z-index: 1000;
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
-    display: block !important;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
 }
 
 .control-panel-overlay.active {
@@ -44,16 +41,14 @@ body {
 
 .control-panel {
     padding: 20px;
-    height: 100%;
+    height: 100vh;
     overflow-y: auto;
-    max-width: 100%;
-    position: relative;
 }
 
 .control-panel-toggle {
-    position: fixed;
-    right: 0;
-    top: 50%;
+    position: absolute;
+    left: -48px;
+    top: calc(33.33% - 125px);
     transform: translateY(-50%);
     background: rgba(255, 165, 0, 1);
     border: none;
@@ -61,37 +56,17 @@ body {
     border-radius: 8px 0 0 8px;
     cursor: pointer;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    display: block !important;
-    z-index: 1101;
-    width: 48px;
+    transition: background-color 0.3s ease;
 }
 
-.control-panel-overlay.active + .control-panel-toggle {
-    right: min(400px, 90vw);
+.control-panel-toggle:hover {
+    background: rgba(255, 165, 0, 0.5);
 }
 
 .control-panel-toggle i {
     color: white;
     width: 24px;
     height: 24px;
-}
-
-@media (max-width: 768px) {
-    .control-panel-toggle {
-        width: 36px;
-        padding: 18px 8px;
-    }
-
-    .control-panel-overlay.active + .control-panel-toggle {
-        right: 85vw;
-    }
-}
-
-@media (max-width: 480px) {
-    .control-panel-overlay.active + .control-panel-toggle {
-        right: 95vw;
-    }
 }
 
 .control-group {
@@ -459,7 +434,7 @@ h3, h4 {
 }
 
 /* Accessibility Styles */
-::focus {
+:focus {
     outline: 2px solid #2ecc71 !important;
     outline-offset: 2px !important;
 }
@@ -597,9 +572,6 @@ h3, h4 {
 }
 
 @media (max-width: 768px) {
-    .control-panel-overlay {
-        width: 85vw;
-    }
     .metric-graph {
         height: min(80px, 12vh);
     }
@@ -612,41 +584,6 @@ h3, h4 {
     .metrics-header h4 {
         font-size: 14px;
     }
-
-    .control-panel-toggle {
-        left: -36px;
-        padding: 18px 8px;
-    }
-
-    .top-nav-container {
-        flex-wrap: wrap;
-        gap: 0.25rem;
-    }
-
-    .top-nav-container .btn {
-        font-size: 0.75rem;
-        padding: 0.25rem;
-        min-width: auto !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .control-panel-overlay {
-        width: 95vw;
-    }
-
-    .metrics-panel {
-        width: 90vw;
-        left: 50% !important;
-        transform: translateX(-50%);
-        margin-bottom: 10px;
-    }
-
-    #fpsPanel { top: 80px; }
-    #particlePanel { top: 200px; }
-    #speedPanel { top: 320px; }
-    #memoryPanel { top: 440px; }
-    #positionPanel { top: 560px; }
 }
 
 .metrics-header {

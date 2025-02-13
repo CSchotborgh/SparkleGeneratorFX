@@ -212,14 +212,14 @@ class Particle {
             const scale = size / config.originalSize;
             k.drawSprite({
                 sprite: config.particleSprite,
-                pos: k.vec2(x - size / 2, y - size / 2),
+                pos: k.vec2(x - size/2, y - size/2),
                 scale: k.vec2(scale, scale),
                 angle: angle,
                 opacity: opacity,
             });
             return;
         }
-
+        
         switch (this.shape) {
             case 'square':
                 k.drawRect({
@@ -735,7 +735,7 @@ const presets = {
 // Window resize handler
 window.addEventListener('resize', () => {
     const canvas = document.getElementById("gameCanvas");
-    const newWidth = window.innerWidth;
+    const newWidth = window.innerWidth * 0.75;
     const newHeight = window.innerHeight;
 
     // Update canvas size
@@ -748,57 +748,21 @@ window.addEventListener('resize', () => {
     k.canvas.width = newWidth;
     k.canvas.height = newHeight;
 
-    // Only update vortex center position
+    // Update vortex center
     physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
 
-    // Refresh background only
-    const [r, g, b] = hexToRgb(backgroundColor);
-    k.setBackground(k.rgb(r, g, b));
+    // Ensure particles are within bounds
+    particles.forEach(particle => {
+        if (particle.x > newWidth) particle.x = newWidth;
+        if (particle.y > newHeight) particle.y = newHeight;
 
-    // If there's a background image, redraw it
-    if (backgroundSprite && backgroundImage) {
-        const scale = Math.max(newWidth / backgroundImage.width, newHeight / backgroundImage.height);
-        const width = backgroundImage.width * scale;
-        const height = backgroundImage.height * scale;
-        const x = (newWidth - width) / 2;
-        const y = (newHeight - height) / 2;
-
-        k.drawSprite({
-            sprite: backgroundSprite,
-            pos: k.vec2(x, y),
-            scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
-            opacity: 1,
-            z: -1
-        });
-    }
-
-    // Handle control panel visibility
-    const controlPanel = document.querySelector('.control-panel-overlay');
-    const toggleButton = document.querySelector('.control-panel-toggle');
-
-    if (controlPanel && toggleButton) {
-        // Calculate panel width based on viewport
-        const panelWidth = Math.min(400, window.innerWidth * 0.9);
-        controlPanel.style.width = `${panelWidth}px`;
-        controlPanel.style.height = '100vh';
-
-        // Keep panel and toggle button in view
-        if (controlPanel.classList.contains('active')) {
-            controlPanel.style.right = '0';
-            toggleButton.style.right = `${panelWidth}px`;
-        } else {
-            controlPanel.style.right = `-${panelWidth}px`;
-            toggleButton.style.right = '0';
-        }
-
-        // Ensure proper z-index
-        controlPanel.style.zIndex = '1100';
-        toggleButton.style.zIndex = '1101';
-
-        // Update toggle button position
-        toggleButton.style.top = '50%';
-        toggleButton.style.transform = 'translateY(-50%)';
-    }
+        // Update trail positions if needed
+        particle.trail = particle.trail.map(point => ({
+            x: Math.min(point.x, newWidth),
+            y: Math.min(point.y, newHeight),
+            angle: point.angle
+        }));
+    });
 });
 
 // Metrics tracking variables
