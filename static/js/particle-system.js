@@ -212,7 +212,7 @@ class Particle {
             const scale = size / config.originalSize;
             k.drawSprite({
                 sprite: config.particleSprite,
-                pos: k.vec2(x - size/2, y - size/2),
+                pos: k.vec2(x - size / 2, y - size / 2),
                 scale: k.vec2(scale, scale),
                 angle: angle,
                 opacity: opacity,
@@ -773,6 +773,23 @@ window.addEventListener('resize', () => {
     }
 
     // No particle position updates - let the particles stay where they are
+
+    // Handle control panel visibility
+    const controlPanel = document.querySelector('.control-panel-overlay');
+    const toggleButton = document.querySelector('.control-panel-toggle');
+
+    if (controlPanel) {
+        // Ensure control panel stays within viewport
+        const panelWidth = Math.min(400, window.innerWidth * 0.9);
+        controlPanel.style.width = `${panelWidth}px`;
+
+        // If panel is active, update toggle button position
+        if (controlPanel.classList.contains('active')) {
+            toggleButton.style.right = `${panelWidth}px`;
+        } else {
+            toggleButton.style.right = '0';
+        }
+    }
 });
 
 // Metrics tracking variables
