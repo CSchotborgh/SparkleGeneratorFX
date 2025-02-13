@@ -2,13 +2,28 @@
 const initialWidth = window.innerWidth;
 const initialHeight = window.innerHeight;
 
-// Initialize background configuration
-const backgroundConfig = {
-    scaleMode: 'cover',
-    position: 'center',
-    opacity: 1.0,
-    backgroundColor: "#2ecc71"
+// Background configuration
+let backgroundColor = "#2ecc71"; // Default green background matching UI theme
+
+// Physics parameters
+const physics = {
+    gravity: 0.1,
+    wind: 0,
+    friction: 0.99,
+    bounce: 0.8,
+    airResistance: 0.02,
+    turbulence: 0.1,
+    vortexStrength: 0,
+    vortexCenter: { x: initialWidth / 2, y: initialHeight / 2 },
+    particleMass: 0.59, // Approximately 10% on the 0.1-5 scale
+    particleLife: 1.0,
+    acceleration: 1.0,
+    collisionEnabled: false
 };
+
+// Initialize variables for background
+let backgroundImage = null;
+let backgroundSprite = null;
 
 // Initialize Kaboom.js
 const k = kaboom({
@@ -16,66 +31,35 @@ const k = kaboom({
     canvas: document.getElementById("gameCanvas"),
     width: initialWidth,
     height: initialHeight,
-    background: [46, 204, 113], // Default green background
+    background: hexToRgb(backgroundColor),
 });
 
-// Default physics parameters
-const defaultPhysics = {
-    gravity: 0.1,
-    wind: 0,
-    friction: 0.98,
-    bounce: 0.8,
-    airResistance: 0.02,
-    turbulence: 0.1,
-    vortexStrength: 0,
-    vortexCenter: { x: initialWidth / 2, y: initialHeight / 2 },
-    particleMass: 0.5,
-    particleLife: 0.8,
-    acceleration: 0.8,
-    collisionEnabled: true
-};
-
-// Default particle system configuration
-const defaultConfig = {
-    count: 40,
-    size: 4,
-    speed: 4,
+// Particle system configuration
+const config = {
+    count: 50,
+    size: 5,
+    speed: 5,
     color: "#ffffff",
     preset: "sparkle",
-    trailLength: 8,
-    reverseTrail: false,
-    shape: 'circle',
-    opacity: 0.8,
-    blur: 0,
-    enableRotation: true,
-    particleSprite: null, // Add particleSprite property
-    originalSize: 4 // Add originalSize property
+    trailLength: 10,  // Added trail length configuration
+    reverseTrail: false, // Trail direction control
+    shape: 'circle' // Default shape
 };
 
-// Store initial settings in localStorage
-if (!localStorage.getItem('particleSystemDefaults')) {
-    localStorage.setItem('particleSystemDefaults', JSON.stringify({
-        physics: defaultPhysics,
-        config: defaultConfig
-    }));
-}
-
-// Active physics and config objects
-const physics = { ...defaultPhysics };
-const config = { ...defaultConfig };
-
-// Particle class with core functionality
+// Particle class
 class Particle {
     constructor() {
         this.trail = [];
         this.trailLength = config.trailLength || 10;
-        this.shape = config.shape;
+        this.shape = config.shape; // Store the shape configuration
         this.reset();
     }
 
     reset() {
+        // Always initialize at the center of the screen
         this.x = k.width() / 2;
         this.y = k.height() / 2;
+        // Initialize with random velocities
         this.vx = (Math.random() - 0.5) * config.speed;
         this.vy = (Math.random() - 0.5) * config.speed;
         this.ax = 0;
@@ -85,7 +69,8 @@ class Particle {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.2;
         this.size = config.size * (0.5 + Math.random() * 0.5);
-        this.shape = config.shape;
+        this.shape = config.shape; // Update shape when resetting
+        // Initialize trail from the center position
         this.trail = Array(this.trailLength).fill().map(() => ({
             x: this.x,
             y: this.y,
@@ -94,18 +79,46 @@ class Particle {
     }
 
     update() {
-        // Apply physics
+        // Apply physics to particle
         this.ax = physics.wind;
         this.ay = physics.gravity;
 
-        // Apply air resistance
+        // Apply air resistance (proportional to velocity squared)
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
         if (speed > 0) {
             this.ax -= (this.vx / speed) * physics.airResistance * speed * speed;
             this.ay -= (this.vy / speed) * physics.airResistance * speed * speed;
         }
 
-        // Update velocity and position
+        // Apply turbulence using Perlin noise
+        const time = Date.now() * 0.001;
+        this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
+        this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
+
+        // Apply attraction to emitter position
+        const dx = emitter.x - this.x;
+        const dy = emitter.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > 0) {
+            const attractionStrength = 0.3; // Adjust this value to control attraction force
+            const attractionForce = attractionStrength / (distance * physics.particleMass);
+            this.ax += dx * attractionForce;
+            this.ay += dy * attractionForce;
+        }
+
+        // Apply vortex effect
+        if (physics.vortexStrength !== 0) {
+            const vx = this.x - physics.vortexCenter.x;
+            const vy = this.y - physics.vortexCenter.y;
+            const vortexDist = Math.sqrt(vx * vx + vy * vy);
+            if (vortexDist > 0) {
+                const vortexForce = physics.vortexStrength / (vortexDist * physics.particleMass);
+                this.ax += -vy * vortexForce;
+                this.ay += vx * vortexForce;
+            }
+        }
+
+        // Update velocity and position with acceleration
         this.vx += (this.ax / physics.particleMass) * physics.acceleration;
         this.vy += (this.ay / physics.particleMass) * physics.acceleration;
 
@@ -115,7 +128,7 @@ class Particle {
         this.x += this.vx;
         this.y += this.vy;
 
-        // Bounce off edges
+        // Bounce off screen edges
         if (this.x < 0 || this.x > k.width()) {
             this.vx *= -physics.bounce;
             this.x = this.x < 0 ? 0 : k.width();
@@ -125,18 +138,54 @@ class Particle {
             this.y = this.y < 0 ? 0 : k.height();
         }
 
+        // Particle collisions if enabled
+        if (physics.collisionEnabled) {
+            for (const other of particles) {
+                if (other !== this) {
+                    const dx = other.x - this.x;
+                    const dy = other.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const minDist = (this.size + other.size) * 0.5;
+
+                    if (distance < minDist) {
+                        const angle = Math.atan2(dy, dx);
+                        const targetX = this.x + Math.cos(angle) * minDist;
+                        const targetY = this.y + Math.sin(angle) * minDist;
+
+                        const ax = (targetX - other.x) * 0.05;
+                        const ay = (targetY - other.y) * 0.05;
+
+                        this.vx -= ax;
+                        this.vy -= ay;
+                        other.vx += ax;
+                        other.vy += ay;
+                    }
+                }
+            }
+        }
+
         // Update rotation
         this.angle += this.spin;
 
-        // Update trail
-        this.trail.pop();
-        this.trail.unshift({
-            x: this.x,
-            y: this.y,
-            angle: this.angle
-        });
+        // Update trail based on direction
+        if (config.reverseTrail) {
+            this.trail.shift();
+            this.trail.push({
+                x: this.x,
+                y: this.y,
+                angle: this.angle
+            });
+        } else {
+            this.trail.pop();
+            this.trail.unshift({
+                x: this.x,
+                y: this.y,
+                angle: this.angle
+            });
+        }
 
         this.life -= this.decay;
+
         if (this.life <= 0) {
             this.reset();
         }
@@ -148,42 +197,73 @@ class Particle {
             const point = this.trail[i];
             const opacity = (1 - i / this.trail.length) * this.life * 0.5;
             const trailSize = this.size * (1 - i / this.trail.length);
+
             this.drawShape(point.x, point.y, trailSize, opacity, point.angle);
         }
 
         // Draw current particle
-        this.drawShape(this.x, this.y, this.size, this.life, this.angle);
+        const opacity = this.life;
+        const shouldRotate = config.enableRotation;
+        this.drawShape(this.x, this.y, this.size, opacity, shouldRotate ? this.angle : 0);
     }
 
     drawShape(x, y, size, opacity, angle) {
-        if (config.shape === 'image' && config.particleSprite) {
-            try {
-                // Draw sprite-based particle with improved scaling
-                const scale = size / (config.originalSize || 32); // Default size if originalSize is not set
-                k.drawSprite({
-                    sprite: config.particleSprite,
-                    pos: k.vec2(x, y),
-                    scale: k.vec2(scale, scale),
-                    opacity: opacity,
-                    angle: config.enableRotation ? angle : 0,
-                    anchor: "center",
+        if (this.shape === 'image' && config.particleSprite) {
+            const scale = size / config.originalSize;
+            k.drawSprite({
+                sprite: config.particleSprite,
+                pos: k.vec2(x - size/2, y - size/2),
+                scale: k.vec2(scale, scale),
+                angle: angle,
+                opacity: opacity,
+            });
+            return;
+        }
+        
+        switch (this.shape) {
+            case 'square':
+                k.drawRect({
+                    pos: k.vec2(x - size / 2, y - size / 2),
+                    width: size,
+                    height: size,
+                    angle: angle,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
                 });
-            } catch (error) {
-                console.error('Error drawing sprite:', error);
-                // Fallback to circle if sprite drawing fails
+                break;
+            case 'triangle':
+                const points = [];
+                for (let i = 0; i < 3; i++) {
+                    const pointAngle = (i * 2 * Math.PI / 3) + angle;
+                    points.push(k.vec2(
+                        x + Math.cos(pointAngle) * size,
+                        y + Math.sin(pointAngle) * size
+                    ));
+                }
+                k.drawPolygon({
+                    pts: points,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
+                });
+                break;
+            case 'star':
+                const starPoints = [];
+                for (let i = 0; i < 5; i++) {
+                    const starAngle = (i * 4 * Math.PI / 5) + angle;
+                    starPoints.push(k.vec2(
+                        x + Math.cos(starAngle) * size,
+                        y + Math.sin(starAngle) * size * 0.5
+                    ));
+                }
+                k.drawPolygon({
+                    pts: starPoints,
+                    color: k.rgb(...hexToRgb(config.color), opacity),
+                });
+                break;
+            default: // circle
                 k.drawCircle({
                     pos: k.vec2(x, y),
                     radius: size / 2,
                     color: k.rgb(...hexToRgb(config.color), opacity),
                 });
-            }
-        } else {
-            // Default to circle if no sprite or different shape selected
-            k.drawCircle({
-                pos: k.vec2(x, y),
-                radius: size / 2,
-                color: k.rgb(...hexToRgb(config.color), opacity),
-            });
         }
     }
 }
@@ -191,379 +271,207 @@ class Particle {
 // Create particle pool
 let particles = Array(config.count).fill().map(() => new Particle());
 
-// Emitter class
+// Particle burst function
+function createParticleBurst(x, y, count = 20) {
+    const burstParticles = Array(count).fill().map(() => {
+        const particle = new Particle();
+        particle.x = x;
+        particle.y = y;
+
+        // Create radial burst effect
+        const angle = Math.random() * Math.PI * 2;
+        const speed = config.speed * (1 + Math.random());
+        particle.vx = Math.cos(angle) * speed;
+        particle.vy = Math.sin(angle) * speed;
+
+        // Shorter life for burst particles
+        particle.decay = 0.02 + Math.random() * 0.03;
+
+        // Set sprite if using image-based particles
+        if (animationFrames.length > 0) {
+            particle.sprite = animationFrames[currentFrame].sprite;
+            particle.originalSize = animationFrames[currentFrame].originalSize;
+        }
+
+        return particle;
+    });
+
+    particles.push(...burstParticles);
+
+    // Trim excess particles
+    while (particles.length > config.count * 2) {
+        particles.shift();
+    }
+}
+
+// Emitter class to manage particle generation
 class Emitter {
     constructor() {
-        this.x = k.width() / 2;
-        this.y = k.height() / 2;
+        this.x = physics.vortexCenter.x;
+        this.y = physics.vortexCenter.y;
+        this.vx = 0;
+        this.vy = 0;
+        this.lastX = this.x;
+        this.lastY = this.y;
         this.isDragging = false;
-        this.lastEmitTime = 0;
-        this.emitRate = 60;
+    }
+
+    reset() {
+        this.x = physics.vortexCenter.x;
+        this.y = physics.vortexCenter.y;
+        this.vx = 0;
+        this.vy = 0;
+        this.lastX = this.x;
+        this.lastY = this.y;
     }
 
     update() {
-        if (this.isDragging) {
-            const currentTime = performance.now();
-            if (currentTime - this.lastEmitTime > (1000 / this.emitRate)) {
-                const particlesToGenerate = Math.max(1, Math.floor(config.count / 60));
-                for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
-                    particles.push(this.generateParticle());
-                }
-                this.lastEmitTime = currentTime;
-            }
-        }
+        // Calculate emitter velocity based on position change
+        this.vx = this.x - this.lastX;
+        this.vy = this.y - this.lastY;
+        this.lastX = this.x;
+        this.lastY = this.y;
     }
 
     generateParticle() {
         const particle = new Particle();
         particle.x = this.x + (Math.random() - 0.5) * 10;
         particle.y = this.y + (Math.random() - 0.5) * 10;
-        particle.vx = (Math.random() - 0.5) * config.speed;
-        particle.vy = (Math.random() - 0.5) * config.speed;
+        // Add emitter velocity to particle initial velocity for smoother motion
+        particle.vx = (Math.random() - 0.5) * config.speed + this.vx * 0.5;
+        particle.vy = (Math.random() - 0.5) * config.speed + this.vy * 0.5;
+        // Apply current shape configuration
+        particle.shape = config.shape;
         return particle;
-    }
-
-    updatePosition(clientX, clientY) {
-        if (!k.canvas) return;
-        const rect = k.canvas.getBoundingClientRect();
-        this.x = clientX - rect.left;
-        this.y = clientY - rect.top;
-    }
-
-    reset() {
-        this.x = k.width() / 2;
-        this.y = k.height() / 2;
-        this.isDragging = false;
-        this.lastEmitTime = 0;
     }
 }
 
 // Create emitter instance
 const emitter = new Emitter();
 
-// Event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    const canvas = k.canvas;
-    if (!canvas) {
-        console.error('Canvas element not found');
-        return;
-    }
-
-    function handleStart(e) {
-        e.preventDefault();
-        const event = e.touches ? e.touches[0] : e;
-        if (event) {
-            emitter.isDragging = true;
-            emitter.updatePosition(event.clientX, event.clientY);
-        }
-    }
-
-    function handleMove(e) {
-        e.preventDefault();
-        if (emitter.isDragging) {
-            const event = e.touches ? e.touches[0] : e;
-            if (event) {
-                emitter.updatePosition(event.clientX, event.clientY);
-            }
-        }
-    }
-
-    function handleEnd(e) {
-        if (e) e.preventDefault();
-        emitter.isDragging = false;
-    }
-
-    // Mouse events
-    canvas.addEventListener('mousedown', handleStart);
-    canvas.addEventListener('mousemove', handleMove);
-    canvas.addEventListener('mouseup', handleEnd);
-    canvas.addEventListener('mouseleave', handleEnd);
-
-    // Touch events
-    canvas.addEventListener('touchstart', handleStart, { passive: false });
-    canvas.addEventListener('touchmove', handleMove, { passive: false });
-    canvas.addEventListener('touchend', handleEnd, { passive: false });
-    canvas.addEventListener('touchcancel', handleEnd, { passive: false });
-
-
-    // Initialize background control options
-    const bgScaleMode = document.getElementById('bgScaleMode');
-    if (bgScaleMode) {
-        bgScaleMode.addEventListener('change', (e) => {
-            const mode = e.target.value;
-            backgroundConfig.scaleMode = mode;
-            document.querySelector('.background-options').style.display = mode === 'none' ? 'none' : 'block';
-        });
-    }
-
-    // Particle shape control
-    const particleShape = document.getElementById('particleShape');
-    if (particleShape) {
-        particleShape.addEventListener('change', (e) => {
-            config.shape = e.target.value;
-            const imageGroup = document.getElementById('imageEmitterGroup');
-            if (imageGroup) {
-                imageGroup.style.display = e.target.value === 'image' ? 'block' : 'none';
-            }
-        });
-    }
-
-    // Emitter image control
-    const emitterImage = document.getElementById('emitterImage');
-    if (emitterImage) {
-        emitterImage.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            try {
-                const dataUrl = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-
-                const img = await new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = reject;
-                    img.src = dataUrl;
-                });
-
-                // Calculate appropriate size based on image dimensions
-                const maxSize = 64; // Maximum size for the sprite
-                const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-
-                // Create a temporary canvas to resize the image if needed
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width * scale;
-                canvas.height = img.height * scale;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                const scaledDataURL = canvas.toDataURL('image/png');
-                const spriteName = 'particle_emitter';
-
-                // Load the sprite with the scaled image
-                await k.loadSprite(spriteName, scaledDataURL);
-
-                // Update configuration
-                config.shape = 'image';
-                config.particleSprite = spriteName;
-                config.originalSize = Math.max(canvas.width, canvas.height);
-
-                // Reset particles with new sprite
-                particles.forEach(particle => {
-                    particle.reset();
-                });
-
-                // Update UI
-                if (particleShape) {
-                    particleShape.value = 'image';
-                }
-                const imageGroup = document.getElementById('imageEmitterGroup');
-                if (imageGroup) {
-                    imageGroup.style.display = 'block';
-                }
-
-                console.log('Emitter image loaded successfully:', spriteName);
-            } catch (error) {
-                console.error('Error loading emitter image:', error);
-                // Reset to circle shape if image loading fails
-                config.shape = 'circle';
-                if (particleShape) {
-                    particleShape.value = 'circle';
-                }
-                const imageGroup = document.getElementById('imageEmitterGroup');
-                if (imageGroup) {
-                    imageGroup.style.display = 'none';
-                }
-            }
-        });
-    }
-
-    // Background color control
-    const backgroundColorInput = document.getElementById('backgroundColor');
-    if (backgroundColorInput) {
-        backgroundColorInput.addEventListener('input', (e) => {
-            backgroundColor = e.target.value;
-            backgroundConfig.backgroundColor = e.target.value;
-        });
-    }
-
-    // Initialize other event listeners
-    initializeGraphs();
-
-
-    const bgPosition = document.getElementById('bgPosition');
-    if (bgPosition) {
-        bgPosition.addEventListener('change', function(e) {
-            backgroundConfig.position = e.target.value;
-        });
-    }
-
-    const bgOpacity = document.getElementById('bgOpacity');
-    if (bgOpacity) {
-        bgOpacity.addEventListener('input', function(e) {
-            backgroundConfig.opacity = parseFloat(e.target.value);
-            document.getElementById('bgOpacityValue').value = Math.round(e.target.value * 100);
-        });
-    }
-
-    const bgOpacityValue = document.getElementById('bgOpacityValue');
-    if (bgOpacityValue) {
-        bgOpacityValue.addEventListener('input', function(e) {
-            const value = Math.min(100, Math.max(0, parseInt(e.target.value))) / 100;
-            document.getElementById('bgOpacity').value = value;
-            backgroundConfig.opacity = value;
-        });
-    }
-
-    const particleSprite = document.getElementById('particleSprite');
-    if (particleSprite) {
-        particleSprite.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            try {
-                const dataUrl = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-
-                const spriteName = 'particle';
-                await k.loadSprite(spriteName, dataUrl);
-                config.particleSprite = spriteName;
-                config.originalSize = k.sprites[spriteName].width; //set original size from sprite width
-
-            } catch (error) {
-                console.error('Error loading particle sprite:', error);
-            }
-        });
-    }
-
-    const backgroundImageInput = document.getElementById('backgroundImage');
-    if (backgroundImageInput) {
-        backgroundImageInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            try {
-                const dataUrl = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-
-                backgroundImage = await new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = reject;
-                    img.src = dataUrl;
-                });
-
-                const spriteName = 'background';
-                await k.loadSprite(spriteName, dataUrl);
-                backgroundSprite = spriteName;
-            } catch (error) {
-                console.error('Error loading background image:', error);
-            }
-        });
+// Event listeners for drag and burst effects
+k.canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 0) { // Left click
+        emitter.isDragging = true;
+        const rect = k.canvas.getBoundingClientRect();
+        emitter.x = e.clientX - rect.left;
+        emitter.y = e.clientY - rect.top;
     }
 });
 
-// Helper function to convert hex to RGB
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16)
-    ] : [255, 255, 255];
-}
+k.canvas.addEventListener('mousemove', (e) => {
+    if (emitter.isDragging) {
+        const rect = k.canvas.getBoundingClientRect();
+        emitter.x = e.clientX - rect.left;
+        emitter.y = e.clientY - rect.top;
+    }
+});
 
-// Optional background configuration
-let backgroundColor = "#2ecc71";
-let backgroundImage = null;
-let backgroundSprite = null;
+k.canvas.addEventListener('mouseup', (e) => {
+    if (e.button === 0) { // Left click release
+        emitter.isDragging = false;
+    }
+});
 
+k.canvas.addEventListener('mouseleave', () => {
+    if (emitter.isDragging) {
+        emitter.isDragging = false;
+    }
+});
+
+// Right click for burst
+k.canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const rect = k.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    createParticleBurst(x, y);
+});
+
+// Touch events
+k.canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    emitter.isDragging = true;
+    const rect = k.canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    emitter.x = touch.clientX - rect.left;
+    emitter.y = touch.clientY - rect.top;
+}, { passive: false });
+
+k.canvas.addEventListener('touchmove', (e) => {
+    if (emitter.isDragging) {
+        e.preventDefault();
+        const rect = k.canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        emitter.x = touch.clientX - rect.left;
+        emitter.y = touch.clientY - rect.top;
+    }
+}, { passive: false });
+
+k.canvas.addEventListener('touchend', () => {
+    emitter.isDragging = false;
+});
+
+// Background image handler
+document.getElementById('backgroundImage').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        // Load the background image
+        backgroundImage = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
+
+        // Create a sprite from the background image
+        const spriteName = 'background';
+        await k.loadSprite(spriteName, dataUrl);
+        backgroundSprite = spriteName;
+    } catch (error) {
+        console.error('Error loading background image:', error);
+    }
+});
+
+// Add event listener for background color changes
+document.getElementById('backgroundColor').addEventListener('input', function (e) {
+    const selectedColor = e.target.value;
+    // Update the background color in real-time when color picker changes
+    const [r, g, b] = hexToRgb(selectedColor);
+    k.setBackground(k.rgb(r, g, b, 0.3)); // Keeping the same transparency for consistency
+});
+
+
+// Add event listener for shape changes
+document.getElementById('particleShape').addEventListener('change', function (e) {
+    config.shape = e.target.value;
+});
 
 // Main game loop
 k.onUpdate(() => {
-    // Update background color
-    if (backgroundColor) {
-        const [r, g, b] = hexToRgb(backgroundColor);
-        k.setBackground(k.rgb(r, g, b));
-    }
-
     // Draw background if available
     if (backgroundSprite && backgroundImage) {
-        let width, height, x, y;
-
-        switch (backgroundConfig.scaleMode) {
-            case 'cover':
-                const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-                width = backgroundImage.width * scale;
-                height = backgroundImage.height * scale;
-                break;
-            case 'contain':
-                const containScale = Math.min(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
-                width = backgroundImage.width * containScale;
-                height = backgroundImage.height * containScale;
-                break;
-            case 'stretch':
-                width = k.width();
-                height = k.height();
-                break;
-            case 'tile':
-                width = backgroundImage.width;
-                height = backgroundImage.height;
-                for (let tileX = 0; tileX < k.width(); tileX += width) {
-                    for (let tileY = 0; tileY < k.height(); tileY += height) {
-                        k.drawSprite({
-                            sprite: backgroundSprite,
-                            pos: k.vec2(tileX, tileY),
-                            opacity: backgroundConfig.opacity,
-                            z: -1,
-                        });
-                    }
-                }
-                return;
-        }
-
-        // Calculate position based on alignment
-        switch (backgroundConfig.position) {
-            case 'center':
-                x = (k.width() - width) / 2;
-                y = (k.height() - height) / 2;
-                break;
-            case 'top':
-                x = (k.width() - width) / 2;
-                y = 0;
-                break;
-            case 'bottom':
-                x = (k.width() - width) / 2;
-                y = k.height() - height;
-                break;
-            case 'left':
-                x = 0;
-                y = (k.height() - height) / 2;
-                break;
-            case 'right':
-                x = k.width() - width;
-                y = (k.height() - height) / 2;
-                break;
-        }
+        const scale = Math.max(k.width() / backgroundImage.width, k.height() / backgroundImage.height);
+        const width = backgroundImage.width * scale;
+        const height = backgroundImage.height * scale;
+        const x = (k.width() - width) / 2;
+        const y = (k.height() - height) / 2;
 
         k.drawSprite({
             sprite: backgroundSprite,
             pos: k.vec2(x, y),
             scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
-            opacity: backgroundConfig.opacity,
-            z: -1,
+            opacity: 1,
+            z: -1, // Set z-index to -1 to ensure background is behind particles
         });
     }
 
@@ -573,8 +481,9 @@ k.onUpdate(() => {
     // Remove dead particles
     particles = particles.filter(p => p.life > 0);
 
-    // Generate new particles if needed
-    while (particles.length < config.count) {
+    // Generate new particles from emitter
+    const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); // Distribute particle generation over time
+    for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
         particles.push(emitter.generateParticle());
     }
 
@@ -587,6 +496,16 @@ k.onUpdate(() => {
     // Update metrics display
     updateMetrics();
 });
+
+// Helper function to convert hex to RGB
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+    ] : [255, 255, 255];
+}
 
 // Preset configurations
 const presets = {
@@ -844,46 +763,7 @@ window.addEventListener('resize', () => {
             angle: point.angle
         }));
     });
-
-    // Update graph sizes
-    Object.values(graphs).forEach(graph => {
-        if (graph && graph.resize) {
-            graph.resize();
-        }
-    });
 });
-
-// Panel handling
-function handleKeyDown(e) {
-    const focusedPanel = document.querySelector('.metrics-panel:focus');
-    if (!focusedPanel) return;
-
-    const step = 10;
-    switch (e.key) {
-        case 'Escape':
-            focusedPanel.style.display = 'none';
-            break;
-        case 'ArrowLeft':
-            e.preventDefault();
-            focusedPanel.style.left = `${parseInt(focusedPanel.style.left || 0) - step}px`;
-            break;
-        case 'ArrowRight':
-            e.preventDefault();
-            focusedPanel.style.left = `${parseInt(focusedPanel.style.left || 0) + step}px`;
-            break;
-        case 'ArrowUp':
-            e.preventDefault();
-            focusedPanel.style.top = `${parseInt(focusedPanel.style.top || 0) - step}px`;
-            break;
-        case 'ArrowDown':
-            e.preventDefault();
-            focusedPanel.style.top = `${parseInt(focusedPanel.style.top || 0) + step}px`;
-            break;
-    }
-}
-
-document.addEventListener('keydown', handleKeyDown);
-
 
 // Metrics tracking variables
 let lastTime = performance.now();
@@ -979,6 +859,8 @@ function initializeGraphs() {
     });
 }
 
+// Initialize graphs when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeGraphs);
 
 // Metrics overlay functionality
 const metricsOverlay = document.getElementById("metricsOverlay");
@@ -1003,6 +885,7 @@ function dragStart(e, panel) {
         initialX = e.clientX - xOffset;
         initialY = e.clientY - yOffset;
     }
+
     if (e.target.closest('.metrics-panel')) {
         currentPanel = panel;
         isDragging = true;
@@ -1208,64 +1091,91 @@ function updateMetrics() {
 
 // Add reset functionality
 function resetSystem() {
-    try {
-        // Load stored defaults or use initial defaults
-        const storedDefaults = JSON.parse(localStorage.getItem('particleSystemDefaults')) || {
-            physics: defaultPhysics,
-            config: defaultConfig
-        };
+    // Reset metrics panels positions
+    const panels = {
+        'fpsPanel': { top: '120px', left: '20px' },
+        'particlePanel': { top: '120px', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
+        'speedPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: '20px' },
+        'memoryPanel': { top: 'calc(140px + clamp(150px, 15vh, 200px))', left: 'calc(40px + clamp(250px, 20vw, 400px))' },
+        'positionPanel': { top: 'calc(160px + 2 * clamp(150px, 15vh, 200px))', left: '20px' }
+    };
 
-        // Reset physics and config to stored defaults
-        Object.assign(physics, storedDefaults.physics);
-        Object.assign(config, storedDefaults.config);
-
-        // Reset all particles
-        particles = Array(config.count).fill().map(() => new Particle());
-
-        // Reset emitter
-        emitter.reset();
-
-        // Update UI controls to match reset values
-        updateControlsToMatch(storedDefaults);
-    } catch (error) {
-        console.error('Error resetting system:', error);
-    }
-}
-
-// Update UI controls to match given values
-function updateControlsToMatch(values) {
-    // Update physics controls
-    document.getElementById('gravity').value = values.physics.gravity;
-    document.getElementById('wind').value = values.physics.wind;
-    document.getElementById('friction').value = values.physics.friction;
-    document.getElementById('bounce').value = values.physics.bounce;
-    document.getElementById('airResistance').value = values.physics.airResistance;
-    document.getElementById('turbulence').value = values.physics.turbulence;
-    document.getElementById('vortexStrength').value = values.physics.vortexStrength;
-    document.getElementById('particleMass').value = values.physics.particleMass;
-    document.getElementById('collisionEnabled').checked = values.physics.collisionEnabled;
-
-    // Update particle controls
-    document.getElementById('particleCount').value = values.config.count;
-    document.getElementById('particleSize').value = values.config.size;
-    document.getElementById('particleSpeed').value = values.config.speed;
-    document.getElementById('particleColor').value = values.config.color;
-
-    // Trigger update events
-    document.getElementById('particleCount').dispatchEvent(new Event('input'));
-    document.getElementById('particleSize').dispatchEvent(new Event('input'));
-    document.getElementById('particleSpeed').dispatchEvent(new Event('input'));
-}
-
-function calculatePercentage(value, min, max) {
-    return Math.round(((value - min) / (max - min)) * 100);
-}
-// Toggle all metrics panels
-document.getElementById('toggleMetricsButton').addEventListener('click', () => {
-    const panels = document.querySelectorAll('.metrics-panel');
-    const anyVisible = Array.from(panels).some(panel => panel.style.display !== 'none');
-
-    panels.forEach(panel => {
-        panel.style.display = anyVisible ? 'none' : 'block';
+    Object.entries(panels).forEach(([id, position]) => {
+        const panel = document.getElementById(id);
+        if (panel) {
+            panel.style.transform = 'none';
+            panel.style.top = position.top;
+            panel.style.left = position.left;
+            panel.classList.remove('fullscreen');
+        }
     });
-});
+
+    // Reset physics parameters to default values
+    Object.assign(physics, {
+        gravity: 0.1,
+        wind: 0,
+        friction: 0.99,
+        bounce: 0.8,
+        airResistance: 0.02,
+        turbulence: 0.1,
+        vortexStrength: 0,
+        vortexCenter: { x: k.width() / 2, y: k.height() / 2 },
+        particleMass: 0.59, // Approximately 10% on the 0.1-5 scale
+        particleLife: 1.0,
+        acceleration: 1.0,
+        collisionEnabled: false
+    });
+
+    // Reset configuration to default
+    Object.assign(config, {
+        count: 50,
+        size: 5,
+        speed: 5,
+        color: "#ffffff",
+        preset: "sparkle",
+        trailLength: 10,
+        reverseTrail: false,
+        shape: 'circle' // Default shape
+    });
+
+    // Reset background
+    const [r, g, b] = hexToRgb('#2ecc71');
+    k.setBackground(k.rgb(r, g, b, 0.3));
+    document.getElementById('backgroundColor').value = '#2ecc71';
+
+    // Clear background image if any
+    backgroundImage = null;
+    backgroundSprite = null;
+
+    // Reset emitter position
+    emitter.reset();
+
+    // Clear all particles and create new ones
+    particles = Array(config.count).fill().map(() => new Particle());
+
+    // Reset all UI controls to match default values
+    document.getElementById('particleCount').value = config.count;
+    document.getElementById('particleSize').value = config.size;
+    document.getElementById('particleSpeed').value = config.speed;
+    document.getElementById('particleColor').value = config.color;
+    document.getElementById('gravity').value = physics.gravity;
+    document.getElementById('wind').value = physics.wind;
+    document.getElementById('bounce').value = physics.bounce;
+    document.getElementById('friction').value = physics.friction;
+    document.getElementById('airResistance').value = physics.airResistance;
+    document.getElementById('turbulence').value = physics.turbulence;
+    document.getElementById('vortexStrength').value = physics.vortexStrength;
+    document.getElementById('particleMass').value = physics.particleMass;
+    document.getElementById('particleLife').value = physics.particleLife;
+    document.getElementById('particleAcceleration').value = physics.acceleration;
+    document.getElementById('collisionEnabled').checked = physics.collisionEnabled;
+    document.getElementById('trailLength').value = config.trailLength;
+    document.getElementById('reverseTrail').checked = config.reverseTrail;
+    document.getElementById('presets').value = config.preset;
+
+    // Clear any file inputs
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.value = '';
+    });
+}

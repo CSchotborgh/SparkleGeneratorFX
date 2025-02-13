@@ -1,5 +1,9 @@
 import os
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_file
+import base64
+import subprocess
+import tempfile
+from pathlib import Path
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
@@ -8,10 +12,7 @@ class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
-app = Flask(__name__, 
-    static_folder='static',
-    template_folder='templates'
-)
+app = Flask(__name__)
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "particle_system_secret"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///particle_system.db")
@@ -36,10 +37,6 @@ with app.app_context():
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/static/<path:path>')
-def serve_static(path):
-    return send_from_directory('static', path)
 
 @app.route('/api/presets', methods=['GET'])
 def list_presets():
@@ -79,5 +76,52 @@ def like_preset(preset_id):
     db.session.commit()
     return jsonify({'likes': preset.likes})
 
+@app.route('/export-video', methods=['POST'])
+def export_video():
+    data = request.get_json()
+    frames = data['frames']
+    format = data.get('format', 'mp4')
+    frame_rate = data.get('frameRate', 30)
+    
+    # Create temporary directory for frames
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        
+        # Save frames as PNG files
+        for i, frame in enumerate(frames):
+            # Remove data URL prefix
+            image_data = frame.split(',')[1]
+            frame_path = temp_path / f"frame_{i:06d}.png"
+            with open(frame_path, 'wb') as f:
+                f.write(base64.b64decode(image_data))
+        
+        # Output video path
+        output_path = temp_path / f"output.{format}"
+        
+        # FFmpeg command based on format
+        cmd = ['ffmpeg', '-framerate', str(frame_rate), '-i', str(temp_path / 'frame_%06d.png')]
+        
+        # AVI format encoding settings with transparency support
+        cmd.extend([
+            '-c:v', 'qtrle',  # QuickTime Animation codec which supports alpha channel
+            '-q:v', '3',      # Higher quality setting
+            '-pix_fmt', 'rgb32'  # Use RGB32 format to preserve alpha channel
+        ])
+            
+        # Add output file
+        cmd.extend(['-y', str(output_path)])
+        
+        try:
+            subprocess.run(cmd, check=True, capture_output=True)
+            with open(output_path, 'rb') as f:
+                return send_file(
+                    f,
+                    mimetype=f'video/{format}',
+                    as_attachment=True,
+                    download_name=f'particle-animation.{format}'
+                )
+        except subprocess.CalledProcessError as e:
+            return str(e.stderr), 500
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

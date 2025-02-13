@@ -1,19 +1,3 @@
-// Add background control options
-document.getElementById('bgScaleMode').addEventListener('change', (e) => {
-    const mode = e.target.value;
-    backgroundConfig.scaleMode = mode;
-    document.querySelector('.background-options').style.display = mode === 'none' ? 'none' : 'block';
-});
-
-document.getElementById('bgPosition').addEventListener('change', (e) => {
-    backgroundConfig.position = e.target.value;
-});
-
-document.getElementById('bgOpacity').addEventListener('input', (e) => {
-    const value = parseFloat(e.target.value);
-    backgroundConfig.opacity = value;
-    document.getElementById('bgOpacityValue').textContent = Math.round(value * 100) + '%';
-});
 
 // Initialize tooltips
 document.addEventListener('DOMContentLoaded', function() {
@@ -23,31 +7,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+
+
 // Control panel toggle
 document.getElementById('toggleControlPanel').addEventListener('click', () => {
     document.querySelector('.control-panel-overlay').classList.toggle('active');
 });
 
-// Add background control event listeners
-document.getElementById('backgroundImage').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const img = new Image();
-            img.onload = () => {
-                backgroundImage = img;
-                updateBackground();
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    } catch (error) {
-        console.error('Error loading background image:', error);
-    }
-});
 
 // Control panel event listeners
 function calculatePercentage(value, min, max) {
@@ -127,15 +93,7 @@ document.getElementById('windValue').addEventListener('input', (e) => {
 document.getElementById('bounce').addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     physics.bounce = value;
-    document.getElementById('bounceValue').value = calculatePercentage(value, 0, 1);
-});
-
-document.getElementById('bounceValue').addEventListener('input', (e) => {
-    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-    const value = percentage / 100;
-    physics.bounce = value;
-    document.getElementById('bounce').value = value;
-    e.target.value = percentage;
+    document.getElementById('bounceValue').textContent = calculatePercentage(value, 0, 1);
 });
 
 document.getElementById('friction').addEventListener('input', (e) => {
@@ -159,41 +117,18 @@ document.getElementById('turbulence').addEventListener('input', (e) => {
 document.getElementById('vortexStrength').addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     physics.vortexStrength = value;
-    document.getElementById('vortexStrengthValue').value = calculatePercentage(value, -1, 1);
+    document.getElementById('vortexStrengthValue').textContent = calculatePercentage(value, -1, 1);
     physics.vortexCenter = { x: k.width() / 2, y: k.height() / 2 };
-});
-
-document.getElementById('vortexStrengthValue').addEventListener('input', (e) => {
-    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-    const value = ((percentage / 100) * 2) - 1;
-    physics.vortexStrength = value;
-    document.getElementById('vortexStrength').value = value;
-    physics.vortexCenter = { x: k.width() / 2, y: k.height() / 2 };
-    e.target.value = percentage;
 });
 
 document.getElementById('particleMass').addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     physics.particleMass = value;
-    const massInGrams = (value * 49.9) + 0.1; // Convert to 0.1-50g range
-    document.getElementById('particleMassValue').value = Math.round(massInGrams);
-    document.getElementById('particleMassValue').nextElementSibling.textContent = 'g';
-});
-
-document.getElementById('particleMassValue').addEventListener('input', (e) => {
-    const grams = Math.min(50, Math.max(0.1, parseFloat(e.target.value) || 0.1));
-    const value = (grams - 0.1) / 49.9;
-    physics.particleMass = value;
-    document.getElementById('particleMass').value = value;
-    e.target.value = Math.round(grams);
+    document.getElementById('particleMassValue').textContent = calculatePercentage(value, 0.1, 5);
 });
 
 document.getElementById('particleLife').addEventListener('input', (e) => {
-    const value = parseFloat(e.target.value);
-    physics.particleLife = value;
-    const durationMs = (value * 4900) + 100; // Convert to 100-5000ms range
-    document.getElementById('particleLifeValue').value = Math.round(durationMs);
-    document.getElementById('particleLifeValue').nextElementSibling.textContent = 'ms';
+    physics.particleLife = parseFloat(e.target.value);
     // Update existing particles' life value
     particles.forEach(particle => {
         if (particle.life > physics.particleLife) {
@@ -202,28 +137,8 @@ document.getElementById('particleLife').addEventListener('input', (e) => {
     });
 });
 
-document.getElementById('particleLifeValue').addEventListener('input', (e) => {
-    const ms = Math.min(5000, Math.max(100, parseFloat(e.target.value) || 100));
-    const value = (ms - 100) / 4900;
-    physics.particleLife = value;
-    document.getElementById('particleLife').value = value;
-    e.target.value = Math.round(ms);
-});
-
 document.getElementById('particleAcceleration').addEventListener('input', (e) => {
-    const value = parseFloat(e.target.value);
-    physics.acceleration = value;
-    const pixelsPerFrame = (value * 19) + 1; // Convert to 1-20px/frame range
-    document.getElementById('particleAccelerationValue').value = Math.round(pixelsPerFrame);
-    document.getElementById('particleAccelerationValue').nextElementSibling.textContent = 'px/f';
-});
-
-document.getElementById('particleAccelerationValue').addEventListener('input', (e) => {
-    const pxf = Math.min(20, Math.max(1, parseFloat(e.target.value) || 1));
-    const value = (pxf - 1) / 19;
-    physics.acceleration = value;
-    document.getElementById('particleAcceleration').value = value;
-    e.target.value = Math.round(pxf);
+    physics.acceleration = parseFloat(e.target.value);
 });
 
 document.getElementById('collisionEnabled').addEventListener('change', (e) => {
@@ -236,17 +151,7 @@ document.getElementById('particleColor').addEventListener('input', (e) => {
 
 // Advanced particle options
 document.getElementById('particleOpacity').addEventListener('input', (e) => {
-    const value = parseFloat(e.target.value);
-    config.opacity = value;
-    document.getElementById('particleOpacityValue').value = Math.round(value * 100);
-});
-
-document.getElementById('particleOpacityValue').addEventListener('input', (e) => {
-    const percentage = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-    const value = percentage / 100;
-    config.opacity = value;
-    document.getElementById('particleOpacity').value = value;
-    e.target.value = percentage;
+    config.opacity = parseFloat(e.target.value);
 });
 
 document.getElementById('particleBlur').addEventListener('input', (e) => {
