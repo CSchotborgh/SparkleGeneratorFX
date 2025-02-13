@@ -219,7 +219,7 @@ class Particle {
             });
             return;
         }
-        
+
         switch (this.shape) {
             case 'square':
                 k.drawRect({
@@ -735,7 +735,7 @@ const presets = {
 // Window resize handler
 window.addEventListener('resize', () => {
     const canvas = document.getElementById("gameCanvas");
-    const newWidth = window.innerWidth * 0.75;
+    const newWidth = window.innerWidth;
     const newHeight = window.innerHeight;
 
     // Update canvas size
@@ -748,21 +748,31 @@ window.addEventListener('resize', () => {
     k.canvas.width = newWidth;
     k.canvas.height = newHeight;
 
-    // Update vortex center
+    // Only update vortex center position
     physics.vortexCenter = { x: newWidth / 2, y: newHeight / 2 };
 
-    // Ensure particles are within bounds
-    particles.forEach(particle => {
-        if (particle.x > newWidth) particle.x = newWidth;
-        if (particle.y > newHeight) particle.y = newHeight;
+    // Refresh background only
+    const [r, g, b] = hexToRgb(backgroundColor);
+    k.setBackground(k.rgb(r, g, b));
 
-        // Update trail positions if needed
-        particle.trail = particle.trail.map(point => ({
-            x: Math.min(point.x, newWidth),
-            y: Math.min(point.y, newHeight),
-            angle: point.angle
-        }));
-    });
+    // If there's a background image, redraw it
+    if (backgroundSprite && backgroundImage) {
+        const scale = Math.max(newWidth / backgroundImage.width, newHeight / backgroundImage.height);
+        const width = backgroundImage.width * scale;
+        const height = backgroundImage.height * scale;
+        const x = (newWidth - width) / 2;
+        const y = (newHeight - height) / 2;
+
+        k.drawSprite({
+            sprite: backgroundSprite,
+            pos: k.vec2(x, y),
+            scale: k.vec2(width / backgroundImage.width, height / backgroundImage.height),
+            opacity: 1,
+            z: -1
+        });
+    }
+
+    // No particle position updates - let the particles stay where they are
 });
 
 // Metrics tracking variables
