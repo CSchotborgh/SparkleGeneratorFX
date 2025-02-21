@@ -34,20 +34,24 @@ body {
     pointer-events: none; /* Allow clicks to pass through container */
 }
 
+.image-container {
+    position: absolute;
+    display: inline-block;
+    pointer-events: auto;
+    transform: translate3d(0, 0, 0);
+}
+
 .drag-image {
     display: none;
-    position: absolute;
     max-width: 300px;
     max-height: 300px;
     cursor: move;
-    pointer-events: auto; /* Enable interaction with image */
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 4px;
-    transform: translate3d(0, 0, 0); /* Enable hardware acceleration */
 }
 
 /* Resize handles */
@@ -58,6 +62,7 @@ body {
     background-color: #2ecc71;
     border: 1px solid #fff;
     border-radius: 50%;
+    pointer-events: auto;
 }
 
 /* Corner handles */
@@ -483,7 +488,7 @@ h3, h4 {
 }
 
 /* Accessibility Styles */
-:focus {
+::focus {
     outline: 2px solid #2ecc71 !important;
     outline-offset: 2px !important;
 }
