@@ -50,6 +50,28 @@ body {
     transform: translate3d(0, 0, 0); /* Enable hardware acceleration */
 }
 
+/* Resize handles */
+.resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #2ecc71;
+    border: 1px solid #fff;
+    border-radius: 50%;
+}
+
+/* Corner handles */
+.resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+.resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+.resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+.resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+
+/* Edge handles */
+.resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+.resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.resize-handle.w { left: -5px; top: 50%; transform: translateY(-50%); cursor: w-resize; }
+.resize-handle.e { right: -5px; top: 50%; transform: translateY(-50%); cursor: e-resize; }
+
 .control-panel-overlay {
     position: fixed;
     top: 0;
