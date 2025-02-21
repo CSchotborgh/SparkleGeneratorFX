@@ -338,27 +338,26 @@ class Emitter {
     generateParticle() {
         const particle = new Particle();
 
-        // Check if we have image emission points
-        if (window.imageEmissionPoints && window.imageEmissionPoints.length > 0) {
-            // Randomly select an emission point
-            const emissionPoint = window.imageEmissionPoints[Math.floor(Math.random() * window.imageEmissionPoints.length)];
+        // Check if we have a sprite emitter
+        if (window.spriteEmitter) {
+            const sprite = window.spriteEmitter;
 
-            particle.x = emissionPoint.x;
-            particle.y = emissionPoint.y;
+            // Generate particles within the sprite's bounds
+            const offsetX = (Math.random() - 0.5) * sprite.width;
+            const offsetY = (Math.random() - 0.5) * sprite.height;
 
-            // Use the color from the image point
-            particle.color = emissionPoint.color;
+            particle.x = sprite.x + offsetX;
+            particle.y = sprite.y + offsetY;
 
             // Add some randomness to the velocity
             particle.vx = (Math.random() - 0.5) * config.speed;
             particle.vy = (Math.random() - 0.5) * config.speed;
         } else {
-            // Default behavior when no image points are available
+            // Default behavior when no sprite is available
             particle.x = this.x + (Math.random() - 0.5) * 10;
             particle.y = this.y + (Math.random() - 0.5) * 10;
             particle.vx = (Math.random() - 0.5) * config.speed + this.vx * 0.5;
             particle.vy = (Math.random() - 0.5) * config.speed + this.vy * 0.5;
-            particle.color = config.color;
         }
 
         // Apply current shape configuration
@@ -982,7 +981,7 @@ function toggleFullscreen(panelId) {
 document.addEventListener('DOMContentLoaded', () => {
     const panels = document.querySelectorAll('.metrics-panel');
     panels.forEach(panel => {
-        panel.addEventListener("touchstart", e => dragStart(e, panel), false);
+        panel.addEventListener("touchstart", e=> dragStart(e, panel), false);
         panel.addEventListener("mousedown", e => dragStart(e, panel), false);
         panel.addEventListener("touchend", dragEnd, false);
         panel.addEventListener("mouseup", dragEnd, false);
