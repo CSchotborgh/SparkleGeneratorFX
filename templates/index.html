@@ -172,6 +172,9 @@
                         <span id="emitterPosMetric">x: 0, y: 0</span>
                     </div>
                 </div>
+                <div id="dragContainer" class="drag-container">
+                    <img id="dragImage" class="drag-image" alt="Draggable overlay">
+                </div>
                 <canvas id="gameCanvas"></canvas>
             </div>
         </div>
@@ -366,6 +369,10 @@
                                         </div>
                                         <button class="btn btn-outline-light mt-2" id="clearPath">Clear Path</button>
                                     </div>
+                                    <div class="control-group">
+                                        <label for="overlayImageUpload" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload an image to overlay on the canvas">Overlay Image</label>
+                                        <input type="file" class="form-control bg-dark text-light" id="overlayImageUpload" accept="image/*">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -514,7 +521,7 @@
 
     <script src="https://unpkg.com/kaboom@3000.0.1/dist/kaboom.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/intro.js/minified/intro.min.js"></js"></script>
+    <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.0/dist/feather.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/particle-system.js') }}"></script>
