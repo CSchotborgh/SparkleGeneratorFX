@@ -95,15 +95,17 @@ class Particle {
         this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
         this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
 
-        // Apply attraction to emitter position
-        const dx = emitter.x - this.x;
-        const dy = emitter.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance > 0) {
-            const attractionStrength = 0.3; // Adjust this value to control attraction force
-            const attractionForce = attractionStrength / (distance * physics.particleMass);
-            this.ax += dx * attractionForce;
-            this.ay += dy * attractionForce;
+        // Apply attraction to emitter position if no sprite emitter
+        if (!window.spriteEmitter) {
+            const dx = mainEmitter.x - this.x;
+            const dy = mainEmitter.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance > 0) {
+                const attractionStrength = 0.3;
+                const attractionForce = attractionStrength / (distance * physics.particleMass);
+                this.ax += dx * attractionForce;
+                this.ay += dy * attractionForce;
+            }
         }
 
         // Apply vortex effect
@@ -136,32 +138,6 @@ class Particle {
         if (this.y < 0 || this.y > k.height()) {
             this.vy *= -physics.bounce;
             this.y = this.y < 0 ? 0 : k.height();
-        }
-
-        // Particle collisions if enabled
-        if (physics.collisionEnabled) {
-            for (const other of particles) {
-                if (other !== this) {
-                    const dx = other.x - this.x;
-                    const dy = other.y - this.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const minDist = (this.size + other.size) * 0.5;
-
-                    if (distance < minDist) {
-                        const angle = Math.atan2(dy, dx);
-                        const targetX = this.x + Math.cos(angle) * minDist;
-                        const targetY = this.y + Math.sin(angle) * minDist;
-
-                        const ax = (targetX - other.x) * 0.05;
-                        const ay = (targetY - other.y) * 0.05;
-
-                        this.vx -= ax;
-                        this.vy -= ay;
-                        other.vx += ax;
-                        other.vy += ay;
-                    }
-                }
-            }
         }
 
         // Update rotation
