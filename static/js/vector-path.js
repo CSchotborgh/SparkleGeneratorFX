@@ -30,6 +30,7 @@ class VectorPath {
         if (pathSpeedSlider) {
             pathSpeedSlider.addEventListener('input', (e) => {
                 this.speed = parseFloat(e.target.value) * 0.001;
+                console.log('Path speed updated:', this.speed);
             });
         }
 
@@ -38,6 +39,7 @@ class VectorPath {
                 this.points = [];
                 this.currentPosition = 0;
                 this.resetEmitterToDefault();
+                console.log('Path cleared');
             });
         }
 
@@ -100,14 +102,6 @@ class VectorPath {
 
     drawPath(k) {
         if (!this.isEnabled || this.points.length < 2) return;
-
-        // Draw the path
-        k.drawLine({
-            p1: this.points[0],
-            p2: this.points[this.points.length - 1],
-            width: 2,
-            color: k.rgb(255, 255, 255, 0.5)
-        });
 
         // Draw intermediate path segments
         for (let i = 1; i < this.points.length; i++) {
