@@ -208,6 +208,8 @@ class Particle {
     }
 
     drawShape(x, y, size, opacity, angle) {
+        const color = this.color || config.color; // Use particle-specific color if available
+
         if (this.shape === 'image' && config.particleSprite) {
             const scale = size / config.originalSize;
             k.drawSprite({
@@ -227,7 +229,7 @@ class Particle {
                     width: size,
                     height: size,
                     angle: angle,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
+                    color: k.rgb(...hexToRgb(color), opacity),
                 });
                 break;
             case 'triangle':
@@ -241,7 +243,7 @@ class Particle {
                 }
                 k.drawPolygon({
                     pts: points,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
+                    color: k.rgb(...hexToRgb(color), opacity),
                 });
                 break;
             case 'star':
@@ -255,14 +257,14 @@ class Particle {
                 }
                 k.drawPolygon({
                     pts: starPoints,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
+                    color: k.rgb(...hexToRgb(color), opacity),
                 });
                 break;
             default: // circle
                 k.drawCircle({
                     pos: k.vec2(x, y),
                     radius: size / 2,
-                    color: k.rgb(...hexToRgb(config.color), opacity),
+                    color: k.rgb(...hexToRgb(color), opacity),
                 });
         }
     }
@@ -345,7 +347,7 @@ class Emitter {
             particle.y = emissionPoint.y;
 
             // Use the color from the image point
-            config.color = emissionPoint.color;
+            particle.color = emissionPoint.color;
 
             // Add some randomness to the velocity
             particle.vx = (Math.random() - 0.5) * config.speed;
@@ -356,6 +358,7 @@ class Emitter {
             particle.y = this.y + (Math.random() - 0.5) * 10;
             particle.vx = (Math.random() - 0.5) * config.speed + this.vx * 0.5;
             particle.vy = (Math.random() - 0.5) * config.speed + this.vy * 0.5;
+            particle.color = config.color;
         }
 
         // Apply current shape configuration
@@ -467,7 +470,6 @@ document.getElementById('backgroundColor').addEventListener('input', function (e
     const [r, g, b] = hexToRgb(selectedColor);
     k.setBackground(k.rgb(r, g, b, 0.3)); // Keeping the same transparency for consistency
 });
-
 
 // Add event listener for shape changes
 document.getElementById('particleShape').addEventListener('change', function (e) {

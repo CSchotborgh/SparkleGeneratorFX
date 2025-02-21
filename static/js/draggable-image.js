@@ -121,9 +121,13 @@ class DraggableImage {
         const rect = this.dragImage.getBoundingClientRect();
         const scale = this.dragImage.width / this.imageData.width;
 
+        // Account for scroll position
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
         window.imageEmissionPoints = this.emissionPoints.map(point => ({
-            x: point.x * scale + rect.left,
-            y: point.y * scale + rect.top,
+            x: point.x * scale + rect.left + scrollX,
+            y: point.y * scale + rect.top + scrollY,
             color: point.color
         }));
     }
