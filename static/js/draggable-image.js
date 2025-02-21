@@ -3,7 +3,9 @@ class ImageManager {
         this.images = new Map(); // Store DraggableImage instances
         this.dragContainer = document.getElementById('dragContainer');
         this.currentId = 0;
+        this.controlPointsVisible = false;
         this.setupImageUpload();
+        this.setupControlsToggle();
     }
 
     setupImageUpload() {
@@ -11,6 +13,23 @@ class ImageManager {
         if (imageUpload) {
             imageUpload.addEventListener('change', (e) => this.handleImageUpload(e));
         }
+    }
+
+    setupControlsToggle() {
+        const toggleButton = document.getElementById('toggleControlPoints');
+        if (toggleButton) {
+            toggleButton.addEventListener('click', () => {
+                this.controlPointsVisible = !this.controlPointsVisible;
+                toggleButton.classList.toggle('active');
+                this.toggleAllControlPoints();
+            });
+        }
+    }
+
+    toggleAllControlPoints() {
+        this.images.forEach(image => {
+            image.toggleControlPoints(this.controlPointsVisible);
+        });
     }
 
     async handleImageUpload(e) {
@@ -23,6 +42,7 @@ class ImageManager {
                 const draggableImage = new DraggableImage(imageId, this.dragContainer);
                 await draggableImage.loadImage(file);
                 this.images.set(imageId, draggableImage);
+                draggableImage.toggleControlPoints(this.controlPointsVisible);
             } catch (error) {
                 console.error('Error loading overlay image:', error);
             }
@@ -52,6 +72,7 @@ class DraggableImage {
         this.currentHandle = null;
         this.initialWidth = 0;
         this.initialHeight = 0;
+        this.controlPoints = [];
 
         // Create container structure
         this.imageContainer = document.createElement('div');
@@ -80,11 +101,21 @@ class DraggableImage {
 
     addResizeHandles() {
         const handles = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
-        handles.forEach(position => {
+        this.controlPoints = handles.map(position => {
             const handle = document.createElement('div');
             handle.className = `resize-handle ${position}`;
             handle.setAttribute('data-handle', position);
             this.imageContainer.appendChild(handle);
+            return handle;
+        });
+
+        // Initially hide control points
+        this.toggleControlPoints(false);
+    }
+
+    toggleControlPoints(show) {
+        this.controlPoints.forEach(handle => {
+            handle.style.display = show ? 'block' : 'none';
         });
     }
 
