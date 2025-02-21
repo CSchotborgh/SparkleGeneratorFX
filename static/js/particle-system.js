@@ -212,7 +212,7 @@ class Particle {
             const scale = size / config.originalSize;
             k.drawSprite({
                 sprite: config.particleSprite,
-                pos: k.vec2(x - size/2, y - size/2),
+                pos: k.vec2(x - size / 2, y - size / 2),
                 scale: k.vec2(scale, scale),
                 angle: angle,
                 opacity: opacity,
@@ -335,11 +335,29 @@ class Emitter {
 
     generateParticle() {
         const particle = new Particle();
-        particle.x = this.x + (Math.random() - 0.5) * 10;
-        particle.y = this.y + (Math.random() - 0.5) * 10;
-        // Add emitter velocity to particle initial velocity for smoother motion
-        particle.vx = (Math.random() - 0.5) * config.speed + this.vx * 0.5;
-        particle.vy = (Math.random() - 0.5) * config.speed + this.vy * 0.5;
+
+        // Check if we have image emission points
+        if (window.imageEmissionPoints && window.imageEmissionPoints.length > 0) {
+            // Randomly select an emission point
+            const emissionPoint = window.imageEmissionPoints[Math.floor(Math.random() * window.imageEmissionPoints.length)];
+
+            particle.x = emissionPoint.x;
+            particle.y = emissionPoint.y;
+
+            // Use the color from the image point
+            config.color = emissionPoint.color;
+
+            // Add some randomness to the velocity
+            particle.vx = (Math.random() - 0.5) * config.speed;
+            particle.vy = (Math.random() - 0.5) * config.speed;
+        } else {
+            // Default behavior when no image points are available
+            particle.x = this.x + (Math.random() - 0.5) * 10;
+            particle.y = this.y + (Math.random() - 0.5) * 10;
+            particle.vx = (Math.random() - 0.5) * config.speed + this.vx * 0.5;
+            particle.vy = (Math.random() - 0.5) * config.speed + this.vy * 0.5;
+        }
+
         // Apply current shape configuration
         particle.shape = config.shape;
         return particle;
