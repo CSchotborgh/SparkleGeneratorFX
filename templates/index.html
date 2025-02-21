@@ -351,6 +351,17 @@
                                             <input class="form-check-input" type="checkbox" id="reverseTrail">
                                         </div>
                                     </div>
+                                    <div class="control-group">
+                                        <label for="vectorPathEnabled" data-bs-toggle="tooltip" data-bs-placement="right" title="Enable drawing a path for the emitter to follow">Vector Path Mode</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="vectorPathEnabled">
+                                        </div>
+                                    </div>
+                                    <div class="control-group" id="vectorPathControls" style="display: none;">
+                                        <label for="pathSpeed" data-bs-toggle="tooltip" data-bs-placement="right" title="Adjust how fast the emitter moves along the path">Path Speed</label>
+                                        <input type="range" class="form-range" id="pathSpeed" min="1" max="10" value="5">
+                                        <button class="btn btn-outline-light mt-2" id="clearPath">Clear Path</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -502,15 +513,8 @@
     <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.0/dist/feather.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Ensure Chart.js is loaded before initializing particle system
-        window.addEventListener('load', () => {
-            if (typeof Chart === 'undefined') {
-                console.error('Chart.js not loaded properly');
-            }
-        });
-    </script>
-    <script src="{{ url_for('static', filename='js/particle-system.js') }}"></script>
+    <<script src="{{ url_for('static', filename='js/particle-system.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/vector-path.js') }}"></script>
     <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
     <script src="{{ url_for('static', filename='js/export.js') }}"></script>
     <script src="{{ url_for('static', filename='js/video-export.js') }}"></script>
@@ -520,23 +524,6 @@
         // Initialize Feather icons
         document.addEventListener('DOMContentLoaded', () => {
             feather.replace();
-        });
-
-        // Add Toggle Metrics functionality
-        const toggleMetricsButton = document.getElementById('toggleMetricsButton');
-        const metricsPanels = document.querySelectorAll('.metrics-panel');
-        let metricsVisible = true;
-
-        toggleMetricsButton.addEventListener('click', () => {
-            metricsVisible = !metricsVisible;
-            metricsPanels.forEach(panel => {
-                panel.style.display = metricsVisible ? 'block' : 'none';
-            });
-            toggleMetricsButton.innerHTML = metricsVisible ? 
-                '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Metrics On</span>' : 
-                '<i data-feather="bar-chart-2" class="me-1" style="width: 16px; height: 16px;"></i><span style="white-space: nowrap;">Metrics Off</span>';
-        toggleMetricsButton.classList.toggle('active', metricsVisible);
-            feather.replace(); // Re-render Feather icons after changing innerHTML
         });
     </script>
 </body>

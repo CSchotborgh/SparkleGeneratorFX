@@ -219,7 +219,7 @@ class Particle {
             });
             return;
         }
-        
+
         switch (this.shape) {
             case 'square':
                 k.drawRect({
@@ -478,13 +478,20 @@ k.onUpdate(() => {
     // Update emitter
     emitter.update();
 
-    // Remove dead particles
+    //Remove dead particles
     particles = particles.filter(p => p.life > 0);
 
-    // Generate new particles from emitter
-    const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); // Distribute particle generation over time
+    //Generate new particles from emitter
+    const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); //Distribute particle generation over time
     for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
         particles.push(emitter.generateParticle());
+    }
+
+
+    //Vector Path Integration
+    if (window.vectorPath) {
+        window.vectorPath.updateEmitterPosition();
+        window.vectorPath.drawPath(k);
     }
 
     // Update and draw particles
