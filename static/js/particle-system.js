@@ -366,36 +366,37 @@ class Emitter {
     }
 }
 
-// Create emitter instance
-const emitter = new Emitter();
+// Create two emitter instances
+const mainEmitter = new Emitter();
+const overlayEmitter = new Emitter();
 
 // Event listeners for drag and burst effects
 k.canvas.addEventListener('mousedown', (e) => {
     if (e.button === 0) { // Left click
-        emitter.isDragging = true;
+        mainEmitter.isDragging = true;
         const rect = k.canvas.getBoundingClientRect();
-        emitter.x = e.clientX - rect.left;
-        emitter.y = e.clientY - rect.top;
+        mainEmitter.x = e.clientX - rect.left;
+        mainEmitter.y = e.clientY - rect.top;
     }
 });
 
 k.canvas.addEventListener('mousemove', (e) => {
-    if (emitter.isDragging) {
+    if (mainEmitter.isDragging) {
         const rect = k.canvas.getBoundingClientRect();
-        emitter.x = e.clientX - rect.left;
-        emitter.y = e.clientY - rect.top;
+        mainEmitter.x = e.clientX - rect.left;
+        mainEmitter.y = e.clientY - rect.top;
     }
 });
 
 k.canvas.addEventListener('mouseup', (e) => {
     if (e.button === 0) { // Left click release
-        emitter.isDragging = false;
+        mainEmitter.isDragging = false;
     }
 });
 
 k.canvas.addEventListener('mouseleave', () => {
-    if (emitter.isDragging) {
-        emitter.isDragging = false;
+    if (mainEmitter.isDragging) {
+        mainEmitter.isDragging = false;
     }
 });
 
@@ -411,25 +412,25 @@ k.canvas.addEventListener('contextmenu', (e) => {
 // Touch events
 k.canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    emitter.isDragging = true;
+    mainEmitter.isDragging = true;
     const rect = k.canvas.getBoundingClientRect();
     const touch = e.touches[0];
-    emitter.x = touch.clientX - rect.left;
-    emitter.y = touch.clientY - rect.top;
+    mainEmitter.x = touch.clientX - rect.left;
+    mainEmitter.y = touch.clientY - rect.top;
 }, { passive: false });
 
 k.canvas.addEventListener('touchmove', (e) => {
-    if (emitter.isDragging) {
+    if (mainEmitter.isDragging) {
         e.preventDefault();
         const rect = k.canvas.getBoundingClientRect();
         const touch = e.touches[0];
-        emitter.x = touch.clientX - rect.left;
-        emitter.y = touch.clientY - rect.top;
+        mainEmitter.x = touch.clientX - rect.left;
+        mainEmitter.y = touch.clientY - rect.top;
     }
 }, { passive: false });
 
 k.canvas.addEventListener('touchend', () => {
-    emitter.isDragging = false;
+    mainEmitter.isDragging = false;
 });
 
 // Background image handler
@@ -494,16 +495,24 @@ k.onUpdate(() => {
         });
     }
 
-    // Update emitter
-    emitter.update();
+    // Update emitters
+    mainEmitter.update();
+    overlayEmitter.update();
 
     //Remove dead particles
     particles = particles.filter(p => p.life > 0);
 
     //Generate new particles from emitter
-    const particlesToGenerate = Math.max(1, Math.floor(config.count / 60)); //Distribute particle generation over time
-    for (let i = 0; i < particlesToGenerate && particles.length < config.count; i++) {
-        particles.push(emitter.generateParticle());
+    const particlesPerEmitter = Math.max(1, Math.floor(config.count / 120)); //Distribute particle generation over time
+    for (let i = 0; i < particlesPerEmitter && particles.length < config.count; i++) {
+        particles.push(mainEmitter.generateParticle());
+    }
+
+    // Generate particles from overlay emitter if sprite exists
+    if (window.spriteEmitter) {
+        for (let i = 0; i < particlesPerEmitter && particles.length < config.count; i++) {
+            particles.push(overlayEmitter.generateParticle());
+        }
     }
 
 
@@ -981,7 +990,7 @@ function toggleFullscreen(panelId) {
 document.addEventListener('DOMContentLoaded', () => {
     const panels = document.querySelectorAll('.metrics-panel');
     panels.forEach(panel => {
-        panel.addEventListener("touchstart", e=> dragStart(e, panel), false);
+        panel.addEventListener("touchstart", e => dragStart(e, panel), false);
         panel.addEventListener("mousedown", e => dragStart(e, panel), false);
         panel.addEventListener("touchend", dragEnd, false);
         panel.addEventListener("mouseup", dragEnd, false);
@@ -1080,7 +1089,7 @@ function updateMetrics() {
     document.getElementById('avgSpeedMetric').textContent = avgSpeed.toFixed(2);
     document.getElementById('memoryMetric').textContent = `${memoryUsage.toFixed(2)} MB`;
     document.getElementById('emitterPosMetric').textContent =
-        `x: ${Math.round(emitter.x)}, y: ${Math.round(emitter.y)}`;
+        `x: ${Math.round(mainEmitter.x)}, y: ${Math.round(mainEmitter.y)}`;
 
     // Update metrics history
     metricsHistory.fps.push(fps);
@@ -1174,7 +1183,8 @@ function resetSystem() {
     backgroundSprite = null;
 
     // Reset emitter position
-    emitter.reset();
+    mainEmitter.reset();
+    overlayEmitter.reset();
 
     // Clear all particles and create new ones
     particles = Array(config.count).fill().map(() => new Particle());
