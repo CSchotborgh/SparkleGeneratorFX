@@ -3,8 +3,7 @@ class VectorPath {
         this.points = [];
         this.isEnabled = false;
         this.currentPosition = 0;
-        this.speed = 0.005;
-
+        this.speed = 0.005; // Base speed value
         this.setupEventListeners();
     }
 
@@ -14,6 +13,7 @@ class VectorPath {
         const pathSpeedSlider = document.getElementById('pathSpeed');
         const clearPathBtn = document.getElementById('clearPath');
         const controls = document.getElementById('vectorPathControls');
+        const pathSpeedValue = document.getElementById('pathSpeedValue');
 
         if (vectorPathToggle) {
             vectorPathToggle.addEventListener('change', (e) => {
@@ -24,13 +24,24 @@ class VectorPath {
                 if (!this.isEnabled) {
                     this.resetEmitterToDefault();
                 }
+                console.log('Vector path mode:', this.isEnabled ? 'enabled' : 'disabled');
             });
         }
 
-        if (pathSpeedSlider) {
+        if (pathSpeedSlider && pathSpeedValue) {
             pathSpeedSlider.addEventListener('input', (e) => {
+                // Scale the speed value properly (1-10 range to 0.001-0.01)
                 this.speed = parseFloat(e.target.value) * 0.001;
+                pathSpeedValue.value = e.target.value;
                 console.log('Path speed updated:', this.speed);
+            });
+
+            // Sync number input with slider
+            pathSpeedValue.addEventListener('input', (e) => {
+                const value = Math.min(Math.max(parseInt(e.target.value) || 1, 1), 10);
+                pathSpeedSlider.value = value;
+                this.speed = value * 0.001;
+                console.log('Path speed updated from input:', this.speed);
             });
         }
 
@@ -39,11 +50,10 @@ class VectorPath {
                 this.points = [];
                 this.currentPosition = 0;
                 this.resetEmitterToDefault();
-                console.log('Path cleared');
+                console.log('Path cleared, points:', this.points.length);
             });
         }
 
-        // Mouse click event
         if (canvas) {
             canvas.addEventListener('click', (e) => {
                 if (!this.isEnabled) return;
@@ -54,12 +64,17 @@ class VectorPath {
 
                 this.points.push({ x, y });
                 console.log('Added point:', { x, y }, 'Total points:', this.points.length);
+
+                // If this is the first point, move emitter there immediately
+                if (this.points.length === 1 && window.particleSystem) {
+                    window.particleSystem.emitterX = x;
+                    window.particleSystem.emitterY = y;
+                }
             });
 
-            // Touch event support
             canvas.addEventListener('touchend', (e) => {
                 if (!this.isEnabled) return;
-                e.preventDefault(); // Prevent default touch behavior
+                e.preventDefault();
 
                 const rect = canvas.getBoundingClientRect();
                 const touch = e.changedTouches[0];
@@ -68,6 +83,12 @@ class VectorPath {
 
                 this.points.push({ x, y });
                 console.log('Added touch point:', { x, y }, 'Total points:', this.points.length);
+
+                // If this is the first point, move emitter there immediately
+                if (this.points.length === 1 && window.particleSystem) {
+                    window.particleSystem.emitterX = x;
+                    window.particleSystem.emitterY = y;
+                }
             }, { passive: false });
         }
     }
@@ -77,6 +98,7 @@ class VectorPath {
         if (window.particleSystem && canvas) {
             window.particleSystem.emitterX = canvas.width / 2;
             window.particleSystem.emitterY = canvas.height / 2;
+            console.log('Reset emitter to center:', { x: canvas.width / 2, y: canvas.height / 2 });
         }
     }
 
