@@ -15,51 +15,64 @@ class VectorPath {
         const clearPathBtn = document.getElementById('clearPath');
         const controls = document.getElementById('vectorPathControls');
 
-        vectorPathToggle.addEventListener('change', (e) => {
-            this.isEnabled = e.target.checked;
-            controls.style.display = this.isEnabled ? 'block' : 'none';
-            if (!this.isEnabled) {
+        if (vectorPathToggle) {
+            vectorPathToggle.addEventListener('change', (e) => {
+                this.isEnabled = e.target.checked;
+                if (controls) {
+                    controls.style.display = this.isEnabled ? 'block' : 'none';
+                }
+                if (!this.isEnabled) {
+                    this.resetEmitterToDefault();
+                }
+            });
+        }
+
+        if (pathSpeedSlider) {
+            pathSpeedSlider.addEventListener('input', (e) => {
+                this.speed = parseFloat(e.target.value) * 0.001;
+            });
+        }
+
+        if (clearPathBtn) {
+            clearPathBtn.addEventListener('click', () => {
+                this.points = [];
+                this.currentPosition = 0;
                 this.resetEmitterToDefault();
-            }
-        });
-
-        pathSpeedSlider.addEventListener('input', (e) => {
-            this.speed = e.target.value * 0.001;
-        });
-
-        clearPathBtn.addEventListener('click', () => {
-            this.points = [];
-            this.currentPosition = 0;
-        });
+            });
+        }
 
         // Mouse click event
-        canvas.addEventListener('click', (e) => {
-            if (!this.isEnabled) return;
+        if (canvas) {
+            canvas.addEventListener('click', (e) => {
+                if (!this.isEnabled) return;
 
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
-            this.points.push({ x, y });
-        });
+                this.points.push({ x, y });
+                console.log('Added point:', { x, y }, 'Total points:', this.points.length);
+            });
 
-        // Touch event support
-        canvas.addEventListener('touchend', (e) => {
-            if (!this.isEnabled) return;
-            e.preventDefault(); // Prevent default touch behavior
+            // Touch event support
+            canvas.addEventListener('touchend', (e) => {
+                if (!this.isEnabled) return;
+                e.preventDefault(); // Prevent default touch behavior
 
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.changedTouches[0];
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.changedTouches[0];
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
 
-            this.points.push({ x, y });
-        }, { passive: false });
+                this.points.push({ x, y });
+                console.log('Added touch point:', { x, y }, 'Total points:', this.points.length);
+            }, { passive: false });
+        }
     }
 
     resetEmitterToDefault() {
         const canvas = document.getElementById('gameCanvas');
-        if (window.particleSystem) {
+        if (window.particleSystem && canvas) {
             window.particleSystem.emitterX = canvas.width / 2;
             window.particleSystem.emitterY = canvas.height / 2;
         }
@@ -85,37 +98,35 @@ class VectorPath {
         this.currentPosition = (this.currentPosition + this.speed) % this.points.length;
     }
 
-    drawPath(ctx) {
+    drawPath(k) {
         if (!this.isEnabled || this.points.length < 2) return;
 
-        ctx.save();
-
         // Draw the path
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(this.points[0].x, this.points[0].y);
+        k.drawLine({
+            p1: this.points[0],
+            p2: this.points[this.points.length - 1],
+            width: 2,
+            color: k.rgb(255, 255, 255, 0.5)
+        });
 
+        // Draw intermediate path segments
         for (let i = 1; i < this.points.length; i++) {
-            ctx.lineTo(this.points[i].x, this.points[i].y);
+            k.drawLine({
+                p1: this.points[i - 1],
+                p2: this.points[i],
+                width: 2,
+                color: k.rgb(255, 255, 255, 0.5)
+            });
         }
-
-        // Close the path if we have more than 2 points
-        if (this.points.length > 2) {
-            ctx.lineTo(this.points[0].x, this.points[0].y);
-        }
-
-        ctx.stroke();
 
         // Draw points/nodes
         this.points.forEach(point => {
-            ctx.beginPath();
-            ctx.fillStyle = 'rgba(46, 204, 113, 0.8)';
-            ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
-            ctx.fill();
+            k.drawCircle({
+                pos: point,
+                radius: 5,
+                color: k.rgb(46, 204, 113, 0.8)
+            });
         });
-
-        ctx.restore();
     }
 }
 
