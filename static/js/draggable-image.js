@@ -1,5 +1,46 @@
-class DraggableImage {
+class ImageManager {
     constructor() {
+        this.images = new Map(); // Store DraggableImage instances
+        this.dragContainer = document.getElementById('dragContainer');
+        this.currentId = 0;
+        this.setupImageUpload();
+    }
+
+    setupImageUpload() {
+        const imageUpload = document.getElementById('overlayImageUpload');
+        if (imageUpload) {
+            imageUpload.addEventListener('change', (e) => this.handleImageUpload(e));
+        }
+    }
+
+    async handleImageUpload(e) {
+        const files = e.target.files;
+        if (!files.length) return;
+
+        for (const file of files) {
+            try {
+                const imageId = `image_${this.currentId++}`;
+                const draggableImage = new DraggableImage(imageId, this.dragContainer);
+                await draggableImage.loadImage(file);
+                this.images.set(imageId, draggableImage);
+            } catch (error) {
+                console.error('Error loading overlay image:', error);
+            }
+        }
+    }
+
+    removeImage(imageId) {
+        const image = this.images.get(imageId);
+        if (image) {
+            image.destroy();
+            this.images.delete(imageId);
+        }
+    }
+}
+
+class DraggableImage {
+    constructor(id, container) {
+        this.id = id;
         this.isDragging = false;
         this.isResizing = false;
         this.currentX = 0;
@@ -12,16 +53,25 @@ class DraggableImage {
         this.initialWidth = 0;
         this.initialHeight = 0;
 
-        this.dragContainer = document.getElementById('dragContainer');
-
-        // Create image container structure
+        // Create container structure
         this.imageContainer = document.createElement('div');
         this.imageContainer.className = 'image-container';
-        this.dragContainer.appendChild(this.imageContainer);
+        this.imageContainer.id = `container_${id}`;
+        container.appendChild(this.imageContainer);
 
+        // Create close button
+        this.closeButton = document.createElement('button');
+        this.closeButton.className = 'close-button';
+        this.closeButton.innerHTML = '×';
+        this.closeButton.onclick = () => {
+            window.imageManager.removeImage(this.id);
+        };
+        this.imageContainer.appendChild(this.closeButton);
+
+        // Create image element
         this.dragImage = document.createElement('img');
-        this.dragImage.id = 'dragImage';
         this.dragImage.className = 'drag-image';
+        this.dragImage.id = `image_${id}`;
         this.imageContainer.appendChild(this.dragImage);
 
         this.setupEventListeners();
@@ -39,24 +89,18 @@ class DraggableImage {
     }
 
     setupEventListeners() {
-        // Mouse events for dragging and resizing
         this.imageContainer.addEventListener('mousedown', (e) => this.handleMouseDown(e));
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseup', () => this.handleMouseUp());
 
-        // Touch events for mobile
         this.imageContainer.addEventListener('touchstart', (e) => this.handleMouseDown(e));
         document.addEventListener('touchmove', (e) => this.handleMouseMove(e));
         document.addEventListener('touchend', () => this.handleMouseUp());
-
-        // Image upload
-        const imageUpload = document.getElementById('overlayImageUpload');
-        if (imageUpload) {
-            imageUpload.addEventListener('change', (e) => this.handleImageUpload(e));
-        }
     }
 
     handleMouseDown(e) {
+        if (e.target === this.closeButton) return;
+
         if (e.target.classList.contains('resize-handle')) {
             this.startResize(e);
         } else if (e.target === this.dragImage) {
@@ -203,6 +247,7 @@ class DraggableImage {
             const scrollY = window.pageYOffset || document.documentElement.scrollTop;
 
             window.spriteEmitter = {
+                id: this.id,
                 x: rect.left + scrollX + rect.width / 2,
                 y: rect.top + scrollY + rect.height / 2,
                 width: rect.width,
@@ -211,11 +256,8 @@ class DraggableImage {
         }
     }
 
-    async handleImageUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        try {
+    async loadImage(file) {
+        return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (event) => {
                 if (this.dragImage) {
@@ -223,7 +265,7 @@ class DraggableImage {
                     this.dragImage.style.display = 'block';
                     this.imageContainer.style.display = 'inline-block';
 
-                    // Reset position and size when new image is loaded
+                    // Reset position and size
                     this.currentX = 0;
                     this.currentY = 0;
                     this.xOffset = 0;
@@ -237,16 +279,25 @@ class DraggableImage {
 
                     this.setTranslate(0, 0, this.imageContainer);
                     this.updateSpritePosition();
+                    resolve();
                 }
             };
+            reader.onerror = reject;
             reader.readAsDataURL(file);
-        } catch (error) {
-            console.error('Error loading overlay image:', error);
-        }
+        });
+    }
+
+    destroy() {
+        // Remove event listeners
+        this.imageContainer.removeEventListener('mousedown', this.handleMouseDown);
+        this.imageContainer.removeEventListener('touchstart', this.handleMouseDown);
+
+        // Remove the container and its contents
+        this.imageContainer.remove();
     }
 }
 
-// Initialize draggable image system
+// Initialize image manager
 document.addEventListener('DOMContentLoaded', () => {
-    window.draggableImage = new DraggableImage();
+    window.imageManager = new ImageManager();
 });
