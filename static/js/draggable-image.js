@@ -7,22 +7,25 @@ class DraggableImage {
         this.initialY = 0;
         this.xOffset = 0;
         this.yOffset = 0;
-        
+
         this.dragContainer = document.getElementById('dragContainer');
         this.dragImage = document.getElementById('dragImage');
-        
+
         this.setupEventListeners();
     }
 
     setupEventListeners() {
-        if (!this.dragContainer) return;
+        if (!this.dragContainer || !this.dragImage) {
+            console.error('Required elements not found');
+            return;
+        }
 
-        // Mouse events
+        // Mouse events for dragging
         this.dragContainer.addEventListener('mousedown', (e) => this.dragStart(e));
         document.addEventListener('mousemove', (e) => this.drag(e));
         document.addEventListener('mouseup', () => this.dragEnd());
 
-        // Touch events
+        // Touch events for mobile
         this.dragContainer.addEventListener('touchstart', (e) => this.dragStart(e));
         document.addEventListener('touchmove', (e) => this.drag(e));
         document.addEventListener('touchend', () => this.dragEnd());
@@ -50,9 +53,9 @@ class DraggableImage {
 
     drag(e) {
         if (!this.isDragging) return;
-        
+
         e.preventDefault();
-        
+
         if (e.type === "touchmove") {
             this.currentX = e.touches[0].clientX - this.initialX;
             this.currentY = e.touches[0].clientY - this.initialY;
@@ -82,8 +85,17 @@ class DraggableImage {
         try {
             const reader = new FileReader();
             reader.onload = (event) => {
-                this.dragImage.src = event.target.result;
-                this.dragImage.style.display = 'block';
+                if (this.dragImage) {
+                    this.dragImage.src = event.target.result;
+                    this.dragImage.style.display = 'block';
+
+                    // Reset position when new image is loaded
+                    this.currentX = 0;
+                    this.currentY = 0;
+                    this.xOffset = 0;
+                    this.yOffset = 0;
+                    this.setTranslate(0, 0, this.dragImage);
+                }
             };
             reader.readAsDataURL(file);
         } catch (error) {
@@ -93,6 +105,6 @@ class DraggableImage {
 }
 
 // Initialize draggable image system
-window.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     window.draggableImage = new DraggableImage();
 });
