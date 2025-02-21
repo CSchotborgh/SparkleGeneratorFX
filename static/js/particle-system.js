@@ -48,17 +48,28 @@ const config = {
 
 // Particle class
 class Particle {
-    constructor() {
+    constructor(isOverlay = false) {
         this.trail = [];
         this.trailLength = config.trailLength || 10;
-        this.shape = config.shape; // Store the shape configuration
+        this.shape = config.shape;
+        this.isOverlay = isOverlay;
         this.reset();
     }
 
     reset() {
-        // Always initialize at the center of the screen
-        this.x = k.width() / 2;
-        this.y = k.height() / 2;
+        if (this.isOverlay && window.spriteEmitter) {
+            // Initialize at the sprite emitter position
+            const sprite = window.spriteEmitter;
+            const offsetX = (Math.random() - 0.5) * sprite.width;
+            const offsetY = (Math.random() - 0.5) * sprite.height;
+            this.x = sprite.x + offsetX;
+            this.y = sprite.y + offsetY;
+        } else {
+            // Initialize at the center for main particles
+            this.x = k.width() / 2;
+            this.y = k.height() / 2;
+        }
+
         // Initialize with random velocities
         this.vx = (Math.random() - 0.5) * config.speed;
         this.vy = (Math.random() - 0.5) * config.speed;
@@ -69,8 +80,9 @@ class Particle {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.2;
         this.size = config.size * (0.5 + Math.random() * 0.5);
-        this.shape = config.shape; // Update shape when resetting
-        // Initialize trail from the center position
+        this.shape = config.shape;
+
+        // Initialize trail
         this.trail = Array(this.trailLength).fill().map(() => ({
             x: this.x,
             y: this.y,
@@ -83,20 +95,33 @@ class Particle {
         this.ax = physics.wind;
         this.ay = physics.gravity;
 
-        // Apply air resistance (proportional to velocity squared)
+        // Apply air resistance
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
         if (speed > 0) {
             this.ax -= (this.vx / speed) * physics.airResistance * speed * speed;
             this.ay -= (this.vy / speed) * physics.airResistance * speed * speed;
         }
 
-        // Apply turbulence using Perlin noise
+        // Apply turbulence
         const time = Date.now() * 0.001;
         this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
         this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
 
-        // Apply attraction to emitter position if no sprite emitter
-        if (!window.spriteEmitter) {
+        if (this.isOverlay && window.spriteEmitter) {
+            // Overlay particles are attracted to the sprite emitter
+            const sprite = window.spriteEmitter;
+            const dx = sprite.x - this.x;
+            const dy = sprite.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > sprite.width / 2) {  // Only attract when outside the sprite bounds
+                const attractionStrength = 0.2;
+                const attractionForce = attractionStrength / (distance * physics.particleMass);
+                this.ax += dx * attractionForce;
+                this.ay += dy * attractionForce;
+            }
+        } else {
+            // Main particles are attracted to the main emitter
             const dx = mainEmitter.x - this.x;
             const dy = mainEmitter.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -284,7 +309,7 @@ function createParticleBurst(x, y, count = 20) {
 
 // Emitter class to manage particle generation
 class Emitter {
-    constructor() {
+    constructor(isOverlay = false) {
         this.x = physics.vortexCenter.x;
         this.y = physics.vortexCenter.y;
         this.vx = 0;
@@ -292,11 +317,14 @@ class Emitter {
         this.lastX = this.x;
         this.lastY = this.y;
         this.isDragging = false;
+        this.isOverlay = isOverlay;
     }
 
     reset() {
-        this.x = physics.vortexCenter.x;
-        this.y = physics.vortexCenter.y;
+        if (!this.isOverlay) {
+            this.x = physics.vortexCenter.x;
+            this.y = physics.vortexCenter.y;
+        }
         this.vx = 0;
         this.vy = 0;
         this.lastX = this.x;
@@ -304,6 +332,12 @@ class Emitter {
     }
 
     update() {
+        if (this.isOverlay && window.spriteEmitter) {
+            // Update position based on sprite emitter
+            this.x = window.spriteEmitter.x;
+            this.y = window.spriteEmitter.y;
+        }
+
         // Calculate emitter velocity based on position change
         this.vx = this.x - this.lastX;
         this.vy = this.y - this.lastY;
@@ -314,8 +348,7 @@ class Emitter {
     generateParticle() {
         const particle = new Particle();
 
-        // Check if we have a sprite emitter
-        if (window.spriteEmitter) {
+        if (this.isOverlay && window.spriteEmitter) {
             const sprite = window.spriteEmitter;
 
             // Generate particles within the sprite's bounds
@@ -325,11 +358,11 @@ class Emitter {
             particle.x = sprite.x + offsetX;
             particle.y = sprite.y + offsetY;
 
-            // Add some randomness to the velocity
-            particle.vx = (Math.random() - 0.5) * config.speed;
-            particle.vy = (Math.random() - 0.5) * config.speed;
+            // Add velocity based on emitter movement and some randomness
+            particle.vx = this.vx + (Math.random() - 0.5) * config.speed;
+            particle.vy = this.vy + (Math.random() - 0.5) * config.speed;
         } else {
-            // Default behavior when no sprite is available
+            // Default behavior for main emitter
             particle.x = this.x + (Math.random() - 0.5) * 10;
             particle.y = this.y + (Math.random() - 0.5) * 10;
             particle.vx = (Math.random() - 0.5) * config.speed + this.vx * 0.5;
@@ -343,8 +376,8 @@ class Emitter {
 }
 
 // Create two emitter instances
-const mainEmitter = new Emitter();
-const overlayEmitter = new Emitter();
+const mainEmitter = new Emitter(false);
+const overlayEmitter = new Emitter(true);
 
 // Event listeners for drag and burst effects
 k.canvas.addEventListener('mousedown', (e) => {
@@ -487,7 +520,9 @@ k.onUpdate(() => {
     // Generate particles from overlay emitter if sprite exists
     if (window.spriteEmitter) {
         for (let i = 0; i < particlesPerEmitter && particles.length < config.count; i++) {
-            particles.push(overlayEmitter.generateParticle());
+            const particle = overlayEmitter.generateParticle();
+            particle.isOverlay = true;  // Mark as overlay particle
+            particles.push(particle);
         }
     }
 
@@ -929,7 +964,7 @@ function drag(e) {
         const maxY = window.innerHeight - currentPanel.offsetHeight;
 
         currentX = Math.min(Math.max(currentX, 0), maxX);
-        currentY = Math.min(Math.max(currentY, 0), maxY);
+        currentY =Math.min(Math.max(currentY, 0), maxY);
 
         currentPanel.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
     }
