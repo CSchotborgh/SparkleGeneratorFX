@@ -160,8 +160,6 @@ document.getElementById('particleBlur').addEventListener('input', (e) => {
 
 document.getElementById('particleShape').addEventListener('change', (e) => {
     config.shape = e.target.value;
-    const imageGroup = document.getElementById('imageEmitterGroup');
-    imageGroup.style.display = e.target.value === 'image' ? 'block' : 'none';
 });
 
 document.getElementById('emitterImage').addEventListener('change', async (e) => {
