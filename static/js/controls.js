@@ -186,6 +186,11 @@ document.getElementById('emitterImage').addEventListener('change', async (e) => 
         await k.loadSprite(spriteName, dataUrl);
         config.particleSprite = spriteName;
         config.originalSize = Math.max(img.width, img.height);
+        
+        // Set shape to image and create new particles immediately
+        config.shape = 'image';
+        document.getElementById('particleShape').value = 'image';
+        particles = Array(config.count).fill().map(() => new Particle());
     } catch (error) {
         console.error('Error loading emitter image:', error);
     }
