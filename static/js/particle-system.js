@@ -48,17 +48,25 @@ const config = {
 
 // Particle class
 class Particle {
-    constructor(isOverlay = false) {
+    constructor(isOverlay = false, spriteId = null) {
         this.trail = [];
         this.trailLength = config.trailLength || 10;
         this.shape = config.shape;
         this.isOverlay = isOverlay;
+        this.spriteId = spriteId; // Track which sprite this particle belongs to
         this.reset();
     }
 
     reset() {
-        if (this.isOverlay && window.spriteEmitter) {
-            // Initialize at the sprite emitter position
+        if (this.isOverlay && this.spriteId && window.spriteEmitters && window.spriteEmitters.has(this.spriteId)) {
+            // Initialize at the specific sprite emitter position
+            const sprite = window.spriteEmitters.get(this.spriteId);
+            const offsetX = (Math.random() - 0.5) * sprite.width;
+            const offsetY = (Math.random() - 0.5) * sprite.height;
+            this.x = sprite.x + offsetX;
+            this.y = sprite.y + offsetY;
+        } else if (this.isOverlay && window.spriteEmitter) {
+            // Fallback to single sprite emitter for backward compatibility
             const sprite = window.spriteEmitter;
             const offsetX = (Math.random() - 0.5) * sprite.width;
             const offsetY = (Math.random() - 0.5) * sprite.height;
@@ -107,14 +115,27 @@ class Particle {
         this.ax += (Math.sin(time * 2 + this.x * 0.1) * physics.turbulence);
         this.ay += (Math.cos(time * 2 + this.y * 0.1) * physics.turbulence);
 
-        if (this.isOverlay && window.spriteEmitter) {
-            // Overlay particles are attracted to the sprite emitter
-            const sprite = window.spriteEmitter;
+        if (this.isOverlay && this.spriteId && window.spriteEmitters && window.spriteEmitters.has(this.spriteId)) {
+            // Overlay particles are attracted to their specific sprite emitter
+            const sprite = window.spriteEmitters.get(this.spriteId);
             const dx = sprite.x - this.x;
             const dy = sprite.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > sprite.width / 2) {  // Only attract when outside the sprite bounds
+                const attractionStrength = 0.2;
+                const attractionForce = attractionStrength / (distance * physics.particleMass);
+                this.ax += dx * attractionForce;
+                this.ay += dy * attractionForce;
+            }
+        } else if (this.isOverlay && window.spriteEmitter) {
+            // Fallback for backward compatibility
+            const sprite = window.spriteEmitter;
+            const dx = sprite.x - this.x;
+            const dy = sprite.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > sprite.width / 2) {
                 const attractionStrength = 0.2;
                 const attractionForce = attractionStrength / (distance * physics.particleMass);
                 this.ax += dx * attractionForce;
@@ -309,7 +330,7 @@ function createParticleBurst(x, y, count = 20) {
 
 // Emitter class to manage particle generation
 class Emitter {
-    constructor(isOverlay = false) {
+    constructor(isOverlay = false, spriteId = null) {
         this.x = physics.vortexCenter.x;
         this.y = physics.vortexCenter.y;
         this.vx = 0;
@@ -318,6 +339,7 @@ class Emitter {
         this.lastY = this.y;
         this.isDragging = false;
         this.isOverlay = isOverlay;
+        this.spriteId = spriteId;
     }
 
     reset() {
@@ -332,8 +354,13 @@ class Emitter {
     }
 
     update() {
-        if (this.isOverlay && window.spriteEmitter) {
-            // Update position based on sprite emitter
+        if (this.isOverlay && this.spriteId && window.spriteEmitters && window.spriteEmitters.has(this.spriteId)) {
+            // Update position based on specific sprite emitter
+            const sprite = window.spriteEmitters.get(this.spriteId);
+            this.x = sprite.x;
+            this.y = sprite.y;
+        } else if (this.isOverlay && window.spriteEmitter) {
+            // Fallback for backward compatibility
             this.x = window.spriteEmitter.x;
             this.y = window.spriteEmitter.y;
         }
@@ -346,10 +373,10 @@ class Emitter {
     }
 
     generateParticle() {
-        const particle = new Particle();
+        const particle = new Particle(this.isOverlay, this.spriteId);
 
-        if (this.isOverlay && window.spriteEmitter) {
-            const sprite = window.spriteEmitter;
+        if (this.isOverlay && this.spriteId && window.spriteEmitters && window.spriteEmitters.has(this.spriteId)) {
+            const sprite = window.spriteEmitters.get(this.spriteId);
 
             // Generate particles within the sprite's bounds
             const offsetX = (Math.random() - 0.5) * sprite.width;
@@ -359,6 +386,18 @@ class Emitter {
             particle.y = sprite.y + offsetY;
 
             // Add velocity based on emitter movement and some randomness
+            particle.vx = this.vx + (Math.random() - 0.5) * config.speed;
+            particle.vy = this.vy + (Math.random() - 0.5) * config.speed;
+        } else if (this.isOverlay && window.spriteEmitter) {
+            // Fallback for backward compatibility
+            const sprite = window.spriteEmitter;
+
+            const offsetX = (Math.random() - 0.5) * sprite.width;
+            const offsetY = (Math.random() - 0.5) * sprite.height;
+
+            particle.x = sprite.x + offsetX;
+            particle.y = sprite.y + offsetY;
+
             particle.vx = this.vx + (Math.random() - 0.5) * config.speed;
             particle.vy = this.vy + (Math.random() - 0.5) * config.speed;
         } else {
@@ -375,8 +414,11 @@ class Emitter {
     }
 }
 
-// Create two emitter instances
+// Create main emitter and collection for overlay emitters
 const mainEmitter = new Emitter(false);
+const overlayEmitters = new Map(); // Map to store overlay emitters by sprite ID
+
+// Legacy overlay emitter for backward compatibility
 const overlayEmitter = new Emitter(true);
 
 // Event listeners for drag and burst effects
@@ -508,6 +550,23 @@ k.onUpdate(() => {
     mainEmitter.update();
     overlayEmitter.update();
 
+    // Update all overlay emitters and ensure we have emitters for all sprites
+    if (window.spriteEmitters) {
+        window.spriteEmitters.forEach((sprite, spriteId) => {
+            if (!overlayEmitters.has(spriteId)) {
+                overlayEmitters.set(spriteId, new Emitter(true, spriteId));
+            }
+            overlayEmitters.get(spriteId).update();
+        });
+
+        // Remove emitters for sprites that no longer exist
+        for (const [spriteId, emitter] of overlayEmitters) {
+            if (!window.spriteEmitters.has(spriteId)) {
+                overlayEmitters.delete(spriteId);
+            }
+        }
+    }
+
     //Remove dead particles
     particles = particles.filter(p => p.life > 0);
 
@@ -517,8 +576,19 @@ k.onUpdate(() => {
         particles.push(mainEmitter.generateParticle());
     }
 
-    // Generate particles from overlay emitter if sprite exists
-    if (window.spriteEmitter) {
+    // Generate particles from all overlay emitters
+    if (window.spriteEmitters && window.spriteEmitters.size > 0) {
+        const particlesPerSprite = Math.max(1, Math.floor(particlesPerEmitter / window.spriteEmitters.size));
+        
+        overlayEmitters.forEach((emitter, spriteId) => {
+            for (let i = 0; i < particlesPerSprite && particles.length < config.count; i++) {
+                const particle = emitter.generateParticle();
+                particle.isOverlay = true;  // Mark as overlay particle
+                particles.push(particle);
+            }
+        });
+    } else if (window.spriteEmitter) {
+        // Fallback for single sprite emitter
         for (let i = 0; i < particlesPerEmitter && particles.length < config.count; i++) {
             const particle = overlayEmitter.generateParticle();
             particle.isOverlay = true;  // Mark as overlay particle

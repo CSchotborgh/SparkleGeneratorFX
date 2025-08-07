@@ -34,6 +34,18 @@ class ImageManager {
         if (image) {
             image.destroy();
             this.images.delete(imageId);
+            
+            // Remove from sprite emitters
+            if (window.spriteEmitters) {
+                window.spriteEmitters.delete(imageId);
+                
+                // Update backward compatibility reference
+                if (window.spriteEmitters.size === 0) {
+                    window.spriteEmitter = null;
+                } else if (window.spriteEmitters.size === 1) {
+                    window.spriteEmitter = Array.from(window.spriteEmitters.values())[0];
+                }
+            }
         }
     }
 }
@@ -246,13 +258,23 @@ class DraggableImage {
             const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
             const scrollY = window.pageYOffset || document.documentElement.scrollTop;
 
-            window.spriteEmitter = {
+            // Store sprite emitter data in global sprites collection
+            if (!window.spriteEmitters) {
+                window.spriteEmitters = new Map();
+            }
+            
+            window.spriteEmitters.set(this.id, {
                 id: this.id,
                 x: rect.left + scrollX + rect.width / 2,
                 y: rect.top + scrollY + rect.height / 2,
                 width: rect.width,
                 height: rect.height
-            };
+            });
+            
+            // Keep backward compatibility for single sprite
+            if (window.spriteEmitters.size === 1) {
+                window.spriteEmitter = window.spriteEmitters.get(this.id);
+            }
         }
     }
 
